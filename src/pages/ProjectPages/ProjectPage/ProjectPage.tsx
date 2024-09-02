@@ -1,24 +1,24 @@
 import { Box, Grid, Button, TextField } from "@mui/material";
-import NavBar from "../../components/NavBar/Navbar";
+import NavBar from "../../../components/NavBar/Navbar";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export const CollectionPage: React.FC = () => {
-  const [collections, setCollections] = useState<string[]>(["CS1101S", "CS2030S", "CS2040S", "CS2109S"]);
-  const [newCollection, setNewCollection] = useState<string>("");
+export const ProjectPage: React.FC = () => {
+  const [projects, setProjects] = useState<string[]>(["CS1101S", "CS2030S", "CS2040S", "CS2109S"]);
+  const [newProject, setNewProject] = useState<string>("");
   const navigate = useNavigate();
 
-  const addCollection = () => {
-    if (newCollection.trim() !== "" && !collections.includes(newCollection)) {
-      setCollections([...collections, newCollection]);
-      setNewCollection("");
+  const addProject = () => {
+    if (newProject.trim() !== "" && !projects.includes(newProject)) {
+      setProjects([...projects, newProject]);
+      setNewProject("");
     } else {
-      alert("Collection already exists or input is empty.");
+      alert("Project already exists or input is empty.");
     }
   };
 
-  const handleCollectionClick = (collection: string) => {
-    navigate(`/collections/${collection}`);
+  const handleProjectClick = (project: string) => {
+    navigate(`/projects/${project}/assessments`);
   };
 
   return (
@@ -26,7 +26,7 @@ export const CollectionPage: React.FC = () => {
       <NavBar/>
       <Box sx={{ marginTop: '64px', padding: 2 }}>
         <Grid container spacing={2} sx={{ margin: '0 auto', maxWidth: '1200px' }}>
-          {collections.map((collection, index) => (
+          {projects.map((project, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
               <Box
                 sx={{
@@ -34,15 +34,15 @@ export const CollectionPage: React.FC = () => {
                   padding: '16px',
                   borderRadius: '8px',
                   textAlign: 'center',
-                  height: '150px', // Fixed height for consistency
+                  height: '150px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
                 }}
-                onClick={() => handleCollectionClick(collection)}
+                onClick={() => handleProjectClick(project)}
               >
-                {collection}
+                {project}
               </Box>
             </Grid>
           ))}
@@ -57,20 +57,20 @@ export const CollectionPage: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                height: '150px', // Fixed height for consistency
+                height: '150px',
                 flexDirection: 'column',
               }}
             >
               <Box sx={{ width: '80%' }}>
                 <TextField
-                  value={newCollection}
-                  onChange={(e) => setNewCollection(e.target.value)}
+                  value={newProject}
+                  onChange={(e) => setNewProject(e.target.value)}
                   variant="outlined"
                   fullWidth
                   sx={{ marginBottom: 2 }}
                 />
-                <Button onClick={addCollection} variant="outlined" fullWidth>
-                  Add New Collection
+                <Button onClick={addProject} variant="outlined" fullWidth>
+                  Add New Project
                 </Button>
               </Box>
             </Box>
@@ -81,4 +81,4 @@ export const CollectionPage: React.FC = () => {
   );
 };
 
-export default CollectionPage;
+export default ProjectPage;

@@ -15,21 +15,28 @@ import MenuItem from '@mui/material/MenuItem';
 import questionsImage from '../../assets/question.png';
 
 interface NavBarProps {
-  collectionId?: string;
+  projectId?: string;
+  assessmentId?: string;
+  questionBankId?: string;
 }
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
-function NavBar({ collectionId}: NavBarProps) {
+function NavBar({ projectId, assessmentId, questionBankId }: NavBarProps) {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const navigate = useNavigate();
 
-  const pages = ['Collections'];
-  if (collectionId) {
-    pages.push(collectionId);
+  const pages = ['Projects'];
+  if (projectId) {
+    pages.push(projectId);
   }
-
+  if (assessmentId) {
+    pages.push(assessmentId);
+  }
+  if (questionBankId) {
+    pages.push(questionBankId);
+  }
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -47,10 +54,18 @@ function NavBar({ collectionId}: NavBarProps) {
   };
 
   const handleNavigate = (page: string) => {
-    if (page === 'Collections') {
+    if (page === 'Projects') {
       navigate('/');
-    } else if (page === collectionId) {
-      navigate(`/collections/${collectionId}`);
+    } else if (page === projectId) {
+      if (assessmentId) {
+        navigate(`/projects/${projectId}/assessments`);
+      } else if (questionBankId) {
+        navigate(`/projects/${projectId}/questionBanks`);
+      }
+    } else if (page === assessmentId) {
+      navigate(`/projects/${projectId}/assessments/${assessmentId}`);
+    } else if (page === questionBankId) {
+      navigate(`/projects/${projectId}/questionBanks/${questionBankId}`);
     }
     handleCloseNavMenu();
   };
