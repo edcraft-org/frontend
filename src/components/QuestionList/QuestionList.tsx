@@ -1,10 +1,6 @@
 import React from 'react';
 import { Box, Grid, Typography, Checkbox } from "@mui/material";
-
-interface Question {
-  title: string;
-  description: string;
-}
+import { Question } from '../../utils/api/QuestionAPI';
 
 interface QuestionListProps {
   questions: Question[];
@@ -51,7 +47,7 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestion
             onClick={() => onQuestionClick(question)} // Handle click on question box
           >
             <Box sx={{ marginBottom: 2, backgroundColor: '#e0e0e0', paddingY: '8px', paddingLeft: '16px', borderRadius: '8px 8px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="h6" sx={{ color: '#1e88e5' }}>{question.title}</Typography>
+              <Typography variant="h6" sx={{ color: '#1e88e5' }}>Question {index + 1}</Typography>
               <Checkbox
                 checked={selectedQuestions.includes(question)}
                 onClick={(e) => e.stopPropagation()} // Prevent click event from propagating to the question box
@@ -59,7 +55,7 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestion
               />
             </Box>
             <Box sx={{ paddingBottom: '16px', paddingLeft: '16px', borderRadius: '0 0 8px 8px' }}>
-              <Typography variant="body2" sx={{ color: '#555' }}>{question.description}</Typography>
+              <Typography variant="body2" sx={{ color: '#555' }}>{question.text}</Typography>
             </Box>
           </Box>
         </Grid>

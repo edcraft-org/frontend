@@ -1,22 +1,19 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField, Paper } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-
-interface Question {
-  title: string;
-  description: string;
-}
+import { Question } from '../../utils/api/QuestionAPI';
+import { QuestionBankList } from '../../utils/api/QuestionBankAPI';
 
 interface ExportQuestionBankDialogProps {
   open: boolean;
   onClose: () => void;
   selectedQuestions: Question[];
-  questionBanks: string[];
+  questionBanks: QuestionBankList[];
 //   selectedQuestionBanks: string[];
-  newQuestionBank: string;
+  newQuestionBankTitle: string;
   handleNewQuestionBankChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleExport: () => void;
-  setSelectedQuestionBanks: (questionBanks: string[]) => void;
+  setSelectedQuestionBanks: (questionBanks: QuestionBankList[]) => void;
 }
 
 const ExportQuestionBankDialog: React.FC<ExportQuestionBankDialogProps> = ({
@@ -25,7 +22,7 @@ const ExportQuestionBankDialog: React.FC<ExportQuestionBankDialogProps> = ({
   selectedQuestions,
   questionBanks,
 //   selectedQuestionBanks,
-  newQuestionBank,
+  newQuestionBankTitle,
   handleNewQuestionBankChange,
   handleExport,
   setSelectedQuestionBanks
@@ -36,7 +33,7 @@ const ExportQuestionBankDialog: React.FC<ExportQuestionBankDialogProps> = ({
   ];
 
   const questionBankColumns: GridColDef[] = [
-    { field: 'questionBank', headerName: 'Question Banks', width: 200 },
+    { field: 'title', headerName: 'Question Banks', width: 200 },
   ];
 
   const paginationModel = { page: 0, pageSize: 5 };
@@ -48,7 +45,7 @@ const ExportQuestionBankDialog: React.FC<ExportQuestionBankDialogProps> = ({
         <Typography variant="h6" sx={{ marginBottom: 2 }}>Selected Questions</Typography>
         <Paper sx={{ width: '100%', marginBottom: 2 }}>
           <DataGrid
-            rows={selectedQuestions.map((question, index) => ({ id: index, title: question.title, description: question.description }))}
+            rows={selectedQuestions.map((question, index) => ({ id: question._id, title: index + 1, description: question.text }))}
             columns={questionColumns}
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[5, 10]}
@@ -58,7 +55,7 @@ const ExportQuestionBankDialog: React.FC<ExportQuestionBankDialogProps> = ({
         <Typography variant="h6" sx={{ marginBottom: 2 }}>Select Question Banks</Typography>
         <Paper sx={{ width: '100%', marginBottom: 2}}>
           <DataGrid
-            rows={questionBanks.map((questionBank, index) => ({ id: index, questionBank }))}
+            rows={questionBanks.map((questionBank) => ({ id: questionBank._id, title: questionBank.title }))}
             columns={questionBankColumns}
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[5, 10]}
@@ -67,14 +64,14 @@ const ExportQuestionBankDialog: React.FC<ExportQuestionBankDialogProps> = ({
             onRowSelectionModelChange={(newSelection) => {
               const selectedIDs = new Set(newSelection);
               setSelectedQuestionBanks(
-                questionBanks.filter((_, index) => selectedIDs.has(index))
+                questionBanks.filter((questionBank) => selectedIDs.has(questionBank._id))
               );
             }}
           />
           <TextField
             fullWidth
             label="Create New Question Bank"
-            value={newQuestionBank}
+            value={newQuestionBankTitle}
             onChange={handleNewQuestionBankChange}
             sx={{ marginTop: 2 }}
           />

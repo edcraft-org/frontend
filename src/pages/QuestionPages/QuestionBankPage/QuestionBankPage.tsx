@@ -1,16 +1,20 @@
 import { Box, Grid, Button, TextField, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import NavBar from "../../../components/NavBar/Navbar";
+import { getUserQuestionBanks, createQuestionBank, QuestionBankList } from "../../../utils/api/QuestionBankAPI";
+import { AuthContext } from "../../../context/Authcontext";
 
 const QuestionBankPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const [questionBanks, setQuestionBanks] = useState<string[]>(["Question Bank 1", "Question Bank 2", "Question Bank 3", "Question Bank 4"]);
-  const [newQuestionBank, setNewQuestionBank] = useState<string>("");
+  const [questionBanks, setQuestionBanks] = useState<QuestionBankList[]>([]);
+  const [newQuestionBankTitle, setNewQuestionBankTitle] = useState<string>("");
   const [view, setView] = useState<'assessment' | 'questionBank'>('questionBank');
   const navigate = useNavigate();
+
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     if (view === 'assessment') {
@@ -18,15 +22,34 @@ const QuestionBankPage: React.FC = () => {
     }
   }, [view, navigate, projectId]);
 
+  useEffect(() => {
+    const fetchQuestionBanks = async () => {
+      if (user) {
+        const userQuestionBanks = await getUserQuestionBanks(user.id);
+        setQuestionBanks(userQuestionBanks);
+      }
+    };
+    fetchQuestionBanks();
+  }, [user]);
+
   if (!projectId) {
     return <div>Error: Project ID is missing</div>;
   }
+  if (!user) {
+    return <div>Error: User is missing</div>;
+  }
 
-  const addQuestionBank = () => {
-    if (newQuestionBank.trim() !== "" && !questionBanks.includes(newQuestionBank)) {
-      setQuestionBanks([...questionBanks, newQuestionBank]);
-      setNewQuestionBank("");
-      navigate(`/projects/${projectId}/createQuestionBank/${newQuestionBank}`);
+  const addQuestionBank = async () => {
+    if (newQuestionBankTitle.trim() !== "" && !questionBanks.some(qb => qb.title === newQuestionBankTitle.trim())) {
+      const newQuestionBankData = {
+        title: newQuestionBankTitle,
+        questions: [],
+        user_id: user.id,
+      };
+      const questionBankId = await createQuestionBank(newQuestionBankData);
+      setQuestionBanks([...questionBanks, {...newQuestionBankData, _id: questionBankId}]);
+      setNewQuestionBankTitle("");
+      // navigate(`/projects/${projectId}/createQuestionBank/${newQuestionBank}`);
     } else {
       alert("Question Bank already exists or input is empty.");
     }
@@ -76,9 +99,9 @@ const QuestionBankPage: React.FC = () => {
                   justifyContent: 'center',
                   cursor: 'pointer',
                 }}
-                onClick={() => handleQuestionBankClick(questionBank)}
+                onClick={() => handleQuestionBankClick(questionBank._id)}
               >
-                {questionBank}
+                {questionBank.title}
               </Box>
             </Grid>
           ))}
@@ -99,8 +122,8 @@ const QuestionBankPage: React.FC = () => {
             >
               <Box sx={{ width: '80%' }}>
                 <TextField
-                  value={newQuestionBank}
-                  onChange={(e) => setNewQuestionBank(e.target.value)}
+                  value={newQuestionBankTitle}
+                  onChange={(e) => setNewQuestionBankTitle(e.target.value)}
                   variant="outlined"
                   fullWidth
                   sx={{ marginBottom: 2 }}

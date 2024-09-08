@@ -1,16 +1,19 @@
 import { Box, Grid, Button, TextField, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import NavBar from "../../../components/NavBar/Navbar";
+import { getUserAssessments, createAssessment, AssessmentList } from "../../../utils/api/AssessmentAPI";
+import { AuthContext } from "../../../context/Authcontext";
 
 const AssessmentPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const [assessments, setAssessments] = useState<string[]>(["Assessment 1", "Assessment 2", "Assessment 3", "Assessment 4"]);
+  const [assessments, setAssessments] = useState<AssessmentList[]>([]);
   const [newAssessment, setNewAssessment] = useState<string>("");
   const [view, setView] = useState<'assessment' | 'questionBank'>('assessment');
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     if (view === 'questionBank') {
@@ -18,15 +21,34 @@ const AssessmentPage: React.FC = () => {
     }
   }, [view, navigate, projectId]);
 
+  useEffect(() => {
+    const fetchAssessments = async () => {
+      if (user) {
+        const userAssessments = await getUserAssessments(user.id);
+        setAssessments(userAssessments);
+      }
+    };
+    fetchAssessments();
+  }, [user]);
+
   if (!projectId) {
     return <div>Error: Project ID is missing</div>;
   }
+  if (!user) {
+    return <div>Error: User is missing</div>;
+  }
 
-  const addAssessment = () => {
-    if (newAssessment.trim() !== "" && !assessments.includes(newAssessment)) {
-      setAssessments([...assessments, newAssessment]);
+  const addAssessment = async () => {
+    if (newAssessment.trim() !== "" && !assessments.some(assessment => assessment.title === newAssessment.trim())) {
+      const newAssessmentData = {
+        title: newAssessment,
+        questions: [],
+        user_id: user.id,
+      };
+      const assessmentId = await createAssessment(newAssessmentData);
+      setAssessments([...assessments, {...newAssessmentData, _id: assessmentId}]);
       setNewAssessment("");
-      navigate(`/projects/${projectId}/createAssessment/${newAssessment}`);
+      // navigate(`/projects/${projectId}/createAssessment/${assessmentId}`);
     } else {
       alert("Assessment already exists or input is empty.");
     }
@@ -76,9 +98,9 @@ const AssessmentPage: React.FC = () => {
                   justifyContent: 'center',
                   cursor: 'pointer',
                 }}
-                onClick={() => handleAssessmentClick(assessment)}
+                onClick={() => handleAssessmentClick(assessment._id)}
               >
-                {assessment}
+                {assessment.title}
               </Box>
             </Grid>
           ))}

@@ -1,27 +1,21 @@
 import { Box, Button } from "@mui/material";
 import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 
 import NavBar from "../../../components/NavBar/Navbar";
 import ExportAssessmentsDialog from "../../../components/ExportAssessmentDialog/ExportAssessmentDialog";
 import ExportQuestionBankDialog from "../../../components/ExportQuestionBankDialog/ExportQuestionBankDialog";
 import QuestionList from "../../../components/QuestionList/QuestionList";
 import QuestionDialog from "../../../components/QuestionDialog/QuestionDialog";
+import { addExistingQuestionToQuestionBank, createQuestionBank, getQuestionBankById, getUserQuestionBanks, NewQuestionBank, QuestionBankList } from "../../../utils/api/QuestionBankAPI";
+import { AuthContext } from "../../../context/Authcontext";
+import { Question } from "../../../utils/api/QuestionAPI";
+import { addExistingQuestionToAssessment, AssessmentList, createAssessment, getUserAssessments, NewAssessment } from "../../../utils/api/AssessmentAPI";
 
-interface Question {
-  title: string;
-  description: string;
-}
 
 const QuestionBankDetailsPage: React.FC = () => {
   const { projectId, questionBankId } = useParams<{ projectId: string, questionBankId: string }>();
-  // const [questions, setQuestions] = useState<Question[]>([
-  const [questions] = useState<Question[]>([
-    { title: "Question 1", description: "This is a short description of question 1." },
-    { title: "Question 2", description: "This is a short description of question 2." },
-    { title: "Question 3", description: "This is a short description of question 3." },
-    { title: "Question 4", description: "This is a short description of question 4." },
-  ]);
+  const [questions, setQuestions] = useState<Question[]>([])
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
   const [selectAll, setSelectAll] = useState(false);
 
@@ -31,16 +25,45 @@ const QuestionBankDetailsPage: React.FC = () => {
 
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
 
-  // const [assessments, setAssessments] = useState<string[]>(["Assessment 1", "Assessment 2", "Assessment 3"]);
-  const [assessments] = useState<string[]>(["Assessment 1", "Assessment 2", "Assessment 3"]);
-  const [selectedAssessments, setSelectedAssessments] = useState<string[]>([]);
-  const [newAssessment, setNewAssessment] = useState<string>('');
+  const [assessments, setAssessments] = useState<AssessmentList[]>([]);
+  const [selectedAssessments, setSelectedAssessments] = useState<AssessmentList[]>([]);
+  const [newAssessmentTitle, setNewAssessmentTitle] = useState<string>('');
 
-  // const [questionBanks, setQuestionBanks] = useState<string[]>(["Question Bank 2", "Question Bank 3", "Question Bank 4"]);
-  const [questionBanks] = useState<string[]>(["Question Bank 2", "Question Bank 3", "Question Bank 4"]);
-  const [selectedQuestionBanks, setSelectedQuestionBanks] = useState<string[]>([]);
-  const [newQuestionBank, setNewQuestionBank] = useState<string>('');
+  const [questionBanks, setQuestionBanks] = useState<QuestionBankList[]>([]);
+  const [selectedQuestionBanks, setSelectedQuestionBanks] = useState<QuestionBankList[]>([]);
+  const [newQuestionBankTitle, setNewQuestionBankTitle] = useState<string>('');
 
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    const fetchQuestionBankQuestions = async () => {
+      if (questionBankId) {
+        const questionBankQuestions = await getQuestionBankById(questionBankId);
+        setQuestions(questionBankQuestions.questions);
+      }
+    };
+    fetchQuestionBankQuestions();
+  }, [questionBankId]);
+
+  useEffect(() => {
+    const fetchAssessmentList = async () => {
+      if (user) {
+        const userAssessments = await getUserAssessments(user.id);
+        setAssessments(userAssessments);
+      }
+    };
+    fetchAssessmentList();
+  }, [user]);
+
+  useEffect(() => {
+    const fetchQuestionBanksList = async () => {
+      if (user) {
+        const userQuestionBanks = await getUserQuestionBanks(user.id);
+        setQuestionBanks(userQuestionBanks);
+      }
+    };
+    fetchQuestionBanksList();
+  }, [user]);
 
   if (!projectId) {
     return <div>Error: Project ID is missing</div>;
@@ -48,11 +71,14 @@ const QuestionBankDetailsPage: React.FC = () => {
   if (!questionBankId) {
     return <div>Error: Question Bank ID is missing</div>;
   }
+  if (!user) {
+    return <div>Error: User is missing</div>;
+  }
 
   const handleQuestionClick = (question: Question) => {
     setSelectedQuestions((prevSelected) =>
-      prevSelected.includes(question)
-        ? prevSelected.filter((q) => q.title !== question.title)
+      prevSelected.some((q) => q._id === question._id)
+        ? prevSelected.filter((q) => q._id !== question._id)
         : [...prevSelected, question]
     );
   };
@@ -76,10 +102,14 @@ const QuestionBankDetailsPage: React.FC = () => {
   };
 
   const handleExportAssessmentDialogClose = () => {
+    setSelectedAssessments([]);
+    setSelectedQuestions([]);
     setExportAssessmentDialogOpen(false);
   };
 
   const handleExportQuestionBankDialogClose = () => {
+    setSelectedAssessments([]);
+    setSelectedQuestions([]);
     setExportQuestionBankDialogOpen(false);
   };
 
@@ -94,28 +124,62 @@ const QuestionBankDetailsPage: React.FC = () => {
   };
 
   const handleNewAssessmentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewAssessment(event.target.value);
+    setNewAssessmentTitle(event.target.value);
   };
 
   const handleNewQuestionBankChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewQuestionBank(event.target.value);
+    setNewQuestionBankTitle(event.target.value);
   };
 
-  const handleExportAssessment = () => {
+  const handleExportAssessment = async () => {
     const combinedAssessments = [...selectedAssessments];
-    if (newAssessment) {
-      combinedAssessments.push(newAssessment);
+    if (newAssessmentTitle) {
+      const newAssessment: NewAssessment = {
+        title: newAssessmentTitle,
+        questions: [],
+        user_id: user.id
+      };
+      const newAssessmentId = await createAssessment(newAssessment);
+      console.log(newAssessmentId)
+      combinedAssessments.push({...newAssessment, _id: newAssessmentId});
     }
-    alert(`Exporting questions to assessments: ${combinedAssessments.join(', ')}`);
+    try {
+      for (const assessment of combinedAssessments) {
+        for (const question of selectedQuestions) {
+          await addExistingQuestionToAssessment(assessment._id, question._id);
+        }
+      }
+      alert(`Exporting questions to assessments: ${combinedAssessments.map(a => a.title).join(', ')}`);
+    } catch (error) {
+      console.error("Error adding questions to assessments:", error);
+      alert("An error occurred while exporting questions to assessments.");
+    }
+
     setExportAssessmentDialogOpen(false);
   };
 
-  const handleExportQuestionBank = () => {
+  const handleExportQuestionBank = async () => {
     const combinedQuestionBanks = [...selectedQuestionBanks];
-    if (newQuestionBank) {
-      combinedQuestionBanks.push(newQuestionBank);
+    if (newQuestionBankTitle) {
+      const newQuestionBank: NewQuestionBank = {
+        title: newQuestionBankTitle,
+        questions: [],
+        user_id: user.id
+      };
+      const newQuestionBankId = await createQuestionBank(newQuestionBank);
+      combinedQuestionBanks.push({...newQuestionBank, _id: newQuestionBankId});
     }
-    alert(`Exporting questions to question banks: ${combinedQuestionBanks.join(', ')}`);
+    try {
+      for (const assessment of combinedQuestionBanks) {
+        for (const question of selectedQuestions) {
+          await addExistingQuestionToQuestionBank(assessment._id, question._id);
+        }
+      }
+      alert(`Exporting questions to assessments: ${combinedQuestionBanks.map(a => a.title).join(', ')}`);
+    } catch (error) {
+      console.error("Error adding questions to assessments:", error);
+      alert("An error occurred while exporting questions to assessments.");
+    }
     setExportQuestionBankDialogOpen(false);
   };
 
@@ -168,7 +232,7 @@ const QuestionBankDetailsPage: React.FC = () => {
         onClose={handleExportAssessmentDialogClose}
         selectedQuestions={selectedQuestions}
         assessments={assessments}
-        newAssessment={newAssessment}
+        newAssessmentTitle={newAssessmentTitle}
         handleNewAssessmentChange={handleNewAssessmentChange}
         handleExport={handleExportAssessment}
         setSelectedAssessments={setSelectedAssessments}
@@ -180,7 +244,7 @@ const QuestionBankDetailsPage: React.FC = () => {
         selectedQuestions={selectedQuestions}
         questionBanks={questionBanks}
         // selectedQuestionBanks={selectedQuestionBanks}
-        newQuestionBank={newQuestionBank}
+        newQuestionBankTitle={newQuestionBankTitle}
         handleNewQuestionBankChange={handleNewQuestionBankChange}
         handleExport={handleExportQuestionBank}
         setSelectedQuestionBanks={setSelectedQuestionBanks}

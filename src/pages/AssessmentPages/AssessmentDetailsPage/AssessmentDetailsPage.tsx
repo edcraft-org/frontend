@@ -1,27 +1,38 @@
 import { Box, Grid, Typography, Button } from "@mui/material";
 import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useContext } from "react";
 
 import NavBar from "../../../components/NavBar/Navbar";
 import QuestionGroupPage from "../../QuestionPages/QuestionGroupPage/QuestionGroupPage";
+import { AuthContext } from "../../../context/Authcontext";
+import { getAssessmentById } from "../../../utils/api/AssessmentAPI";
+import { Question } from "../../../utils/api/QuestionAPI";
 
-interface Question {
-  title: string;
-  description: string;
-}
 
 const AssessmentDetailsPage: React.FC = () => {
   const { projectId, assessmentId } = useParams<{ projectId: string, assessmentId: string }>();
-  // const [questions, setQuestions] = useState<Question[]>([
-  const [questions] = useState<Question[]>([
-  { title: "Question 1", description: "This is a short description of question 1." },
-    { title: "Question 2", description: "This is a short description of question 2." },
-    { title: "Question 3", description: "This is a short description of question 3." },
-    { title: "Question 4", description: "This is a short description of question 4." },
-  ]);
+  const [questions, setQuestions] = useState<Question[]>([]);
+
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    const fetchAssessmentQuestions = async () => {
+      if (assessmentId) {
+        const assessmentQuestions = await getAssessmentById(assessmentId);
+        setQuestions(assessmentQuestions.questions);
+      }
+    };
+    fetchAssessmentQuestions();
+  }, [assessmentId]);
 
   if (!projectId) {
     return <div>Error: Project ID is missing</div>;
+  }
+  if (!assessmentId) {
+    return <div>Error: Assessment ID is missing</div>;
+  }
+  if (!user) {
+    return <div>Error: User is missing</div>;
   }
 
   const importQuestions = () => {
@@ -87,11 +98,11 @@ const AssessmentDetailsPage: React.FC = () => {
                 }}
               >
                 <Box sx={{ marginBottom: 2, backgroundColor: '#e0e0e0', paddingY: '8px', paddingLeft: '16px', borderRadius: '8px 8px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6" sx={{ color: '#1e88e5' }}>{question.title}</Typography>
+                  <Typography variant="h6" sx={{ color: '#1e88e5' }}>Question {index + 1}</Typography>
                 </Box>
                 <Box sx={{ paddingBottom: '16px', paddingLeft: '16px', borderRadius: '0 0 8px 8px' }}>
                   {/* <QuestionGroupPage projectId={projectId} questionGroupId ={"holder"} questionTitle={question.title} /> */}
-                  <QuestionGroupPage questionTitle={question.title} />
+                  <QuestionGroupPage questionTitle={question.text} />
                 </Box>
               </Box>
             </Grid>

@@ -1,21 +1,18 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField, Paper } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-
-interface Question {
-  title: string;
-  description: string;
-}
+import { Question } from '../../utils/api/QuestionAPI';
+import { AssessmentList } from '../../utils/api/AssessmentAPI';
 
 interface ExportAssessmentsDialogProps {
   open: boolean;
   onClose: () => void;
   selectedQuestions: Question[];
-  assessments: string[];
-  newAssessment: string;
+  assessments: AssessmentList[];
+  newAssessmentTitle: string;
   handleNewAssessmentChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleExport: () => void;
-  setSelectedAssessments: (assessments: string[]) => void;
+  setSelectedAssessments: (assessments: AssessmentList[]) => void;
 }
 
 const ExportAssessmentsDialog: React.FC<ExportAssessmentsDialogProps> = ({
@@ -23,7 +20,7 @@ const ExportAssessmentsDialog: React.FC<ExportAssessmentsDialogProps> = ({
   onClose,
   selectedQuestions,
   assessments,
-  newAssessment,
+  newAssessmentTitle,
   handleNewAssessmentChange,
   handleExport,
   setSelectedAssessments
@@ -34,7 +31,7 @@ const ExportAssessmentsDialog: React.FC<ExportAssessmentsDialogProps> = ({
   ];
 
   const assessmentColumns: GridColDef[] = [
-    { field: 'assessment', headerName: 'Assessments', width: 200 },
+    { field: 'title', headerName: 'Assessments', width: 200 },
   ];
 
   const paginationModel = { page: 0, pageSize: 5 };
@@ -46,7 +43,7 @@ const ExportAssessmentsDialog: React.FC<ExportAssessmentsDialogProps> = ({
         <Typography variant="h6" sx={{ marginBottom: 2 }}>Selected Questions</Typography>
         <Paper sx={{ width: '100%', marginBottom: 2 }}>
           <DataGrid
-            rows={selectedQuestions.map((question, index) => ({ id: index, title: question.title, description: question.description }))}
+            rows={selectedQuestions.map((question, index) => ({ id: question._id, title: index + 1, description: question.text }))}
             columns={questionColumns}
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[5, 10]}
@@ -56,7 +53,7 @@ const ExportAssessmentsDialog: React.FC<ExportAssessmentsDialogProps> = ({
         <Typography variant="h6" sx={{ marginBottom: 2 }}>Select Assessments</Typography>
         <Paper sx={{ width: '100%', marginBottom: 2}}>
           <DataGrid
-            rows={assessments.map((assessment, index) => ({ id: index, assessment }))}
+            rows={assessments.map((assessment) => ({ id: assessment._id, title: assessment.title }))}
             columns={assessmentColumns}
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[5, 10]}
@@ -65,14 +62,14 @@ const ExportAssessmentsDialog: React.FC<ExportAssessmentsDialogProps> = ({
             onRowSelectionModelChange={(newSelection) => {
               const selectedIDs = new Set(newSelection);
               setSelectedAssessments(
-                assessments.filter((_, index) => selectedIDs.has(index))
+                assessments.filter((assessment) => selectedIDs.has(assessment._id))
               );
             }}
           />
           <TextField
             fullWidth
             label="Create New Assessment"
-            value={newAssessment}
+            value={newAssessmentTitle}
             onChange={handleNewAssessmentChange}
             sx={{ marginTop: 2 }}
           />
