@@ -1,6 +1,7 @@
 import { Box, Grid, Typography, Button } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
 import NavBar from "../../../components/NavBar/Navbar";
 import QuestionGroupPage from "../../QuestionPages/QuestionGroupPage/QuestionGroupPage";
@@ -12,7 +13,7 @@ import { Question } from "../../../utils/api/QuestionAPI";
 const AssessmentDetailsPage: React.FC = () => {
   const { projectId, assessmentId } = useParams<{ projectId: string, assessmentId: string }>();
   const [questions, setQuestions] = useState<Question[]>([]);
-
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
@@ -42,7 +43,7 @@ const AssessmentDetailsPage: React.FC = () => {
 
   const createNewQuestion = () => {
     // Logic to create a new question
-    alert("Create a new question");
+    navigate(`/projects/${projectId}/createQuestion`);
   };
 
   const previewAssessment = () => {

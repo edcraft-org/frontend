@@ -22,6 +22,7 @@ const CreateAssessmentPage: React.FC = () => {
   const { projectId, assessmentId } = useParams<{ projectId: string, assessmentId: string }>();
   const [assessmentTitle, setAssessmentTitle] = useState<string>("");
   const [questions, setQuestions] = useState<Question[]>([{ questionText: "", options: ["True", "False"], type: "True or False", correctAnswer: "True", category: "Rule Based" }]);
+  const [marks, setMarks] = useState<number | string>('');
 
   if (!projectId) {
     return <div>Error: Project ID is missing</div>;
@@ -138,6 +139,18 @@ const CreateAssessmentPage: React.FC = () => {
                 ))}
               </Select>
             </FormControl>
+            <Box >
+              <TextField
+                fullWidth
+                label="Question Marks"
+                variant="outlined"
+                type="number"
+                value={marks}
+                onChange={(e) => setMarks(e.target.value)}
+                required
+                inputProps={{ min: 1 }}
+              />
+            </Box>
             {question.type === "True or False" ? (
               <TrueOrFalseQuestion
                 questionText={question.questionText}
