@@ -10,7 +10,7 @@ const QuestionCreationPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
 
   const [description, setDescription] = useState('');
-  const [type, setType] = useState('multiple choice');
+  const [type, setType] = useState('');
   const [marks, setMarks] = useState<number | string>('');
   const [creationMethod, setCreationMethod] = useState('generation');
   const [options, setOptions] = useState<string[]>(['', '', '', '']);

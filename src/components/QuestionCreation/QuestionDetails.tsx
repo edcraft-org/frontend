@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, MenuItem, FormControl, InputLabel, Select, Chip, Typography, TextField } from '@mui/material';
 
 interface QuestionDetailsProps {
   type: string;
@@ -21,20 +21,23 @@ const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType,
       <Typography variant="h6" gutterBottom sx={{ marginBottom: 2 }}>
         Question Details
       </Typography>
-      <TextField
-        fullWidth
-        select
-        label="Question Type"
-        variant="outlined"
-        value={type}
-        onChange={(e) => setType(e.target.value)}
-        required
-      >
-        <MenuItem value="multiple choice">Multiple Choice</MenuItem>
-        <MenuItem value="true or false">True or False</MenuItem>
-        <MenuItem value="fill in the blank">Fill in the Blank</MenuItem>
-        <MenuItem value="other">Other</MenuItem>
-      </TextField>
+      <FormControl fullWidth sx={{ marginBottom: 2 }}>
+        <InputLabel id="question-type-label">Question Type</InputLabel>
+        <Select
+          labelId="question-type-label"
+          label="Question Type"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          renderValue={(selected) => (
+            <Chip label={selected} />
+          )}
+        >
+          <MenuItem value="Multiple Choice">Multiple Choice</MenuItem>
+          <MenuItem value="True or False">True or False</MenuItem>
+          <MenuItem value="Fill in the blank">Fill in the Blank</MenuItem>
+          <MenuItem value="Other">Other</MenuItem>
+        </Select>
+      </FormControl>
       <TextField
         fullWidth
         label="Question Marks"
