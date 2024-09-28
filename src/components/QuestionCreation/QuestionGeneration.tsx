@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Autocomplete, Box, TextField, Typography, Button, Select, MenuItem, FormControl, InputLabel, Chip, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Tooltip } from '@mui/material';
-import { topics } from './utils';
+import { Box, TextField, Typography, Button, Select, MenuItem, FormControl, InputLabel, Chip, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Tooltip } from '@mui/material';
+import { getTopics, getSubtopics, getQueryables, Topic, Subtopic, Queryable } from '../../utils/api/QuestionGenerationAPI';
 
 interface QuestionGenerationProps {
   description: string;
@@ -12,19 +12,57 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   description,
   setDescription,
   type
-}) => {  const [numOptions, setNumOptions] = useState<number>(4);
+}) => {
+  const [numOptions, setNumOptions] = useState<number>(4);
   const [numQuestions, setNumQuestions] = useState<number>(1);
   const [topic, setTopic] = useState<string>("");
+  const [subtopic, setSubtopic] = useState<string>("");
   const [queryable, setQueryable] = useState<string>("");
   const [variables, setVariables] = useState<string[]>([]);
-
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [subtopics, setSubtopics] = useState<Subtopic[]>([]);
+  const [queryables, setQueryables] = useState<Queryable[]>([]);
 
   useEffect(() => {
-    if (queryable && topic) {
-      setVariables(topics[topic][queryable].variables);
+    // Fetch topics
+    getTopics()
+      .then(setTopics)
+      .catch(error => console.error('Error fetching topics:', error));
+  }, []);
+
+  useEffect(() => {
+    if (topic) {
+      // Fetch subtopics
+      getSubtopics(topic)
+        .then(setSubtopics)
+        .catch(error => console.error('Error fetching subtopics:', error));
+    } else {
+      setSubtopics([]);
+      setSubtopic('');
+      setQueryables([]);
+      setQueryable('');
     }
-  }, [queryable, topic]);
-  
+  }, [topic]);
+
+  useEffect(() => {
+    if (subtopic) {
+      // Fetch queryables
+      getQueryables(topic, subtopic)
+        .then(setQueryables)
+        .catch(error => console.error('Error fetching queryables:', error));
+    } else {
+      setQueryables([]);
+      setQueryable('');
+    }
+  }, [topic, subtopic]);
+
+  useEffect(() => {
+    if (queryable && topic && subtopic) {
+      const selectedQueryable = queryables.find(q => q.queryable === queryable);
+      setVariables(selectedQueryable ? selectedQueryable.variables : []);
+    }
+  }, [queryable, topic, subtopic, queryables]);
+
   useEffect(() => {
     if (type === 'true or false') {
       setNumOptions(2);
@@ -70,23 +108,28 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
             <Chip label={selected} />
           )}
         >
-          {Object.keys(topics).map((topic) => (
-            <MenuItem value={topic}>{topic}</MenuItem>
+          {topics.map((topic) => (
+            <MenuItem key={topic} value={topic}>{topic}</MenuItem>
           ))}
         </Select>
       </FormControl>
-      {/* <Autocomplete
-        id="topic-autocomplete"
-        options={Object.keys(topics)}
-        value={topic}
-        onChange={(event, newValue) => {
-          if (newValue) {
-            setTopic(newValue);
-          }
-        }}
-        renderInput={(params) => <TextField {...params} label="Topic" />}
-        sx = {{ marginBottom: 2 }}
-      /> */}
+      <FormControl fullWidth sx={{ marginBottom: 2 }}>
+        <InputLabel id="subtopic-label">Subtopic</InputLabel>
+        <Select
+          labelId="subtopic-label"
+          label="Subtopic"
+          value={subtopic}
+          onChange={(e) => setSubtopic(e.target.value)}
+          disabled={!topic}
+          renderValue={(selected) => (
+            <Chip label={selected} />
+          )}
+        >
+          {subtopics.map((subtopic) => (
+            <MenuItem key={subtopic} value={subtopic}>{subtopic}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
       <FormControl fullWidth sx={{ marginBottom: 2 }}>
         <InputLabel id="queryable-label">Queryable</InputLabel>
         <Select
@@ -94,13 +137,13 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           label="Queryable"
           value={queryable}
           onChange={(e) => setQueryable(e.target.value)}
-          disabled={!topic}
+          disabled={!subtopic}
           renderValue={(selected) => (
             <Chip label={selected} />
           )}
         >
-          {topic && Object.keys(topics[topic]).map((queryable) => (
-            <MenuItem value={queryable}>{queryable}</MenuItem>
+          {queryables.map((queryable) => (
+            <MenuItem key={queryable.queryable} value={queryable.queryable}>{queryable.queryable}</MenuItem>
           ))}
         </Select>
       </FormControl>
@@ -110,62 +153,62 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         </Typography>
       </Tooltip>
       <TableContainer component={Paper} sx={{ marginBottom: 2, border: '1px solid #ccc' }}>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Variable Index</TableCell>
-            <TableCell>Variable Name</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {variables.map((variable, index) => (
-            <TableRow key={index}>
-              <TableCell>{index}</TableCell>
-              <TableCell>{variable}</TableCell>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Variable Index</TableCell>
+              <TableCell>Variable Name</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-    <Paper variant="outlined" sx={{ padding: 1, marginBottom: 2, backgroundColor: '#f0f0f0' }}>
-      <Typography variant="subtitle1">
-        Output Type: {topic && queryable && topics[topic][queryable].outputType}
-      </Typography>
-    </Paper>
-    <TextField
-      fullWidth
-      label="Question Description"
-      variant="outlined"
-      value={description}
-      onChange={(e) => setDescription(e.target.value)}
-      required
-      sx={{ marginBottom: 2 }}
-    />
-    <TextField
-      fullWidth
-      label="Number of Options"
-      variant="outlined"
-      type="number"
-      value={numOptions}
-      onChange={(e) => setNumOptions(Number(e.target.value))}
-      required
-      sx={{ marginBottom: 2 }}
-      disabled={type === 'true or false'}
-    />
-    <TextField
-      fullWidth
-      label="Number of Questions"
-      variant="outlined"
-      type="number"
-      value={numQuestions}
-      onChange={(e) => setNumQuestions(Number(e.target.value))}
-      required
-      sx={{ marginBottom: 2 }}
-    />
-    <Button variant="contained" color="primary" onClick={handleGenerate}>
-      Generate
-    </Button>
-  </Box>
+          </TableHead>
+          <TableBody>
+            {variables.map((variable, index) => (
+              <TableRow key={index}>
+                <TableCell>{index}</TableCell>
+                <TableCell>{variable}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Paper variant="outlined" sx={{ padding: 1, marginBottom: 2, backgroundColor: '#f0f0f0' }}>
+        <Typography variant="subtitle1">
+          Output Type: {topic && subtopic && queryable && queryables.find(q => q.queryable === queryable)?.outputType}
+        </Typography>
+      </Paper>
+      <TextField
+        fullWidth
+        label="Question Description"
+        variant="outlined"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        required
+        sx={{ marginBottom: 2 }}
+      />
+      <TextField
+        fullWidth
+        label="Number of Options"
+        variant="outlined"
+        type="number"
+        value={numOptions}
+        onChange={(e) => setNumOptions(Number(e.target.value))}
+        required
+        sx={{ marginBottom: 2 }}
+        disabled={type === 'true or false'}
+      />
+      <TextField
+        fullWidth
+        label="Number of Questions"
+        variant="outlined"
+        type="number"
+        value={numQuestions}
+        onChange={(e) => setNumQuestions(Number(e.target.value))}
+        required
+        sx={{ marginBottom: 2 }}
+      />
+      <Button variant="contained" color="primary" onClick={handleGenerate}>
+        Generate
+      </Button>
+    </Box>
   );
 };
 

@@ -5,7 +5,6 @@ import CreateAssessmentPage from '../pages/AssessmentPages/CreateAssessmentPage/
 import QuestionBankDetailsPage from '../pages/QuestionPages/QuestionBankDetailsPage/QuestionBankDetailsPage';
 import AssessmentPage from '../pages/AssessmentPages/AssessmentPage/AssessmentPage';
 import QuestionBankPage from '../pages/QuestionPages/QuestionBankPage/QuestionBankPage';
-import { Create } from '@mui/icons-material';
 import QuestionCreationPage from '../pages/QuestionPages/QuestionCreationPage/QuestionCreationPage';
 // import QuestionGroupPage from '../pages/QuestionPages/QuestionGroupPage/QuestionGroupPage';
 
