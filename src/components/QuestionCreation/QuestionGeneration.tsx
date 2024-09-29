@@ -1,17 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { Box, TextField, Typography, Button, Select, MenuItem, FormControl, InputLabel, Chip, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Tooltip } from '@mui/material';
-import { getTopics, getSubtopics, getQueryables, Topic, Subtopic, Queryable } from '../../utils/api/QuestionGenerationAPI';
+import { getTopics, getSubtopics, getQueryables, generateQuestion, Topic, Subtopic, Queryable, GenerateQuestionRequest, GeneratedQuestion } from '../../utils/api/QuestionGenerationAPI';
+import GeneratedQuestions from './GeneratedQuestions';
+import { createQuestion } from '../../utils/api/QuestionAPI';
+import { addExistingQuestionToAssessment } from '../../utils/api/AssessmentAPI';
+import { addExistingQuestionToQuestionBank } from '../../utils/api/QuestionBankAPI';
+import { AuthContext } from '../../context/Authcontext';
 
 interface QuestionGenerationProps {
   description: string;
   setDescription: (description: string) => void;
   type: string;
+  assessmentId?: string;
+  questionBankId?: string;
 }
 
 const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   description,
   setDescription,
-  type
+  type,
+  assessmentId,
+  questionBankId
 }) => {
   const [numOptions, setNumOptions] = useState<number>(4);
   const [numQuestions, setNumQuestions] = useState<number>(1);
@@ -22,6 +31,9 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   const [topics, setTopics] = useState<Topic[]>([]);
   const [subtopics, setSubtopics] = useState<Subtopic[]>([]);
   const [queryables, setQueryables] = useState<Queryable[]>([]);
+  const [generatedQuestions, setGeneratedQuestions] = useState<GeneratedQuestion[]>([]);
+
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     // Fetch topics
@@ -69,7 +81,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     }
   }, [type]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     // Check if all variables are used in the description
     const allVariablesUsed = variables.every((_, index) => description.includes(`{${index}}`));
 
@@ -78,11 +90,58 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       return;
     }
 
-    // Logic to generate questions
-    console.log('Generating questions with the following parameters:');
-    console.log('Description:', description);
-    console.log('Number of Options:', numOptions);
-    console.log('Number of Questions:', numQuestions);
+    // Create request payload
+    const requestPayload: GenerateQuestionRequest = {
+      topic,
+      subtopic,
+      queryable,
+      question_description: description,
+      question_type: type,
+      number_of_options: numOptions,
+      number_of_questions: numQuestions,
+    };
+
+    try {
+      const data = await generateQuestion(requestPayload);
+      setGeneratedQuestions(data); // Store the generated questions in state
+    } catch (error) {
+      console.error('Error generating question:', error);
+    }
+  };
+
+  const onAddQuestion = async (selectedQuestions: GeneratedQuestion[]) => {
+    try {
+      // TODO: To be updated when authentication logic is implemented
+      if (!user) {
+        throw new Error('User is not logged in');
+      }
+
+      for (const selectedQuestion of selectedQuestions) {
+        const newQuestion = {
+          text: selectedQuestion.question,
+          options: selectedQuestion.options,
+          answer: selectedQuestion.answer,
+          user_id: user.id
+        };
+
+        // Create the question
+        const question = await createQuestion(newQuestion);
+
+        if (assessmentId) {
+          // Add the question to the assessment
+          await addExistingQuestionToAssessment(assessmentId, question._id);
+        } else if (questionBankId) {
+          // Add the question to the question bank
+          await addExistingQuestionToQuestionBank(questionBankId, question._id);
+        } else {
+          throw new Error('Assessment ID or Question Bank ID is missing');
+        }
+      }
+
+      console.log('Questions added to assessment successfully');
+    } catch (error) {
+      console.error('Error adding questions to assessment:', error);
+    }
   };
 
   return (
@@ -170,11 +229,6 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           </TableBody>
         </Table>
       </TableContainer>
-      <Paper variant="outlined" sx={{ padding: 1, marginBottom: 2, backgroundColor: '#f0f0f0' }}>
-        <Typography variant="subtitle1">
-          Output Type: {topic && subtopic && queryable && queryables.find(q => q.queryable === queryable)?.outputType}
-        </Typography>
-      </Paper>
       <TextField
         fullWidth
         label="Question Description"
@@ -208,6 +262,9 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       <Button variant="contained" color="primary" onClick={handleGenerate}>
         Generate
       </Button>
+      {generatedQuestions.length > 0 && (
+        <GeneratedQuestions questions={generatedQuestions} onAddQuestion={onAddQuestion}/>
+      )}
     </Box>
   );
 };

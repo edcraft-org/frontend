@@ -34,11 +34,17 @@ function NavBar({ projectId, assessmentId, questionBankId }: NavBarProps) {
   if (projectId) {
     pages.push(projectId);
   }
+  // if (assessmentId) {
+  //   pages.push(assessmentId);
+  // }
+  // if (questionBankId) {
+  //   pages.push(questionBankId);
+  // }
   if (assessmentId) {
-    pages.push(assessmentId);
+    pages.push('Assessment');
   }
   if (questionBankId) {
-    pages.push(questionBankId);
+    pages.push('Question Bank');
   }
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {

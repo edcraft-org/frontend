@@ -1,5 +1,5 @@
 import { Box, Button } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 
 import NavBar from "../../../components/NavBar/Navbar";
@@ -34,6 +34,7 @@ const QuestionBankDetailsPage: React.FC = () => {
   const [newQuestionBankTitle, setNewQuestionBankTitle] = useState<string>('');
 
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchQuestionBankQuestions = async () => {
@@ -188,7 +189,10 @@ const QuestionBankDetailsPage: React.FC = () => {
   };
 
   const createNewQuestion = () => {
-    alert("Create a new question");
+     // Logic to create a new question
+     navigate(`/projects/${projectId}/createQuestion`, {
+      state: { questionBankId },
+    });
   };
 
   return (

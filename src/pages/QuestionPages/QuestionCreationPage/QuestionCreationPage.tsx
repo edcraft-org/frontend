@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Box, Button, Switch, Typography, FormControlLabel } from '@mui/material';
 import NavBar from '../../../components/NavBar/Navbar';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import QuestionDetails from '../../../components/QuestionCreation/QuestionDetails';
 import QuestionGeneration from '../../../components/QuestionCreation/QuestionGeneration';
 import ManualCreation from '../../../components/QuestionCreation/ManualCreation';
 
 const QuestionCreationPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
-
+  const location = useLocation();
+  const { assessmentId, questionBankId } = location.state || {};
   const [description, setDescription] = useState('');
   const [type, setType] = useState('');
   const [marks, setMarks] = useState<number | string>('');
@@ -59,7 +60,7 @@ const QuestionCreationPage: React.FC = () => {
             sx={{ marginBottom: 2 }}
           />
           {creationMethod === 'generation' ? (
-            <QuestionGeneration description={description} setDescription={setDescription} type={type} />
+            <QuestionGeneration description={description} setDescription={setDescription} type={type} assessmentId={assessmentId} questionBankId={questionBankId}/>
           ) : (
             <ManualCreation
               description={description}
@@ -71,9 +72,9 @@ const QuestionCreationPage: React.FC = () => {
               setCorrectAnswer={setCorrectAnswer}
             />
           )}
-          <Button type="submit" variant="contained" color="primary">
+          {/* <Button type="submit" variant="contained" color="primary">
             Create Question
-          </Button>
+          </Button> */}
         </form>
       </Box>
     </Box>

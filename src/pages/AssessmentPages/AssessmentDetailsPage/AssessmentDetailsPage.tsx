@@ -9,10 +9,14 @@ import { AuthContext } from "../../../context/Authcontext";
 import { getAssessmentById } from "../../../utils/api/AssessmentAPI";
 import { Question } from "../../../utils/api/QuestionAPI";
 
+interface AssessmentDetails {
+  title: string;
+  questions: Question[];
+}
 
 const AssessmentDetailsPage: React.FC = () => {
   const { projectId, assessmentId } = useParams<{ projectId: string, assessmentId: string }>();
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [assessmentDetails, setAssessmentDetails] = useState<AssessmentDetails | null>(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
@@ -20,7 +24,7 @@ const AssessmentDetailsPage: React.FC = () => {
     const fetchAssessmentQuestions = async () => {
       if (assessmentId) {
         const assessmentQuestions = await getAssessmentById(assessmentId);
-        setQuestions(assessmentQuestions.questions);
+        setAssessmentDetails(assessmentQuestions);
       }
     };
     fetchAssessmentQuestions();
@@ -43,7 +47,9 @@ const AssessmentDetailsPage: React.FC = () => {
 
   const createNewQuestion = () => {
     // Logic to create a new question
-    navigate(`/projects/${projectId}/createQuestion`);
+    navigate(`/projects/${projectId}/createQuestion`, {
+      state: { assessmentId },
+    });
   };
 
   const previewAssessment = () => {
@@ -67,7 +73,7 @@ const AssessmentDetailsPage: React.FC = () => {
       <Box sx={{ marginTop: '64px', padding: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}>
           <Typography variant="h4" gutterBottom>
-            {assessmentId}
+            {assessmentDetails ? assessmentDetails.title : 'Loading...'}
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
             <Button variant="contained" color="primary" onClick={previewAssessment} sx={{ marginBottom: 1, width: '150px' }}>
@@ -82,7 +88,7 @@ const AssessmentDetailsPage: React.FC = () => {
           </Box>
         </Box>
         <Grid container spacing={2} sx={{ margin: '0 auto', maxWidth: '1200px' }}>
-          {questions.map((question, index) => (
+          {assessmentDetails?.questions.map((question, index) => (
             <Grid item xs={12} key={index}>
               <Box
                 sx={{
@@ -102,8 +108,7 @@ const AssessmentDetailsPage: React.FC = () => {
                   <Typography variant="h6" sx={{ color: '#1e88e5' }}>Question {index + 1}</Typography>
                 </Box>
                 <Box sx={{ paddingBottom: '16px', paddingLeft: '16px', borderRadius: '0 0 8px 8px' }}>
-                  {/* <QuestionGroupPage projectId={projectId} questionGroupId ={"holder"} questionTitle={question.title} /> */}
-                  <QuestionGroupPage questionTitle={question.text} />
+                  <QuestionGroupPage question={question} />
                 </Box>
               </Box>
             </Grid>

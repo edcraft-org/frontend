@@ -9,6 +9,22 @@ export interface Queryable {
   outputType: string;
 }
 
+export interface GenerateQuestionRequest {
+  topic: string;
+  subtopic: string;
+  queryable: string;
+  question_description: string;
+  question_type: string;
+  number_of_options: number;
+  number_of_questions: number;
+}
+
+export interface GeneratedQuestion {
+  question: string;
+  answer: string;
+  options: string[];
+}
+
 export const getTopics = async (): Promise<Topic[]> => {
   const url = `${basePath}/question_generation/topics`;
   const response = await fetch(url);
@@ -44,5 +60,25 @@ export const getQueryables = async (topic: string, subtopic: string): Promise<Qu
   }
 
   const data: Queryable[] = await response.json();
+  return data;
+};
+
+export const generateQuestion = async (request: GenerateQuestionRequest): Promise<GeneratedQuestion[]> => {
+  const url = `${basePath}/question_generation/generate`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: GeneratedQuestion[] = await response.json();
   return data;
 };

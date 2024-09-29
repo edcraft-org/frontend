@@ -15,7 +15,7 @@ interface NewQuestion {
   user_id: string;
 }
 
-export const createQuestion = async (newQuestion: NewQuestion): Promise<string> => {
+export const createQuestion = async (newQuestion: NewQuestion): Promise<Question> => {
   const url = `${basePath}/questions`;
   const response = await fetch(url, {
     method: "POST",
@@ -30,8 +30,8 @@ export const createQuestion = async (newQuestion: NewQuestion): Promise<string> 
     throw new Error(message);
   }
 
-  const questionId: string = await response.text();
-  return questionId;
+  const question: Question = await response.json();
+  return question;
 };
 
 export const getQuestionById = async (questionId: string): Promise<Question> => {
