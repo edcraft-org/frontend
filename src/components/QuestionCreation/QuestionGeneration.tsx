@@ -11,6 +11,8 @@ interface QuestionGenerationProps {
   description: string;
   setDescription: (description: string) => void;
   type: string;
+  marks: number;
+  project: { id: string, title: string };
   assessmentId?: string;
   questionBankId?: string;
 }
@@ -19,6 +21,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   description,
   setDescription,
   type,
+  marks,
+  project,
   assessmentId,
   questionBankId
 }) => {
@@ -97,6 +101,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       queryable,
       question_description: description,
       question_type: type,
+      marks,
       number_of_options: numOptions,
       number_of_questions: numQuestions,
     };
@@ -121,6 +126,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           text: selectedQuestion.question,
           options: selectedQuestion.options,
           answer: selectedQuestion.answer,
+          marks: selectedQuestion.marks,
           user_id: user.id
         };
 
@@ -263,7 +269,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         Generate
       </Button>
       {generatedQuestions.length > 0 && (
-        <GeneratedQuestions questions={generatedQuestions} onAddQuestion={onAddQuestion}/>
+        <GeneratedQuestions project={project} questions={generatedQuestions} onAddQuestion={onAddQuestion} assessmentId={assessmentId} questionBankId={questionBankId}/>
       )}
     </Box>
   );

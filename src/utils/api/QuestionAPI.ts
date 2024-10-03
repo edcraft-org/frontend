@@ -6,6 +6,7 @@ export interface Question {
   options: string[];
   answer: string;
   user_id: string;
+  marks: number;
 }
 
 interface NewQuestion {
@@ -13,6 +14,7 @@ interface NewQuestion {
   options: string[];
   answer: string;
   user_id: string;
+  marks: number;
 }
 
 export const createQuestion = async (newQuestion: NewQuestion): Promise<Question> => {

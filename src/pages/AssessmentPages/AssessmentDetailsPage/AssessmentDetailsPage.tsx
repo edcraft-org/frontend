@@ -1,5 +1,5 @@
 import { Box, Grid, Typography, Button } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -19,6 +19,8 @@ const AssessmentDetailsPage: React.FC = () => {
   const [assessmentDetails, setAssessmentDetails] = useState<AssessmentDetails | null>(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const location = useLocation();
+  const { projectTitle } = location.state || {};
 
   useEffect(() => {
     const fetchAssessmentQuestions = async () => {
@@ -28,7 +30,7 @@ const AssessmentDetailsPage: React.FC = () => {
       }
     };
     fetchAssessmentQuestions();
-  }, [assessmentId]);
+  }, [assessmentId, location.state]);
 
   if (!projectId) {
     return <div>Error: Project ID is missing</div>;
@@ -48,7 +50,7 @@ const AssessmentDetailsPage: React.FC = () => {
   const createNewQuestion = () => {
     // Logic to create a new question
     navigate(`/projects/${projectId}/createQuestion`, {
-      state: { assessmentId, assessmentTitle: assessmentDetails?.title },
+      state: { assessmentId, assessmentTitle: assessmentDetails?.title, projectTitle },
     });
   };
 
@@ -69,7 +71,7 @@ const AssessmentDetailsPage: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <NavBar projectId={projectId}  assessment={assessmentDetails ? { id: assessmentId, title: assessmentDetails.title } : undefined} />
+      <NavBar project={{id: projectId, title: projectTitle}} assessment={assessmentDetails ? { id: assessmentId, title: assessmentDetails.title } : undefined} />
       <Box sx={{ marginTop: '64px', padding: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}>
           <Typography variant="h4" gutterBottom>

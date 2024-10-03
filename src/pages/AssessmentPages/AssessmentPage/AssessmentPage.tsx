@@ -1,35 +1,39 @@
 import { Box, Grid, Button, TextField, ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import NavBar from "../../../components/NavBar/Navbar";
-import { getUserAssessments, createAssessment, AssessmentList } from "../../../utils/api/AssessmentAPI";
+import { getUserProjectAssessments, createAssessment, AssessmentList } from "../../../utils/api/AssessmentAPI";
 import { AuthContext } from "../../../context/Authcontext";
 
-const AssessmentPage: React.FC = () => {
+const AssessmentPage: React.FC= () => {
   const { projectId } = useParams<{ projectId: string }>();
+
   const [assessments, setAssessments] = useState<AssessmentList[]>([]);
   const [newAssessment, setNewAssessment] = useState<string>("");
   const [view, setView] = useState<'assessment' | 'questionBank'>('assessment');
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-
+  const location = useLocation();
+  const { projectTitle } = location.state || {};
   useEffect(() => {
     if (view === 'questionBank') {
-      navigate(`/projects/${projectId}/questionBanks`);
+      navigate(`/projects/${projectId}/questionBanks`, {
+        state: { projectTitle },
+      });
     }
-  }, [view, navigate, projectId]);
+  }, [view, navigate, projectId, projectTitle]);
 
   useEffect(() => {
     const fetchAssessments = async () => {
-      if (user) {
-        const userAssessments = await getUserAssessments(user.id);
+      if (user && projectId) {
+        const userAssessments = await getUserProjectAssessments(user.id, projectId);
         setAssessments(userAssessments);
       }
     };
     fetchAssessments();
-  }, [user]);
+  }, [user, projectId]);
 
   if (!projectId) {
     return <div>Error: Project ID is missing</div>;
@@ -44,18 +48,20 @@ const AssessmentPage: React.FC = () => {
         title: newAssessment,
         questions: [],
         user_id: user.id,
+        project_id: projectId
       };
-      const assessmentId = await createAssessment(newAssessmentData);
-      setAssessments([...assessments, {...newAssessmentData, _id: assessmentId}]);
+      const createdAssessment = await createAssessment(newAssessmentData);
+      setAssessments([...assessments, {...newAssessmentData, _id: createdAssessment._id}]);
       setNewAssessment("");
-      // navigate(`/projects/${projectId}/createAssessment/${assessmentId}`);
     } else {
       alert("Assessment already exists or input is empty.");
     }
   };
 
   const handleAssessmentClick = (assessment: string) => {
-    navigate(`/projects/${projectId}/assessments/${assessment}`);
+    navigate(`/projects/${projectId}/assessments/${assessment}`, {
+      state: projectTitle
+    });
   };
 
   const handleViewChange = (_: React.MouseEvent<HTMLElement>, newView: 'assessment' | 'questionBank') => {
@@ -66,7 +72,7 @@ const AssessmentPage: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <NavBar projectId={projectId} isProjectAssessment={view === 'assessment'}/>
+      <NavBar project={{id: projectId, title: projectTitle}} isProjectAssessment={view === 'assessment'}/>
       <Box sx={{ marginTop: '64px', padding: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 2 }}>
           <ToggleButtonGroup

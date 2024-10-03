@@ -1,5 +1,5 @@
 import { Box, Button } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 
 import NavBar from "../../../components/NavBar/Navbar";
@@ -7,7 +7,7 @@ import ExportAssessmentsDialog from "../../../components/ExportAssessmentDialog/
 import ExportQuestionBankDialog from "../../../components/ExportQuestionBankDialog/ExportQuestionBankDialog";
 import QuestionList from "../../../components/QuestionList/QuestionList";
 import QuestionDialog from "../../../components/QuestionDialog/QuestionDialog";
-import { addExistingQuestionToQuestionBank, createQuestionBank, getQuestionBankById, getUserQuestionBanks, NewQuestionBank, QuestionBank, QuestionBankList } from "../../../utils/api/QuestionBankAPI";
+import { addExistingQuestionToQuestionBank, createQuestionBank, getQuestionBankById, getUserProjectQuestionBanks, NewQuestionBank, QuestionBank, QuestionBankList } from "../../../utils/api/QuestionBankAPI";
 import { AuthContext } from "../../../context/Authcontext";
 import { Question } from "../../../utils/api/QuestionAPI";
 import { addExistingQuestionToAssessment, AssessmentList, createAssessment, getUserAssessments, NewAssessment } from "../../../utils/api/AssessmentAPI";
@@ -36,6 +36,8 @@ const QuestionBankDetailsPage: React.FC = () => {
 
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { projectTitle } = location.state || {};
 
   useEffect(() => {
     const fetchQuestionBankQuestions = async () => {
@@ -60,13 +62,13 @@ const QuestionBankDetailsPage: React.FC = () => {
 
   useEffect(() => {
     const fetchQuestionBanksList = async () => {
-      if (user) {
-        const userQuestionBanks = await getUserQuestionBanks(user.id);
+      if (user && projectId) {
+        const userQuestionBanks = await getUserProjectQuestionBanks(user.id, projectId);
         setQuestionBanks(userQuestionBanks);
       }
     };
     fetchQuestionBanksList();
-  }, [user]);
+  }, [user, projectId]);
 
   if (!projectId) {
     return <div>Error: Project ID is missing</div>;
@@ -140,11 +142,11 @@ const QuestionBankDetailsPage: React.FC = () => {
       const newAssessment: NewAssessment = {
         title: newAssessmentTitle,
         questions: [],
-        user_id: user.id
+        user_id: user.id,
+        project_id: projectId
       };
-      const newAssessmentId = await createAssessment(newAssessment);
-      console.log(newAssessmentId)
-      combinedAssessments.push({...newAssessment, _id: newAssessmentId});
+      const newAssessmentCreated = await createAssessment(newAssessment);
+      combinedAssessments.push({...newAssessment, _id: newAssessmentCreated._id});
     }
     try {
       for (const assessment of combinedAssessments) {
@@ -167,10 +169,11 @@ const QuestionBankDetailsPage: React.FC = () => {
       const newQuestionBank: NewQuestionBank = {
         title: newQuestionBankTitle,
         questions: [],
-        user_id: user.id
+        user_id: user.id,
+        project_id: projectId
       };
-      const newQuestionBankId = await createQuestionBank(newQuestionBank);
-      combinedQuestionBanks.push({...newQuestionBank, _id: newQuestionBankId});
+      const newQuestionBankCreated = await createQuestionBank(newQuestionBank);
+      combinedQuestionBanks.push({...newQuestionBank, _id: newQuestionBankCreated._id});
     }
     try {
       for (const assessment of combinedQuestionBanks) {
@@ -186,20 +189,20 @@ const QuestionBankDetailsPage: React.FC = () => {
     setExportQuestionBankDialogOpen(false);
   };
 
-  const importQuestions = () => {
-    alert("Import questions from the question bank");
-  };
+  // const importQuestions = () => {
+  //   alert("Import questions from the question bank");
+  // };
 
   const createNewQuestion = () => {
      // Logic to create a new question
      navigate(`/projects/${projectId}/createQuestion`, {
-      state: { questionBankId, questionBankTitle: questionBankDetails?.title },
+      state: { questionBankId, questionBankTitle: questionBankDetails?.title, projectTitle },
     });
   };
 
   return (
     <Box sx={{ width: '100%' }}>
-      <NavBar projectId={projectId} questionBank={questionBankDetails ? { id: questionBankId, title: questionBankDetails.title } : undefined} />
+      <NavBar project={{id: projectId, title: projectTitle}} questionBank={questionBankDetails ? { id: questionBankId, title: questionBankDetails.title } : undefined} />
       <Box sx={{ marginTop: '64px', padding: 2 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
           <Button variant="contained" color="primary" onClick={handleExportAssessmentClick} sx={{ width: '150px', mb: 2 }}>
@@ -218,9 +221,9 @@ const QuestionBankDetailsPage: React.FC = () => {
           onQuestionClick={handleQuestionClickDialog}
         />
         <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
-          <Button variant="contained" color="primary" onClick={importQuestions} sx={{ marginRight: 2 }}>
+          {/* <Button variant="contained" color="primary" onClick={importQuestions} sx={{ marginRight: 2 }}>
             Import Questions
-          </Button>
+          </Button> */}
           <Button variant="contained" color="primary" onClick={createNewQuestion}>
             Create New Question
           </Button>

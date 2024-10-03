@@ -16,10 +16,13 @@ import questionsImage from '../../assets/question.png';
 import { AuthContext } from '../../context/Authcontext';
 
 interface NavBarProps {
-  projectId?: string;
   isProjectAssessment?: boolean;
   isProjectQuestionBank?: boolean;
   isQuestionCreation?: boolean;
+  project?: {
+    id: string;
+    title?: string;
+  }
   assessment?: {
     id: string;
     title: string;
@@ -32,7 +35,7 @@ interface NavBarProps {
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
-function NavBar({ projectId, assessment, questionBank, isProjectAssessment, isProjectQuestionBank, isQuestionCreation }: NavBarProps) {
+function NavBar({ project, assessment, questionBank, isProjectAssessment, isProjectQuestionBank, isQuestionCreation }: NavBarProps) {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
@@ -43,18 +46,18 @@ function NavBar({ projectId, assessment, questionBank, isProjectAssessment, isPr
     </Link>,
   ];
 
-  if (projectId) {
+  if (project && project.id && project.title) {
     if (isProjectAssessment || (assessment && assessment.id && assessment.title)) {
       breadcrumbs.push(
-        <Link key="2" color="inherit" onClick={() => navigate(`/projects/${projectId}/assessments`)}>
-          {projectId} Assessments
+        <Link key="2" color="inherit" onClick={() => navigate(`/projects/${project.id}/assessments`)}>
+          {project.title} Assessments
         </Link>
       );
     }
     if (isProjectQuestionBank || (questionBank && questionBank.id && questionBank.title)) {
       breadcrumbs.push(
-        <Link key="3" color="inherit" onClick={() => navigate(`/projects/${projectId}/questionBanks`)}>
-          {projectId} Question Banks
+        <Link key="3" color="inherit" onClick={() => navigate(`/projects/${project.id}/questionBanks`)}>
+          {project.title} Question Banks
         </Link>
       );
     }
@@ -62,7 +65,7 @@ function NavBar({ projectId, assessment, questionBank, isProjectAssessment, isPr
 
   if (assessment && assessment.id && assessment.title) {
     breadcrumbs.push(
-      <Link key="3" color="inherit" onClick={() => navigate(`/projects/${projectId}/assessments/${assessment.id}`)}>
+      <Link key="3" color="inherit" onClick={() => navigate(`/projects/${project?.id}/assessments/${assessment.id}`)}>
         {assessment.title}
       </Link>
     );
@@ -70,7 +73,7 @@ function NavBar({ projectId, assessment, questionBank, isProjectAssessment, isPr
 
   if (questionBank && questionBank.id && questionBank.title) {
     breadcrumbs.push(
-      <Link key="4" color="inherit" onClick={() => navigate(`/projects/${projectId}/questionBanks/${questionBank.id}`)}>
+      <Link key="4" color="inherit" onClick={() => navigate(`/projects/${project?.id}/questionBanks/${questionBank.id}`)}>
         {questionBank.title}
       </Link>
     );
@@ -78,7 +81,7 @@ function NavBar({ projectId, assessment, questionBank, isProjectAssessment, isPr
 
   if (isQuestionCreation) {
     breadcrumbs.push(
-      <Link key="5" color="inherit" onClick={() => navigate(`/projects/${projectId}/createQuestion`)}>
+      <Link key="5" color="inherit" onClick={() => navigate(`/projects/${project?.id}/createQuestion`)}>
         Create Question
       </Link>
     );

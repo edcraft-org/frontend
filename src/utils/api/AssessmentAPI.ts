@@ -5,6 +5,7 @@ export interface NewAssessment {
   title: string;
   questions: string[];
   user_id: string;
+  project_id: string;
 }
 
 export interface Assessment {
@@ -12,6 +13,7 @@ export interface Assessment {
   questions: Question[];
   title: string;
   user_id: string;
+  project_id: string;
 }
 
 export interface AssessmentList {
@@ -19,9 +21,10 @@ export interface AssessmentList {
   questions: string[];
   title: string;
   user_id: string;
+  project_id: string;
 }
 
-export const createAssessment = async (newAssessment: NewAssessment): Promise<string> => {
+export const createAssessment = async (newAssessment: NewAssessment): Promise<Assessment> => {
   const url = `${basePath}/assessments`;
   const response = await fetch(url, {
     method: "POST",
@@ -36,12 +39,25 @@ export const createAssessment = async (newAssessment: NewAssessment): Promise<st
     throw new Error(message);
   }
 
-  const assessmentId: string = await response.json();
-  return assessmentId;
+  const assessment: Assessment = await response.json();
+  return assessment;
 };
 
 export const getUserAssessments = async (userId: string): Promise<AssessmentList[]> => {
   const url = `${basePath}/assessments?user_id=${userId}`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: AssessmentList[] = await response.json();
+  return data;
+};
+
+export const getUserProjectAssessments = async (userId: string, projectId: string): Promise<AssessmentList[]> => {
+  const url = `${basePath}/assessments?user_id=${userId}&project_id=${projectId}`;
   const response = await fetch(url);
 
   if (!response.ok) {

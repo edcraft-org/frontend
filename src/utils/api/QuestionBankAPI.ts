@@ -5,6 +5,7 @@ export interface NewQuestionBank {
   questions: string[];
   title: string;
   user_id: string;
+  project_id: string;
 }
 
 export interface QuestionBank {
@@ -12,6 +13,7 @@ export interface QuestionBank {
   questions: Question[];
   title: string;
   user_id: string;
+  project_id: string;
 }
 
 export interface QuestionBankList {
@@ -19,9 +21,10 @@ export interface QuestionBankList {
     questions: string[];
     title: string;
     user_id: string;
+    project_id: string;
 }
 
-export const createQuestionBank = async (newQuestionBank: NewQuestionBank): Promise<string> => {
+export const createQuestionBank = async (newQuestionBank: NewQuestionBank): Promise<QuestionBank> => {
   const url = `${basePath}/question_banks`;
   const response = await fetch(url, {
     method: "POST",
@@ -36,12 +39,25 @@ export const createQuestionBank = async (newQuestionBank: NewQuestionBank): Prom
     throw new Error(message);
   }
 
-  const questionBankId: string = await response.json();
-  return questionBankId;
+  const questionBank: QuestionBank = await response.json();
+  return questionBank;
 };
 
 export const getUserQuestionBanks = async (userId: string): Promise<QuestionBankList[]> => {
   const url = `${basePath}/question_banks?user_id=${userId}`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: QuestionBankList[] = await response.json();
+  return data;
+};
+
+export const getUserProjectQuestionBanks = async (userId: string, projectId: string): Promise<QuestionBankList[]> => {
+  const url = `${basePath}/question_banks?user_id=${userId}&project_id=${projectId}`;
   const response = await fetch(url);
 
   if (!response.ok) {

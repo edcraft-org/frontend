@@ -15,6 +15,7 @@ export interface GenerateQuestionRequest {
   queryable: string;
   question_description: string;
   question_type: string;
+  marks: number
   number_of_options: number;
   number_of_questions: number;
 }
@@ -23,6 +24,7 @@ export interface GeneratedQuestion {
   question: string;
   answer: string;
   options: string[];
+  marks: number;
 }
 
 export const getTopics = async (): Promise<Topic[]> => {

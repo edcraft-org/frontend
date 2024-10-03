@@ -3,9 +3,9 @@ import { Box, MenuItem, FormControl, InputLabel, Select, Chip, Typography, TextF
 
 interface QuestionDetailsProps {
   type: string;
-  marks: number | string;
+  marks: number;
   setType: (type: string) => void;
-  setMarks: (marks: number | string) => void;
+  setMarks: (marks: number) => void;
 }
 
 const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType, setMarks }) => {

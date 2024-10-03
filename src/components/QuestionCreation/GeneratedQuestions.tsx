@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { Box, Typography, Card, CardContent, CardHeader, List, ListItem, ListItemText, Divider, Checkbox, Button, Dialog, DialogTitle, DialogContent, DialogActions, Paper } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { useNavigate } from 'react-router-dom';
 import { GeneratedQuestion } from '../../utils/api/QuestionGenerationAPI';
 
 interface GeneratedQuestionsProps {
   questions: GeneratedQuestion[];
   onAddQuestion: (selectedQuestions: GeneratedQuestion[]) => void;
+  project: { id: string, title: string };
+  assessmentId?: string;
+  questionBankId?: string;
 }
 
-const GeneratedQuestions: React.FC<GeneratedQuestionsProps> = ({ questions, onAddQuestion }) => {
+const GeneratedQuestions: React.FC<GeneratedQuestionsProps> = ({ questions, onAddQuestion, project, assessmentId, questionBankId }) => {
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const handleSelectQuestion = (index: number) => {
     setSelectedQuestions((prevSelected) =>
@@ -32,6 +37,15 @@ const GeneratedQuestions: React.FC<GeneratedQuestionsProps> = ({ questions, onAd
     const selected = selectedQuestions.map(index => questions[index]);
     onAddQuestion(selected);
     setDialogOpen(false);
+    if (assessmentId) {
+      navigate(`/projects/${project.id}/assessments/${assessmentId}`, {
+        state: project.title
+      });
+    } else if (questionBankId) {
+      navigate(`/projects/${project.id}/questionBanks/${questionBankId}`, {
+        state: project.title
+      });
+    }
   };
 
   const selectedQuestionRows = selectedQuestions.map(index => ({
@@ -44,6 +58,8 @@ const GeneratedQuestions: React.FC<GeneratedQuestionsProps> = ({ questions, onAd
     { field: 'question', headerName: 'Question', width: 300 },
     { field: 'answer', headerName: 'Answer', flex: 1 },
   ];
+
+  const addButtonText = assessmentId ? 'Add to Assessment' : 'Add to Question Bank';
 
   return (
     <Box
@@ -93,7 +109,7 @@ const GeneratedQuestions: React.FC<GeneratedQuestionsProps> = ({ questions, onAd
         </Card>
       ))}
       <Button variant="contained" color="primary" onClick={handleOpenDialog} disabled={selectedQuestions.length === 0}>
-        Add to Assessment
+        {addButtonText}
       </Button>
       <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>Confirm Selection</DialogTitle>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Switch, Typography, FormControlLabel } from '@mui/material';
+import { Box, Switch, Typography, FormControlLabel } from '@mui/material';
 import NavBar from '../../../components/NavBar/Navbar';
 import { useLocation, useParams } from 'react-router-dom';
 import QuestionDetails from '../../../components/QuestionCreation/QuestionDetails';
@@ -9,10 +9,10 @@ import ManualCreation from '../../../components/QuestionCreation/ManualCreation'
 const QuestionCreationPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
-  const { assessmentId, assessmentTitle, questionBankId, questionBankTitle } = location.state || {};
+  const { projectTitle, assessmentId, assessmentTitle, questionBankId, questionBankTitle } = location.state || {};
   const [description, setDescription] = useState('');
   const [type, setType] = useState('');
-  const [marks, setMarks] = useState<number | string>('');
+  const [marks, setMarks] = useState<number>(1);
   const [creationMethod, setCreationMethod] = useState('generation');
   const [options, setOptions] = useState<string[]>(['', '', '', '']);
   const [correctAnswer, setCorrectAnswer] = useState('');
@@ -40,7 +40,7 @@ const QuestionCreationPage: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <NavBar projectId={projectId} assessment={ {id: assessmentId, title: assessmentTitle} } questionBank={{id: questionBankId, title: questionBankTitle}} isQuestionCreation={true}/>
+      <NavBar project={{id: projectId}} assessment={ {id: assessmentId, title: assessmentTitle} } questionBank={{id: questionBankId, title: questionBankTitle}} isQuestionCreation={true}/>
       <Box sx={{ marginTop: '64px', padding: 2 }}>
         <Typography variant="h4" gutterBottom>
           Create a New Question
@@ -60,7 +60,7 @@ const QuestionCreationPage: React.FC = () => {
             sx={{ marginBottom: 2 }}
           />
           {creationMethod === 'generation' ? (
-            <QuestionGeneration description={description} setDescription={setDescription} type={type} assessmentId={assessmentId} questionBankId={questionBankId}/>
+            <QuestionGeneration project= {{id: projectId, title: projectTitle}} description={description} setDescription={setDescription} type={type} marks={marks} assessmentId={assessmentId} questionBankId={questionBankId}/>
           ) : (
             <ManualCreation
               description={description}
