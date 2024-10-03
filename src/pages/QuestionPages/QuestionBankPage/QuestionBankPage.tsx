@@ -67,7 +67,7 @@ const QuestionBankPage: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <NavBar projectId={projectId} />
+      <NavBar projectId={projectId} isProjectQuestionBank={view === 'questionBank'}/>
       <Box sx={{ marginTop: '64px', padding: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 2 }}>
             <ToggleButtonGroup

@@ -9,7 +9,7 @@ import ManualCreation from '../../../components/QuestionCreation/ManualCreation'
 const QuestionCreationPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
-  const { assessmentId, questionBankId } = location.state || {};
+  const { assessmentId, assessmentTitle, questionBankId, questionBankTitle } = location.state || {};
   const [description, setDescription] = useState('');
   const [type, setType] = useState('');
   const [marks, setMarks] = useState<number | string>('');
@@ -40,7 +40,7 @@ const QuestionCreationPage: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <NavBar projectId={projectId}/>
+      <NavBar projectId={projectId} assessment={ {id: assessmentId, title: assessmentTitle} } questionBank={{id: questionBankId, title: questionBankTitle}} isQuestionCreation={true}/>
       <Box sx={{ marginTop: '64px', padding: 2 }}>
         <Typography variant="h4" gutterBottom>
           Create a New Question

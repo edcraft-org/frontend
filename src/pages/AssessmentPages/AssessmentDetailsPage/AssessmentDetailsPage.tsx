@@ -48,7 +48,7 @@ const AssessmentDetailsPage: React.FC = () => {
   const createNewQuestion = () => {
     // Logic to create a new question
     navigate(`/projects/${projectId}/createQuestion`, {
-      state: { assessmentId },
+      state: { assessmentId, assessmentTitle: assessmentDetails?.title },
     });
   };
 
@@ -69,7 +69,7 @@ const AssessmentDetailsPage: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <NavBar projectId={projectId} assessmentId={assessmentId} />
+      <NavBar projectId={projectId}  assessment={assessmentDetails ? { id: assessmentId, title: assessmentDetails.title } : undefined} />
       <Box sx={{ marginTop: '64px', padding: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}>
           <Typography variant="h4" gutterBottom>

@@ -6,235 +6,178 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 import questionsImage from '../../assets/question.png';
 import { AuthContext } from '../../context/Authcontext';
 
 interface NavBarProps {
   projectId?: string;
-  assessmentId?: string;
-  questionBankId?: string;
+  isProjectAssessment?: boolean;
+  isProjectQuestionBank?: boolean;
+  isQuestionCreation?: boolean;
+  assessment?: {
+    id: string;
+    title: string;
+  }
+  questionBank?: {
+    id: string;
+    title: string;
+  }
 }
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
-function NavBar({ projectId, assessmentId, questionBankId }: NavBarProps) {
-  const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
+function NavBar({ projectId, assessment, questionBank, isProjectAssessment, isProjectQuestionBank, isQuestionCreation }: NavBarProps) {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
+  const breadcrumbs = [
+    <Link key="1" color="inherit" onClick={() => navigate('/')}>
+      Projects
+    </Link>,
+  ];
 
-  const pages = ['Projects'];
   if (projectId) {
-    pages.push(projectId);
-  }
-  // if (assessmentId) {
-  //   pages.push(assessmentId);
-  // }
-  // if (questionBankId) {
-  //   pages.push(questionBankId);
-  // }
-  if (assessmentId) {
-    pages.push('Assessment');
-  }
-  if (questionBankId) {
-    pages.push('Question Bank');
+    if (isProjectAssessment || (assessment && assessment.id && assessment.title)) {
+      breadcrumbs.push(
+        <Link key="2" color="inherit" onClick={() => navigate(`/projects/${projectId}/assessments`)}>
+          {projectId} Assessments
+        </Link>
+      );
+    }
+    if (isProjectQuestionBank || (questionBank && questionBank.id && questionBank.title)) {
+      breadcrumbs.push(
+        <Link key="3" color="inherit" onClick={() => navigate(`/projects/${projectId}/questionBanks`)}>
+          {projectId} Question Banks
+        </Link>
+      );
+    }
   }
 
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
+  if (assessment && assessment.id && assessment.title) {
+    breadcrumbs.push(
+      <Link key="3" color="inherit" onClick={() => navigate(`/projects/${projectId}/assessments/${assessment.id}`)}>
+        {assessment.title}
+      </Link>
+    );
+  }
+
+  if (questionBank && questionBank.id && questionBank.title) {
+    breadcrumbs.push(
+      <Link key="4" color="inherit" onClick={() => navigate(`/projects/${projectId}/questionBanks/${questionBank.id}`)}>
+        {questionBank.title}
+      </Link>
+    );
+  }
+
+  if (isQuestionCreation) {
+    breadcrumbs.push(
+      <Link key="5" color="inherit" onClick={() => navigate(`/projects/${projectId}/createQuestion`)}>
+        Create Question
+      </Link>
+    );
+  }
+
+  // Replace the last breadcrumb with Typography
+  if (breadcrumbs.length > 0) {
+    const lastBreadcrumb = breadcrumbs.pop();
+    breadcrumbs.push(
+      <Typography key="last" sx={{ color: 'text.primary' }}>
+        {lastBreadcrumb?.props.children}
+      </Typography>
+    );
+  }
+
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
   };
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
 
-  const handleNavigate = (page: string) => {
-    if (page === 'Projects') {
-      navigate('/');
-    } else if (page === projectId) {
-      if (assessmentId) {
-        navigate(`/projects/${projectId}/assessments`);
-      } else if (questionBankId) {
-        navigate(`/projects/${projectId}/questionBanks`);
-      }
-    } else if (page === assessmentId) {
-      navigate(`/projects/${projectId}/assessments/${assessmentId}`);
-    } else if (page === questionBankId) {
-      navigate(`/projects/${projectId}/questionBanks/${questionBankId}`);
-    }
-    handleCloseNavMenu();
-  };
-
   return (
     <AppBar position="fixed" sx={{ backgroundColor: '#fafafa' }} >
       <Container maxWidth={false}>
         <Toolbar disableGutters>
-          <Box
+        <Box
             component="img"
             src={questionsImage}
             alt="EdCraft Logo"
             sx={{
-              display: { xs: 'none', md: 'flex' },
+              display: { xs: 'flex', md: 'flex' },
               marginRight: '1rem',
-              width: '40px',
-              height: '40px'
+              width: { xs: '25px', md: '40px' },
+              height: { xs: '25px', md: '40px' }
             }}
-          />
-          <Typography
-            variant="h6"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              mr: 2,
-              display: { xs: 'none', md: 'flex' },
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: '#ff3908',
-              textDecoration: 'none',
-            }}
-          >
-            EdCraft
-          </Typography>
+        />
+        <Typography
+          variant="h6"
+          noWrap
+          component="a"
+          href="#app-bar-with-responsive-menu"
+          sx={{
+            mr: 2,
+            display: { xs: 'flex', md: 'flex' },
+            flexGrow: { xs: 1, md: 0 },
+            fontFamily: 'monospace',
+            fontWeight: 700,
+            letterSpacing: '.3rem',
+            color: '#ff3908',
+            textDecoration: 'none',
+            fontSize: ['1.25rem', '1.25rem', '1.5rem', '1.5rem'],
+          }}
+        >
+          EdCraft
+        </Typography>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              sx={{ color: 'black' }}
-            >
-              <MenuIcon />
-            </IconButton>
+        <Box sx={{ flexGrow: 1 }}>
+          <Breadcrumbs aria-label="breadcrumb">
+            {breadcrumbs}
+          </Breadcrumbs>
+        </Box>
+
+        {user ? (
+          <Box sx={{ flexGrow: 0 }}>
+            <Tooltip title="Open settings">
+              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                <Avatar sx={{ bgcolor: "primary.main", width: 40, height: 40 }}>
+                  {user.name[0]}
+                </Avatar>
+              </IconButton>
+            </Tooltip>
             <Menu
+              sx={{ mt: '45px' }}
               id="menu-appbar"
-              anchorEl={anchorElNav}
+              anchorEl={anchorElUser}
               anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
+                vertical: 'top',
+                horizontal: 'right',
               }}
               keepMounted
               transformOrigin={{
                 vertical: 'top',
-                horizontal: 'left',
+                horizontal: 'right',
               }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{
-                display: { xs: 'block', md: 'none' },
-              }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
             >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={() => handleNavigate(page)}>
-                  <Typography textAlign="center">{page}</Typography>
+              {settings.map((setting) => (
+                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                  <Typography textAlign="center">{setting}</Typography>
                 </MenuItem>
               ))}
             </Menu>
           </Box>
-          <Box
-            component="img"
-            src={questionsImage}
-            alt="EdCraft Logo"
-            sx={{
-              display: { xs: 'flex', md: 'none' },
-              mr: 1,
-              width: '25px',
-              height: '25px'
-            }}
-          />
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              mr: 2,
-              display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: '#ff3908',
-              textDecoration: 'none',
-            }}
-          >
-            EdCraft
-          </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page, index) => (
-              <Box key={page} sx={{ display: 'flex', alignItems: 'center' }}>
-                {index > 0 && (
-                  <span style={{ margin: '0 1px', color: 'grey' }}>{'>'}</span>
-                )}
-                <Button
-                  onClick={() => handleNavigate(page)}
-                  sx={{
-                    my: 2,
-                    color: 'black',
-                    display: 'block',
-                    textTransform: 'none',
-                    fontFamily: 'Calibri',
-                    fontWeight: index === pages.length - 1 ? 'bold' : 'normal',
-                  }}
-                >
-                  {page}
-                </Button>
-              </Box>
-            ))}
-          </Box>
-          {user ? (
-
-            <Box sx={{ flexGrow: 0 }}>
-              <Tooltip title="Open settings">
-                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar sx={{ bgcolor: "primary.main", width: 40, height: 40 }}>
-                    {user.name[0]}
-                  </Avatar>
-                </IconButton>
-              </Tooltip>
-              <Menu
-                sx={{ mt: '45px' }}
-                id="menu-appbar"
-                anchorEl={anchorElUser}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorElUser)}
-                onClose={handleCloseUserMenu}
-              >
-                {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography textAlign="center">{setting}</Typography>
-                  </MenuItem>
-                ))}
-              </Menu>
-            </Box>
-          ) : (
-            <></>
-          )}
+        ) : (
+          <></>
+        )}
         </Toolbar>
       </Container>
     </AppBar>
