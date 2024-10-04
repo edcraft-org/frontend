@@ -40,7 +40,7 @@ const QuestionCreationPage: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <NavBar project={{id: projectId}} assessment={ {id: assessmentId, title: assessmentTitle} } questionBank={{id: questionBankId, title: questionBankTitle}} isQuestionCreation={true}/>
+      <NavBar project={{id: projectId, title: projectTitle}} assessment={ {id: assessmentId, title: assessmentTitle} } questionBank={{id: questionBankId, title: questionBankTitle}} isQuestionCreation={true}/>
       <Box sx={{ marginTop: '64px', padding: 2 }}>
         <Typography variant="h4" gutterBottom>
           Create a New Question

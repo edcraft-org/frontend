@@ -49,14 +49,14 @@ function NavBar({ project, assessment, questionBank, isProjectAssessment, isProj
   if (project && project.id && project.title) {
     if (isProjectAssessment || (assessment && assessment.id && assessment.title)) {
       breadcrumbs.push(
-        <Link key="2" color="inherit" onClick={() => navigate(`/projects/${project.id}/assessments`)}>
+        <Link key="2" color="inherit" onClick={() => navigate(`/projects/${project.id}/assessments`, { state: { projectTitle: project.title } })}>
           {project.title} Assessments
         </Link>
       );
     }
     if (isProjectQuestionBank || (questionBank && questionBank.id && questionBank.title)) {
       breadcrumbs.push(
-        <Link key="3" color="inherit" onClick={() => navigate(`/projects/${project.id}/questionBanks`)}>
+        <Link key="3" color="inherit" onClick={() => navigate(`/projects/${project.id}/questionBanks`, { state: { projectTitle: project.title } })}>
           {project.title} Question Banks
         </Link>
       );
@@ -65,7 +65,7 @@ function NavBar({ project, assessment, questionBank, isProjectAssessment, isProj
 
   if (assessment && assessment.id && assessment.title) {
     breadcrumbs.push(
-      <Link key="3" color="inherit" onClick={() => navigate(`/projects/${project?.id}/assessments/${assessment.id}`)}>
+      <Link key="4" color="inherit" onClick={() => navigate(`/projects/${project?.id}/assessments/${assessment.id}`, { state: { projectTitle: project?.title } })}>
         {assessment.title}
       </Link>
     );
@@ -73,7 +73,7 @@ function NavBar({ project, assessment, questionBank, isProjectAssessment, isProj
 
   if (questionBank && questionBank.id && questionBank.title) {
     breadcrumbs.push(
-      <Link key="4" color="inherit" onClick={() => navigate(`/projects/${project?.id}/questionBanks/${questionBank.id}`)}>
+      <Link key="5" color="inherit" onClick={() => navigate(`/projects/${project?.id}/questionBanks/${questionBank.id}`, { state: { projectTitle: project?.title } })}>
         {questionBank.title}
       </Link>
     );
@@ -81,7 +81,7 @@ function NavBar({ project, assessment, questionBank, isProjectAssessment, isProj
 
   if (isQuestionCreation) {
     breadcrumbs.push(
-      <Link key="5" color="inherit" onClick={() => navigate(`/projects/${project?.id}/createQuestion`)}>
+      <Link key="6" color="inherit" onClick={() => navigate(`/projects/${project?.id}/createQuestion`, { state: { projectTitle: project?.title } })}>
         Create Question
       </Link>
     );

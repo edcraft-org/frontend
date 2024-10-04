@@ -33,18 +33,22 @@ const GeneratedQuestions: React.FC<GeneratedQuestionsProps> = ({ questions, onAd
     setDialogOpen(false);
   };
 
-  const handleConfirmSelection = () => {
+  const handleConfirmSelection = async () => {
     const selected = selectedQuestions.map(index => questions[index]);
-    onAddQuestion(selected);
     setDialogOpen(false);
-    if (assessmentId) {
-      navigate(`/projects/${project.id}/assessments/${assessmentId}`, {
-        state: project.title
-      });
-    } else if (questionBankId) {
-      navigate(`/projects/${project.id}/questionBanks/${questionBankId}`, {
-        state: project.title
-      });
+    try {
+      await onAddQuestion(selected);
+      if (assessmentId) {
+        navigate(`/projects/${project.id}/assessments/${assessmentId}`, {
+          state: { projectTitle: project.title }
+        });
+      } else if (questionBankId) {
+        navigate(`/projects/${project.id}/questionBanks/${questionBankId}`, {
+          state: { projectTitle: project.title }
+        });
+      }
+    } catch (error) {
+      console.error('Error adding questions:', error);
     }
   };
 

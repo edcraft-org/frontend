@@ -21,7 +21,7 @@ const QuestionBankPage: React.FC = () => {
   useEffect(() => {
     if (view === 'assessment') {
       navigate(`/projects/${projectId}/assessments`, {
-        state: {projectTitle},
+        state: { projectTitle },
       });
     }
   }, [view, navigate, projectId, projectTitle]);
@@ -61,7 +61,7 @@ const QuestionBankPage: React.FC = () => {
 
   const handleQuestionBankClick = (questionBank: string) => {
     navigate(`/projects/${projectId}/questionBanks/${questionBank}`, {
-      state: {projectTitle},
+      state: { projectTitle },
     });
   };
 

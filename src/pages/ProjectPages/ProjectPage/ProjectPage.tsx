@@ -41,7 +41,6 @@ export const ProjectPage: React.FC = () => {
   };
 
   const handleProjectClick = (project: Project) => {
-    console.log(project);
     navigate(`/projects/${project._id}/assessments`, {
       state: { projectTitle: project.title },
     });

@@ -60,7 +60,7 @@ const AssessmentPage: React.FC= () => {
 
   const handleAssessmentClick = (assessment: string) => {
     navigate(`/projects/${projectId}/assessments/${assessment}`, {
-      state: projectTitle
+      state: { projectTitle }
     });
   };
 
