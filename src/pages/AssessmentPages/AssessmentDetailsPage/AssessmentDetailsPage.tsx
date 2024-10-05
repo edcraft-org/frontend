@@ -106,24 +106,19 @@ const AssessmentDetailsPage: React.FC = () => {
                   flexDirection: 'column',
                 }}
               >
-                <Box sx={{ marginBottom: 2, backgroundColor: '#e0e0e0', paddingY: '8px', paddingLeft: '16px', borderRadius: '8px 8px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6" sx={{ color: '#1e88e5' }}>Question {index + 1}</Typography>
-                </Box>
-                <Box sx={{ paddingBottom: '16px', paddingLeft: '16px', borderRadius: '0 0 8px 8px' }}>
-                  <QuestionGroupPage question={question} />
-                </Box>
+                <QuestionGroupPage questionNumber= {index+1} question={question} />
               </Box>
             </Grid>
           ))}
         </Grid>
-        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+        {/* <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
           <Button variant="contained" color="primary" onClick={importQuestions} sx={{ marginRight: 2 }}>
             Import Questions
           </Button>
           <Button variant="contained" color="primary" onClick={createNewQuestion}>
             Create New Question
           </Button>
-        </Box>
+        </Box> */}
       </Box>
     </Box>
   );

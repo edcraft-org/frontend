@@ -108,7 +108,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
 
     try {
       const data = await generateQuestion(requestPayload);
-      setGeneratedQuestions(data); // Store the generated questions in state
+      setGeneratedQuestions(data);
     } catch (error) {
       console.error('Error generating question:', error);
     }

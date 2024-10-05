@@ -65,7 +65,7 @@ const QuestionCreationPage: React.FC = () => {
             <ManualCreation
               description={description}
               setDescription={setDescription}
-              type={type} // Pass the type prop here
+              type={type}
               options={options}
               setOptions={setOptions}
               correctAnswer={correctAnswer}

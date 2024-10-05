@@ -13,9 +13,9 @@ const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType,
     <Box
       sx={{
         marginBottom: 2,
-        border: '1px solid #ccc', // Outline color
-        borderRadius: '4px', // Optional: to make the corners rounded
-        padding: 2, // Optional: to add some padding inside the box
+        border: '1px solid #ccc',
+        borderRadius: '4px',
+        padding: 2,
       }}
     >
       <Typography variant="h6" gutterBottom sx={{ marginBottom: 2 }}>

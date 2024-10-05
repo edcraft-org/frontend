@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Grid, Typography, Checkbox } from "@mui/material";
+import { Box, Grid, Typography, Checkbox} from "@mui/material";
 import { Question } from '../../utils/api/QuestionAPI';
 
 interface QuestionListProps {
@@ -8,7 +8,7 @@ interface QuestionListProps {
   handleQuestionClick: (question: Question) => void;
   selectAll: boolean;
   handleSelectAll: () => void;
-  onQuestionClick: (question: Question) => void; // New prop
+  onQuestionClick: (question: Question, index: number) => void;
 }
 
 const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestions, handleQuestionClick, selectAll, handleSelectAll, onQuestionClick }) => {
@@ -44,19 +44,23 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestion
               display: 'flex',
               flexDirection: 'column',
             }}
-            onClick={() => onQuestionClick(question)} // Handle click on question box
+            onClick={() => onQuestionClick(question, index + 1)}
           >
             <Box sx={{ marginBottom: 2, backgroundColor: '#e0e0e0', paddingY: '8px', paddingLeft: '16px', borderRadius: '8px 8px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="h6" sx={{ color: '#1e88e5' }}>Question {index + 1}</Typography>
               <Checkbox
                 checked={selectedQuestions.includes(question)}
-                onClick={(e) => e.stopPropagation()} // Prevent click event from propagating to the question box
+                onClick={(e) => e.stopPropagation()}
                 onChange={() => handleQuestionClick(question)}
               />
             </Box>
             <Box sx={{ paddingBottom: '16px', paddingLeft: '16px', borderRadius: '0 0 8px 8px' }}>
               <Typography variant="body2" sx={{ color: '#555' }}>{question.text}</Typography>
+              <Typography variant="body2" sx={{ marginTop: 2, color: '#888' }}>
+                Answer: {question.answer}
+              </Typography>
             </Box>
+
           </Box>
         </Grid>
       ))}

@@ -1,37 +1,37 @@
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField, Paper } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Question } from '../../utils/api/QuestionAPI';
-import { AssessmentList } from '../../utils/api/AssessmentAPI';
+import { Question } from '../../../utils/api/QuestionAPI';
+import { QuestionBankList } from '../../../utils/api/QuestionBankAPI';
 
-interface ExportAssessmentsDialogProps {
+interface ExportQuestionBankDialogProps {
   open: boolean;
   onClose: () => void;
   selectedQuestions: Question[];
-  assessments: AssessmentList[];
-  newAssessmentTitle: string;
-  handleNewAssessmentChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  questionBanks: QuestionBankList[];
+  newQuestionBankTitle: string;
+  handleNewQuestionBankChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleExport: () => void;
-  setSelectedAssessments: (assessments: AssessmentList[]) => void;
+  setSelectedQuestionBanks: (questionBanks: QuestionBankList[]) => void;
 }
 
-const ExportAssessmentsDialog: React.FC<ExportAssessmentsDialogProps> = ({
+const ExportQuestionBankDialog: React.FC<ExportQuestionBankDialogProps> = ({
   open,
   onClose,
   selectedQuestions,
-  assessments,
-  newAssessmentTitle,
-  handleNewAssessmentChange,
+  questionBanks,
+  newQuestionBankTitle,
+  handleNewQuestionBankChange,
   handleExport,
-  setSelectedAssessments
+  setSelectedQuestionBanks
 }) => {
   const questionColumns: GridColDef[] = [
     { field: 'title', headerName: 'Title', width: 200 },
     { field: 'description', headerName: 'Description', flex: 1 },
   ];
 
-  const assessmentColumns: GridColDef[] = [
-    { field: 'title', headerName: 'Assessments', width: 200 },
+  const questionBankColumns: GridColDef[] = [
+    { field: 'title', headerName: 'Question Banks', width: 200 },
   ];
 
   const paginationModel = { page: 0, pageSize: 5 };
@@ -50,27 +50,27 @@ const ExportAssessmentsDialog: React.FC<ExportAssessmentsDialogProps> = ({
             autoHeight
           />
         </Paper>
-        <Typography variant="h6" sx={{ marginBottom: 2 }}>Select Assessments</Typography>
+        <Typography variant="h6" sx={{ marginBottom: 2 }}>Select Question Banks</Typography>
         <Paper sx={{ width: '100%', marginBottom: 2}}>
           <DataGrid
-            rows={assessments.map((assessment) => ({ id: assessment._id, title: assessment.title }))}
-            columns={assessmentColumns}
+            rows={questionBanks.map((questionBank) => ({ id: questionBank._id, title: questionBank.title }))}
+            columns={questionBankColumns}
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[5, 10]}
             checkboxSelection
             autoHeight
             onRowSelectionModelChange={(newSelection) => {
               const selectedIDs = new Set(newSelection);
-              setSelectedAssessments(
-                assessments.filter((assessment) => selectedIDs.has(assessment._id))
+              setSelectedQuestionBanks(
+                questionBanks.filter((questionBank) => selectedIDs.has(questionBank._id))
               );
             }}
           />
           <TextField
             fullWidth
-            label="Create New Assessment"
-            value={newAssessmentTitle}
-            onChange={handleNewAssessmentChange}
+            label="Create New Question Bank"
+            value={newQuestionBankTitle}
+            onChange={handleNewQuestionBankChange}
             sx={{ marginTop: 2 }}
           />
         </Paper>
@@ -87,4 +87,4 @@ const ExportAssessmentsDialog: React.FC<ExportAssessmentsDialogProps> = ({
   );
 };
 
-export default ExportAssessmentsDialog;
+export default ExportQuestionBankDialog;

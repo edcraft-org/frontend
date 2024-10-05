@@ -7,18 +7,15 @@ interface QuestionDialogProps {
   open: boolean;
   onClose: () => void;
   question: Question | null;
+  questionNumber: number | null;
 }
 
-const QuestionDialog: React.FC<QuestionDialogProps> = ({ open, onClose, question }) => {
-  if (!question) return null;
+const QuestionDialog: React.FC<QuestionDialogProps> = ({ open, onClose, question, questionNumber }) => {
+  if (!question || !questionNumber) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{question.text}</DialogTitle>
-      <DialogContent dividers>
-        {/* <QuestionGroupPage projectId="1" questionGroupId="1" questionTitle={question.title} /> */}
-        <QuestionGroupPage questionTitle={question.text} />
-      </DialogContent>
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+      <QuestionGroupPage questionNumber={questionNumber} question={question} />
       <DialogActions>
         <Button onClick={onClose} color="primary">
           Close

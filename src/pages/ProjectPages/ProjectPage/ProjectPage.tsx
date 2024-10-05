@@ -1,14 +1,23 @@
-import { Box, Grid, Button, TextField } from "@mui/material";
+import { Box, Grid, Button, TextField, IconButton } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import NavBar from "../../../components/NavBar/Navbar";
-import { getUserProjects, createProject, Project } from "../../../utils/api/ProjectAPI";
+import { getUserProjects, createProject, deleteProject, renameProjectTitle, Project } from "../../../utils/api/ProjectAPI";
 import { AuthContext } from "../../../context/Authcontext";
+import EditDialog from "../../../components/Dialogs/EditDialog/EditDialog";
+import DeleteDialog from "../../../components/Dialogs/DeleteDialog/DeleteDialog";
 
 export const ProjectPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [newProject, setNewProject] = useState<string>("");
+  const [editProject, setEditProject] = useState<Project | null>(null);
+  const [editTitle, setEditTitle] = useState<string>("");
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
@@ -33,7 +42,7 @@ export const ProjectPage: React.FC = () => {
         user_id: user.id,
       };
       const createdProject = await createProject(newProjectData);
-      setProjects([...projects, {...newProjectData, _id: createdProject._id}]);
+      setProjects([...projects, { ...newProjectData, _id: createdProject._id }]);
       setNewProject("");
     } else {
       alert("Project already exists or input is empty.");
@@ -46,9 +55,41 @@ export const ProjectPage: React.FC = () => {
     });
   };
 
+  const handleEditClick = (project: Project) => {
+    setEditProject(project);
+    setEditTitle(project.title);
+    setDialogOpen(true);
+  };
+
+  const handleDeleteClick = (project: Project) => {
+    setProjectToDelete(project);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (projectToDelete) {
+      await deleteProject(projectToDelete._id);
+      setProjects(projects.filter(project => project._id !== projectToDelete._id));
+      setDeleteDialogOpen(false);
+      setProjectToDelete(null);
+    }
+  };
+
+  const handleEditSave = async () => {
+    if (editProject && editTitle.trim() !== "") {
+      const updatedProject = await renameProjectTitle(editProject._id, { title: editTitle });
+      setProjects(projects.map(project => project._id === editProject._id ? updatedProject : project));
+      setDialogOpen(false);
+      setEditProject(null);
+      setEditTitle("");
+    } else {
+      alert("Title cannot be empty.");
+    }
+  };
+
   return (
-    <Box sx={{ width: '100%'}}>
-      <NavBar/>
+    <Box sx={{ width: '100%' }}>
+      <NavBar />
       <Box sx={{ marginTop: '64px', padding: 2 }}>
         <Grid container spacing={2} sx={{ margin: '0 auto', maxWidth: '1200px' }}>
           {projects.map((project, index) => (
@@ -63,11 +104,31 @@ export const ProjectPage: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: 'pointer',
+                  position: 'relative',
                 }}
                 onClick={() => handleProjectClick(project)}
               >
-                {project.title}
+                <Box sx={{ cursor: 'pointer', flexGrow: 1 }}>
+                  {project.title}
+                </Box>
+                <IconButton
+                  sx={{ position: 'absolute', top: '8px', right: '40px' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditClick(project);
+                  }}
+                >
+                  <EditIcon />
+                </IconButton>
+                <IconButton
+                  sx={{ position: 'absolute', top: '8px', right: '8px' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClick(project);
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
               </Box>
             </Grid>
           ))}
@@ -102,6 +163,22 @@ export const ProjectPage: React.FC = () => {
           </Grid>
         </Grid>
       </Box>
+
+      <EditDialog
+        open={dialogOpen}
+        title="Project"
+        value={editTitle}
+        onClose={() => setDialogOpen(false)}
+        onSave={handleEditSave}
+        onChange={(e) => setEditTitle(e.target.value)}
+      />
+
+      <DeleteDialog
+        open={deleteDialogOpen}
+        title="project"
+        onClose={() => setDeleteDialogOpen(false)}
+        onDelete={confirmDelete}
+      />
     </Box>
   );
 };

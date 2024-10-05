@@ -3,8 +3,8 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 
 import NavBar from "../../../components/NavBar/Navbar";
-import ExportAssessmentsDialog from "../../../components/ExportAssessmentDialog/ExportAssessmentDialog";
-import ExportQuestionBankDialog from "../../../components/ExportQuestionBankDialog/ExportQuestionBankDialog";
+import ExportAssessmentsDialog from "../../../components/Dialogs/ExportAssessmentDialog/ExportAssessmentDialog";
+import ExportQuestionBankDialog from "../../../components/Dialogs/ExportQuestionBankDialog/ExportQuestionBankDialog";
 import QuestionList from "../../../components/QuestionList/QuestionList";
 import QuestionDialog from "../../../components/QuestionDialog/QuestionDialog";
 import { addExistingQuestionToQuestionBank, createQuestionBank, getQuestionBankById, getUserProjectQuestionBanks, NewQuestionBank, QuestionBank, QuestionBankList } from "../../../utils/api/QuestionBankAPI";
@@ -24,8 +24,7 @@ const QuestionBankDetailsPage: React.FC = () => {
   const [exportQuestionBankDialogOpen, setExportQuestionBankDialogOpen] = useState(false);
   const [questionDialogOpen, setQuestionDialogOpen] = useState(false);
 
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
-
+  const [currentQuestion, setCurrentQuestion] = useState<{ question: Question | null, index: number | null }>({ question: null, index: null });
   const [assessments, setAssessments] = useState<AssessmentList[]>([]);
   const [selectedAssessments, setSelectedAssessments] = useState<AssessmentList[]>([]);
   const [newAssessmentTitle, setNewAssessmentTitle] = useState<string>('');
@@ -118,14 +117,14 @@ const QuestionBankDetailsPage: React.FC = () => {
     setExportQuestionBankDialogOpen(false);
   };
 
-  const handleQuestionClickDialog = (question: Question) => {
-    setCurrentQuestion(question);
+  const handleQuestionClickDialog = (question: Question, index: number) => {
+    setCurrentQuestion({ question, index });
     setQuestionDialogOpen(true);
   };
 
   const handleQuestionDialogClose = () => {
     setQuestionDialogOpen(false);
-    setCurrentQuestion(null);
+    setCurrentQuestion({question: null, index: null});
   };
 
   const handleNewAssessmentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -233,7 +232,8 @@ const QuestionBankDetailsPage: React.FC = () => {
       <QuestionDialog
         open={questionDialogOpen}
         onClose={handleQuestionDialogClose}
-        question={currentQuestion}
+        question={currentQuestion.question}
+        questionNumber={currentQuestion.index}
       />
 
       <ExportAssessmentsDialog

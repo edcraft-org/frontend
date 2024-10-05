@@ -48,3 +48,18 @@ export const getQuestionById = async (questionId: string): Promise<Question> => 
   const data: Question = await response.json();
   return data;
 };
+
+export const deleteQuestion = async (questionId: string): Promise<string> => {
+  const url = `${basePath}/questions/${questionId}`;
+  const response = await fetch(url, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const result: string = await response.json();
+  return result;
+};

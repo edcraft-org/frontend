@@ -11,6 +11,9 @@ export interface Project {
   user_id: string;
 }
 
+export interface ProjectTitleUpdate {
+  title: string;
+}
 
 export const createProject = async (newProject: NewProject): Promise<Project> => {
   const url = `${basePath}/projects`;
@@ -70,4 +73,23 @@ export const deleteProject = async (projectId: string): Promise<string> => {
 
   const result: string = await response.json();
   return result;
+};
+
+export const renameProjectTitle = async (projectId: string, titleUpdate: ProjectTitleUpdate): Promise<Project> => {
+  const url = `${basePath}/projects/${projectId}/title`;
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(titleUpdate),
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const updatedProject: Project = await response.json();
+  return updatedProject;
 };
