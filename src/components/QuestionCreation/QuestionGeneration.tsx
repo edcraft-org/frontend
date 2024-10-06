@@ -93,7 +93,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     }
 
     // Check if all variables are used in the description
-    const allVariablesUsed = variables.every((_, index) => description.includes(`{${index}}`));
+    const allVariablesUsed = variables.every((variable, _) => description.includes(`{${variable}}`));
 
     if (!allVariablesUsed) {
       alert('Please use all variables in the question description.');
@@ -219,9 +219,9 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           ))}
         </Select>
       </FormControl>
-      <Tooltip title="Variables are placeholders in your question. Use {0}, {1}, etc. in your question description to represent these variables." placement='bottom-start'>
+      <Tooltip title="Variables are placeholders in your question. Use {output}, {iteration}, etc. in your question description to represent these variables." placement='bottom-start'>
         <Typography variant="subtitle1" >
-          Variables (Use in question description)
+          Variables (Use variable name in question description)
         </Typography>
       </Tooltip>
       <TableContainer component={Paper} sx={{ marginBottom: 2, border: '1px solid #ccc' }}>
