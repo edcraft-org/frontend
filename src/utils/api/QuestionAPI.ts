@@ -17,6 +17,13 @@ interface NewQuestion {
   marks: number;
 }
 
+export interface QuestionCreationItem {
+  question: string;
+  answer: string;
+  options: string[];
+  marks: number;
+}
+
 export const createQuestion = async (newQuestion: NewQuestion): Promise<Question> => {
   const url = `${basePath}/questions`;
   const response = await fetch(url, {

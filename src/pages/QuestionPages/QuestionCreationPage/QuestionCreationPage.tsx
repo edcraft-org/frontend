@@ -14,21 +14,6 @@ const QuestionCreationPage: React.FC = () => {
   const [type, setType] = useState('');
   const [marks, setMarks] = useState<number>(1);
   const [creationMethod, setCreationMethod] = useState('generation');
-  const [options, setOptions] = useState<string[]>(['', '', '', '']);
-  const [correctAnswer, setCorrectAnswer] = useState('');
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    const questionData = {
-      description,
-      type,
-      marks: Number(marks),
-      options: creationMethod === 'manual' ? options : undefined,
-      correctAnswer: creationMethod === 'manual' ? correctAnswer : undefined,
-    };
-    console.log('Question Data:', questionData);
-    // Add logic to save the question data
-  };
 
   if (!projectId) {
     return <div>Error: Project ID is missing</div>;
@@ -45,37 +30,38 @@ const QuestionCreationPage: React.FC = () => {
         <Typography variant="h4" gutterBottom>
           Create a New Question
         </Typography>
-        <form onSubmit={handleSubmit}>
-          <QuestionDetails type={type} marks={marks} setType={setType} setMarks={setMarks} />
-          <FormControlLabel
-            control={
-              <Switch
-                checked={creationMethod === 'generation'}
-                onChange={handleToggleChange}
-                name="creationMethod"
-                color="primary"
-              />
-            }
-            label={creationMethod === 'generation' ? 'Question Generation' : 'Manual Creation'}
-            sx={{ marginBottom: 2 }}
-          />
-          {creationMethod === 'generation' ? (
-            <QuestionGeneration project= {{id: projectId, title: projectTitle}} description={description} setDescription={setDescription} type={type} marks={marks} assessmentId={assessmentId} questionBankId={questionBankId}/>
-          ) : (
-            <ManualCreation
-              description={description}
-              setDescription={setDescription}
-              type={type}
-              options={options}
-              setOptions={setOptions}
-              correctAnswer={correctAnswer}
-              setCorrectAnswer={setCorrectAnswer}
+        <QuestionDetails type={type} marks={marks} setType={setType} setMarks={setMarks} />
+        <FormControlLabel
+          control={
+            <Switch
+              checked={creationMethod === 'generation'}
+              onChange={handleToggleChange}
+              name="creationMethod"
+              color="primary"
             />
-          )}
-          {/* <Button type="submit" variant="contained" color="primary">
-            Create Question
-          </Button> */}
-        </form>
+          }
+          label={creationMethod === 'generation' ? 'Question Generation' : 'Manual Creation'}
+          sx={{ marginBottom: 2 }}
+        />
+        {creationMethod === 'generation' ? (
+          <QuestionGeneration
+            project= {{id: projectId, title: projectTitle}}
+            description={description}
+            setDescription={setDescription}
+            type={type} marks={marks}
+            assessmentId={assessmentId}
+            questionBankId={questionBankId}
+          />
+        ) : (
+          <ManualCreation
+          project= {{id: projectId, title: projectTitle}}
+          description={description}
+          setDescription={setDescription}
+          type={type} marks={marks}
+          assessmentId={assessmentId}
+          questionBankId={questionBankId}
+          />
+        )}
       </Box>
     </Box>
   );

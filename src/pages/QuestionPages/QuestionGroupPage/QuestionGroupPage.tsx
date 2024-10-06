@@ -1,18 +1,17 @@
 import { Box, Typography, RadioGroup, FormControlLabel, Radio, Divider } from "@mui/material";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
 import { Question } from "../../../utils/api/QuestionAPI";
 
-interface SubQuestion {
-  title: string;
-  description: string;
-}
+// interface SubQuestion {
+//   title: string;
+//   description: string;
+// }
 
-interface QuestionGroup {
-  title: string;
-  description: string;
-  subQuestions: SubQuestion[];
-}
+// interface QuestionGroup {
+//   title: string;
+//   description: string;
+//   subQuestions: SubQuestion[];
+// }
 
 interface QuestionGroupPageProps {
   questionNumber: number;

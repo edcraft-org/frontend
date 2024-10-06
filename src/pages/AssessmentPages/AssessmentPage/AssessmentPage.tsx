@@ -1,6 +1,6 @@
 import { Box, Grid, Button, TextField, ToggleButton, ToggleButtonGroup, IconButton } from "@mui/material";
 import { useLocation, useParams } from "react-router-dom";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -35,16 +35,16 @@ const AssessmentPage: React.FC = () => {
     }
   }, [view, navigate, projectId, projectTitle]);
 
-  const fetchAssessments = async () => {
+  const fetchAssessments = useCallback(async () => {
     if (user && projectId) {
       const userAssessments = await getUserProjectAssessments(user.id, projectId);
       setAssessments(userAssessments);
     }
-  };
+  }, [user, projectId]);
 
   useEffect(() => {
     fetchAssessments();
-  }, [user, projectId]);
+  }, [user, projectId, fetchAssessments]);
 
   if (!projectId) {
     return <div>Error: Project ID is missing</div>;

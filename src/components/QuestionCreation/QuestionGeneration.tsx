@@ -1,8 +1,8 @@
 import { useContext, useState, useEffect } from 'react';
 import { Box, TextField, Typography, Button, Select, MenuItem, FormControl, InputLabel, Chip, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Tooltip } from '@mui/material';
-import { getTopics, getSubtopics, getQueryables, generateQuestion, Topic, Subtopic, Queryable, GenerateQuestionRequest, GeneratedQuestion } from '../../utils/api/QuestionGenerationAPI';
-import GeneratedQuestions from './GeneratedQuestions';
-import { createQuestion } from '../../utils/api/QuestionAPI';
+import { getTopics, getSubtopics, getQueryables, generateQuestion, Topic, Subtopic, Queryable, GenerateQuestionRequest } from '../../utils/api/QuestionGenerationAPI';
+import QuestionCreation from './QuestionCreation';
+import { createQuestion, QuestionCreationItem } from '../../utils/api/QuestionAPI';
 import { addExistingQuestionToAssessment } from '../../utils/api/AssessmentAPI';
 import { addExistingQuestionToQuestionBank } from '../../utils/api/QuestionBankAPI';
 import { AuthContext } from '../../context/Authcontext';
@@ -35,7 +35,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   const [topics, setTopics] = useState<Topic[]>([]);
   const [subtopics, setSubtopics] = useState<Subtopic[]>([]);
   const [queryables, setQueryables] = useState<Queryable[]>([]);
-  const [generatedQuestions, setGeneratedQuestions] = useState<GeneratedQuestion[]>([]);
+  const [generatedQuestions, setGeneratedQuestions] = useState<QuestionCreationItem[]>([]);
 
   const { user } = useContext(AuthContext);
 
@@ -86,6 +86,12 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   }, [type]);
 
   const handleGenerate = async () => {
+    // Validate that all required fields are defined
+    if (!topic || !subtopic || !queryable || !description || !type || !marks || !numOptions || !numQuestions) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
     // Check if all variables are used in the description
     const allVariablesUsed = variables.every((_, index) => description.includes(`{${index}}`));
 
@@ -93,6 +99,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       alert('Please use all variables in the question description.');
       return;
     }
+
 
     // Create request payload
     const requestPayload: GenerateQuestionRequest = {
@@ -114,7 +121,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     }
   };
 
-  const onAddQuestion = async (selectedQuestions: GeneratedQuestion[]) => {
+  const onAddQuestion = async (selectedQuestions: QuestionCreationItem[]) => {
     try {
       // TODO: To be updated when authentication logic is implemented
       if (!user) {
@@ -269,7 +276,26 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         Generate
       </Button>
       {generatedQuestions.length > 0 && (
-        <GeneratedQuestions project={project} questions={generatedQuestions} onAddQuestion={onAddQuestion} assessmentId={assessmentId} questionBankId={questionBankId}/>
+        <Box
+          sx={{
+            marginTop: 2,
+            padding: 2,
+            backgroundColor: '#f0f4f8',
+            borderRadius: '8px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          <Typography variant="h5" gutterBottom sx={{ textAlign: 'center', marginBottom: 4, color: '#333' }}>
+            Generated Questions
+          </Typography>
+          <QuestionCreation
+            project={project}
+            questions={generatedQuestions}
+            onAddQuestion={onAddQuestion}
+            assessmentId={assessmentId}
+            questionBankId={questionBankId}
+          />
+        </Box>
       )}
     </Box>
   );

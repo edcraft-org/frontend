@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
+import { Dialog, DialogActions, Button } from "@mui/material";
 import QuestionGroupPage from '../../pages/QuestionPages/QuestionGroupPage/QuestionGroupPage';
 import { Question } from '../../utils/api/QuestionAPI';
 

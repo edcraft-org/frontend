@@ -1,4 +1,5 @@
 import { basePath } from "./Constants";
+import { QuestionCreationItem } from "./QuestionAPI";
 
 export type Topic = string;
 export type Subtopic = string;
@@ -20,12 +21,6 @@ export interface GenerateQuestionRequest {
   number_of_questions: number;
 }
 
-export interface GeneratedQuestion {
-  question: string;
-  answer: string;
-  options: string[];
-  marks: number;
-}
 
 export const getTopics = async (): Promise<Topic[]> => {
   const url = `${basePath}/question_generation/topics`;
@@ -65,7 +60,7 @@ export const getQueryables = async (topic: string, subtopic: string): Promise<Qu
   return data;
 };
 
-export const generateQuestion = async (request: GenerateQuestionRequest): Promise<GeneratedQuestion[]> => {
+export const generateQuestion = async (request: GenerateQuestionRequest): Promise<QuestionCreationItem[]> => {
   const url = `${basePath}/question_generation/generate`;
 
   const response = await fetch(url, {
@@ -81,6 +76,6 @@ export const generateQuestion = async (request: GenerateQuestionRequest): Promis
     throw new Error(message);
   }
 
-  const data: GeneratedQuestion[] = await response.json();
+  const data: QuestionCreationItem[] = await response.json();
   return data;
 };

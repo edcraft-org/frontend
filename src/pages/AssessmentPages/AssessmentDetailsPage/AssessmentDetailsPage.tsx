@@ -42,10 +42,10 @@ const AssessmentDetailsPage: React.FC = () => {
     return <div>Error: User is missing</div>;
   }
 
-  const importQuestions = () => {
-    // Logic to import questions from the question bank
-    alert("Import questions from the question bank");
-  };
+  // const importQuestions = () => {
+  //   // Logic to import questions from the question bank
+  //   alert("Import questions from the question bank");
+  // };
 
   const createNewQuestion = () => {
     // Logic to create a new question
@@ -111,14 +111,14 @@ const AssessmentDetailsPage: React.FC = () => {
             </Grid>
           ))}
         </Grid>
-        {/* <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
-          <Button variant="contained" color="primary" onClick={importQuestions} sx={{ marginRight: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+          {/* <Button variant="contained" color="primary" onClick={importQuestions} sx={{ marginRight: 2 }}>
             Import Questions
-          </Button>
+          </Button> */}
           <Button variant="contained" color="primary" onClick={createNewQuestion}>
             Create New Question
           </Button>
-        </Box> */}
+        </Box>
       </Box>
     </Box>
   );
