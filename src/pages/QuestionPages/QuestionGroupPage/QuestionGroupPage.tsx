@@ -1,24 +1,15 @@
-import { Box, Typography, RadioGroup, FormControlLabel, Radio, Divider } from "@mui/material";
+import { Box, Typography, RadioGroup, FormControlLabel, Radio, Divider, IconButton } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useState } from "react";
 import { Question } from "../../../utils/api/QuestionAPI";
-
-// interface SubQuestion {
-//   title: string;
-//   description: string;
-// }
-
-// interface QuestionGroup {
-//   title: string;
-//   description: string;
-//   subQuestions: SubQuestion[];
-// }
 
 interface QuestionGroupPageProps {
   questionNumber: number;
   question: Question;
+  onRemove?: (questionId: string) => void;
 }
 
-const QuestionGroupPage: React.FC<QuestionGroupPageProps> = ({ questionNumber, question }) => {
+const QuestionGroupPage: React.FC<QuestionGroupPageProps> = ({ questionNumber, question, onRemove }) => {
   const [selectedOption, setSelectedOption] = useState<string>("");
 
   const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,9 +20,16 @@ const QuestionGroupPage: React.FC<QuestionGroupPageProps> = ({ questionNumber, q
     <Box>
       <Box sx={{ marginBottom: 2, backgroundColor: '#e0e0e0', paddingY: '8px', paddingLeft: '16px', borderRadius: '8px 8px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" sx={{ color: '#1e88e5' }}>Question {questionNumber}</Typography>
-        <Typography variant="h6" sx={{ color: '#1e88e5', marginRight: 2 }}>
-         {question.marks} {question.marks === 1 ? 'pt' : 'pts'}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography variant="h6" sx={{ color: '#1e88e5', marginRight: 2 }}>
+            {question.marks} {question.marks === 1 ? 'pt' : 'pts'}
+          </Typography>
+          {onRemove && (
+            <IconButton onClick={() => onRemove(question._id)}>
+              <DeleteIcon />
+            </IconButton>
+          )}
+        </Box>
       </Box>
       <Box sx={{ paddingBottom: '16px', paddingLeft: '16px', borderRadius: '0 0 8px 8px' }}>
         <Typography variant="h6" gutterBottom>
@@ -53,17 +51,6 @@ const QuestionGroupPage: React.FC<QuestionGroupPageProps> = ({ questionNumber, q
           Answer: {question.answer}
         </Typography>
       </Box>
-      {/* <Box sx={{ marginTop: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Sub Questions
-        </Typography>
-        {question.subQuestions?.map((subQuestion, index) => (
-          <Box key={index} sx={{ marginBottom: 2, padding: 2, border: '1px solid #ccc', borderRadius: '8px' }}>
-            <Typography variant="h6" sx={{ color: '#1e88e5' }}>{subQuestion.title}</Typography>
-            <Typography variant="body2" sx={{ color: '#555' }}>{subQuestion.description}</Typography>
-          </Box>
-        ))}
-      </Box> */}
     </Box>
   );
 };

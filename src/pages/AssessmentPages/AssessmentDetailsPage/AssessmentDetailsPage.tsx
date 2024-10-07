@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "../../../components/NavBar/Navbar";
 import QuestionGroupPage from "../../QuestionPages/QuestionGroupPage/QuestionGroupPage";
 import { AuthContext } from "../../../context/Authcontext";
-import { getAssessmentById } from "../../../utils/api/AssessmentAPI";
+import { getAssessmentById, removeQuestionFromAssessment } from "../../../utils/api/AssessmentAPI";
 import { Question } from "../../../utils/api/QuestionAPI";
 
 interface AssessmentDetails {
@@ -42,31 +42,39 @@ const AssessmentDetailsPage: React.FC = () => {
     return <div>Error: User is missing</div>;
   }
 
-  // const importQuestions = () => {
-  //   // Logic to import questions from the question bank
-  //   alert("Import questions from the question bank");
-  // };
-
   const createNewQuestion = () => {
-    // Logic to create a new question
     navigate(`/projects/${projectId}/createQuestion`, {
       state: { assessmentId, assessmentTitle: assessmentDetails?.title, projectTitle },
     });
   };
 
   const previewAssessment = () => {
-    // Logic to preview the assessment
     alert("Preview assessment");
   };
 
   const publishAssessment = () => {
-    // Logic to publish the assessment
     alert("Publish assessment");
   };
 
   const exportAssessment = () => {
-    // Logic to export the assessment
     alert("Export assessment");
+  };
+
+  const handleRemoveQuestion = async (questionId: string) => {
+    if (assessmentId) {
+      try {
+        await removeQuestionFromAssessment(assessmentId, questionId);
+        setAssessmentDetails((prevDetails) => {
+          if (!prevDetails) return null;
+          return {
+            ...prevDetails,
+            questions: prevDetails.questions.filter((q) => q._id !== questionId),
+          };
+        });
+      } catch (error) {
+        console.error("Failed to remove question:", error);
+      }
+    }
   };
 
   return (
@@ -106,15 +114,12 @@ const AssessmentDetailsPage: React.FC = () => {
                   flexDirection: 'column',
                 }}
               >
-                <QuestionGroupPage questionNumber= {index+1} question={question} />
+                <QuestionGroupPage questionNumber={index + 1} question={question} onRemove={handleRemoveQuestion} />
               </Box>
             </Grid>
           ))}
         </Grid>
         <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
-          {/* <Button variant="contained" color="primary" onClick={importQuestions} sx={{ marginRight: 2 }}>
-            Import Questions
-          </Button> */}
           <Button variant="contained" color="primary" onClick={createNewQuestion}>
             Create New Question
           </Button>
