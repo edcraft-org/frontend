@@ -1,7 +1,5 @@
 import React, { useContext } from 'react';
-import { Box, Button, TextField, Typography } from '@mui/material';
-import MultipleChoiceQuestion from './ManualCreation/MultipleChoice';
-import TrueOrFalseQuestion from './ManualCreation/TrueFalse';
+import { Box, Typography } from '@mui/material';
 import QuestionCreation from './QuestionCreation';
 import { AuthContext } from '../../context/Authcontext';
 import { createQuestion, QuestionCreationItem } from '../../utils/api/QuestionAPI';

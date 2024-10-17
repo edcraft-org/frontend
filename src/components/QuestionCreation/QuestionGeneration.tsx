@@ -1,11 +1,12 @@
 import { useContext, useState, useEffect } from 'react';
-import { Box, TextField, Typography, Button, Select, MenuItem, FormControl, InputLabel, Chip, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Tooltip } from '@mui/material';
-import { getTopics, getSubtopics, getQueryables, generateQuestion, Topic, Subtopic, Queryable, GenerateQuestionRequest } from '../../utils/api/QuestionGenerationAPI';
+import { Box, TextField, Typography, Button, Select, MenuItem, FormControl, InputLabel, Chip, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, CircularProgress } from '@mui/material';
+import { getTopics, getSubtopics, getQueryables, generateQuestion, Topic, Subtopic, Queryable, GenerateQuestionRequest, getVariables } from '../../utils/api/QuestionGenerationAPI';
 import QuestionCreation from './QuestionCreation';
 import { createQuestion, QuestionCreationItem } from '../../utils/api/QuestionAPI';
 import { addExistingQuestionToAssessment } from '../../utils/api/AssessmentAPI';
 import { addExistingQuestionToQuestionBank } from '../../utils/api/QuestionBankAPI';
 import { AuthContext } from '../../context/Authcontext';
+import { formatText } from '../../utils/format';
 
 interface QuestionGenerationProps {
   description: string;
@@ -36,6 +37,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   const [subtopics, setSubtopics] = useState<Subtopic[]>([]);
   const [queryables, setQueryables] = useState<Queryable[]>([]);
   const [generatedQuestions, setGeneratedQuestions] = useState<QuestionCreationItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const { user } = useContext(AuthContext);
 
@@ -73,9 +75,10 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   }, [topic, subtopic]);
 
   useEffect(() => {
-    if (queryable && topic && subtopic) {
-      const selectedQueryable = queryables.find(q => q.queryable === queryable);
-      setVariables(selectedQueryable ? selectedQueryable.variables : []);
+    if (topic && subtopic && queryable) {
+      getVariables(topic, subtopic, queryable)
+      .then(setVariables)
+      .catch(error => console.error('Error fetching variables:', error));
     }
   }, [queryable, topic, subtopic, queryables]);
 
@@ -93,13 +96,12 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     }
 
     // Check if all variables are used in the description
-    const allVariablesUsed = variables.every((variable, _) => description.includes(`{${variable}}`));
+    const allVariablesUsed = variables.every((variable) => description.includes(`{${variable}}`));
 
     if (!allVariablesUsed) {
       alert('Please use all variables in the question description.');
       return;
     }
-
 
     // Create request payload
     const requestPayload: GenerateQuestionRequest = {
@@ -114,10 +116,13 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     };
 
     try {
+      setLoading(true);
       const data = await generateQuestion(requestPayload);
       setGeneratedQuestions(data);
     } catch (error) {
       console.error('Error generating question:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -177,11 +182,11 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           renderValue={(selected) => (
-            <Chip label={selected} />
+            <Chip label={formatText(selected)} />
           )}
         >
           {topics.map((topic) => (
-            <MenuItem key={topic} value={topic}>{topic}</MenuItem>
+            <MenuItem key={topic} value={topic}>{formatText(topic)}</MenuItem>
           ))}
         </Select>
       </FormControl>
@@ -194,11 +199,11 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           onChange={(e) => setSubtopic(e.target.value)}
           disabled={!topic}
           renderValue={(selected) => (
-            <Chip label={selected} />
+            <Chip label={formatText(selected)} />
           )}
         >
           {subtopics.map((subtopic) => (
-            <MenuItem key={subtopic} value={subtopic}>{subtopic}</MenuItem>
+            <MenuItem key={subtopic} value={subtopic}>{formatText(subtopic)}</MenuItem>
           ))}
         </Select>
       </FormControl>
@@ -211,11 +216,11 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           onChange={(e) => setQueryable(e.target.value)}
           disabled={!subtopic}
           renderValue={(selected) => (
-            <Chip label={selected} />
+            <Chip label={formatText(selected)} />
           )}
         >
           {queryables.map((queryable) => (
-            <MenuItem key={queryable.queryable} value={queryable.queryable}>{queryable.queryable}</MenuItem>
+            <MenuItem key={queryable} value={queryable}>{formatText(queryable)}</MenuItem>
           ))}
         </Select>
       </FormControl>
@@ -272,8 +277,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         required
         sx={{ marginBottom: 2 }}
       />
-      <Button variant="contained" color="primary" onClick={handleGenerate}>
-        Generate
+      <Button variant="contained" color="primary" onClick={handleGenerate} disabled={loading}>
+        {loading ? <CircularProgress size={24} /> : 'Generate'}
       </Button>
       {generatedQuestions.length > 0 && (
         <Box

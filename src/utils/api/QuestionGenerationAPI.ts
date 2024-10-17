@@ -3,12 +3,8 @@ import { QuestionCreationItem } from "./QuestionAPI";
 
 export type Topic = string;
 export type Subtopic = string;
-
-export interface Queryable {
-  queryable: string;
-  variables: string[];
-  outputType: string;
-}
+export type Queryable = string;
+export type Variables = string[];
 
 export interface GenerateQuestionRequest {
   topic: string;
@@ -57,6 +53,19 @@ export const getQueryables = async (topic: string, subtopic: string): Promise<Qu
   }
 
   const data: Queryable[] = await response.json();
+  return data;
+};
+
+export const getVariables = async (topic: string, subtopic: string, queryable: string): Promise<Variables> => {
+  const url = `${basePath}/question_generation/topics/${topic}/subtopics/${subtopic}/queryables/${queryable}/variables`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: Variables = await response.json();
   return data;
 };
 
