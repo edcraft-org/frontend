@@ -56,6 +56,19 @@ export const getQueryables = async (topic: string, subtopic: string): Promise<Qu
   return data;
 };
 
+export const getAllQueryables = async (): Promise<Queryable[]> => {
+  const url = `${basePath}/question_generation/queryable_classes`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: Queryable[] = await response.json();
+  return data;
+};
+
 export const getVariables = async (topic: string, subtopic: string, queryable: string): Promise<Variables> => {
   const url = `${basePath}/question_generation/topics/${topic}/subtopics/${subtopic}/queryables/${queryable}/variables`;
   const response = await fetch(url);

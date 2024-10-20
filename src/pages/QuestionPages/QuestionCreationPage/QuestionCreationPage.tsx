@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Switch, Typography, FormControlLabel } from '@mui/material';
+import { Box, Tabs, Tab, Typography } from '@mui/material';
 import NavBar from '../../../components/NavBar/Navbar';
 import { useLocation, useParams } from 'react-router-dom';
 import QuestionDetails from '../../../components/QuestionCreation/QuestionDetails';
@@ -19,8 +19,8 @@ const QuestionCreationPage: React.FC = () => {
     return <div>Error: Project ID is missing</div>;
   }
 
-  const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setCreationMethod(event.target.checked ? 'generation' : 'manual');
+  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: string) => {
+    setCreationMethod(newValue);
   };
 
   return (
@@ -31,18 +31,10 @@ const QuestionCreationPage: React.FC = () => {
           Create a New Question
         </Typography>
         <QuestionDetails type={type} marks={marks} setType={setType} setMarks={setMarks} />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={creationMethod === 'generation'}
-              onChange={handleToggleChange}
-              name="creationMethod"
-              color="primary"
-            />
-          }
-          label={creationMethod === 'generation' ? 'Question Generation' : 'Manual Creation'}
-          sx={{ marginBottom: 2 }}
-        />
+        <Tabs value={creationMethod} onChange={handleTabChange} sx={{ marginBottom: 2 }}>
+          <Tab label="Question Generation" value="generation" />
+          <Tab label="Manual Creation" value="manual" />
+        </Tabs>
         {creationMethod === 'generation' ? (
           <QuestionGeneration
             project= {{id: projectId, title: projectTitle}}
