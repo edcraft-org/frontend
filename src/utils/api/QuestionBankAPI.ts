@@ -10,18 +10,19 @@ export interface NewQuestionBank {
 
 export interface QuestionBank {
   _id: string;
-  questions: Question[];
+  questions: string[];
   title: string;
   user_id: string;
   project_id: string;
 }
 
-export interface QuestionBankList {
+export interface QuestionBankWithQuestions {
   _id: string;
   questions: string[];
   title: string;
   user_id: string;
   project_id: string;
+  full_questions: Question[];
 }
 
 export interface QuestionBankTitleUpdate {
@@ -47,7 +48,7 @@ export const createQuestionBank = async (newQuestionBank: NewQuestionBank): Prom
   return questionBank;
 };
 
-export const getUserQuestionBanks = async (userId: string): Promise<QuestionBankList[]> => {
+export const getUserQuestionBanks = async (userId: string): Promise<QuestionBank[]> => {
   const url = `${basePath}/question_banks?user_id=${userId}`;
   const response = await fetch(url);
 
@@ -56,11 +57,11 @@ export const getUserQuestionBanks = async (userId: string): Promise<QuestionBank
     throw new Error(message);
   }
 
-  const data: QuestionBankList[] = await response.json();
+  const data: QuestionBank[] = await response.json();
   return data;
 };
 
-export const getUserProjectQuestionBanks = async (userId: string, projectId: string): Promise<QuestionBankList[]> => {
+export const getUserProjectQuestionBanks = async (userId: string, projectId: string): Promise<QuestionBank[]> => {
   const url = `${basePath}/question_banks?user_id=${userId}&project_id=${projectId}`;
   const response = await fetch(url);
 
@@ -69,11 +70,11 @@ export const getUserProjectQuestionBanks = async (userId: string, projectId: str
     throw new Error(message);
   }
 
-  const data: QuestionBankList[] = await response.json();
+  const data: QuestionBank[] = await response.json();
   return data;
 };
 
-export const getQuestionBankById = async (questionBankId: string): Promise<QuestionBank> => {
+export const getQuestionBankById = async (questionBankId: string): Promise<QuestionBankWithQuestions> => {
   const url = `${basePath}/question_banks/${questionBankId}`;
   const response = await fetch(url);
 
@@ -82,7 +83,7 @@ export const getQuestionBankById = async (questionBankId: string): Promise<Quest
     throw new Error(message);
   }
 
-  const data: QuestionBank = await response.json();
+  const data: QuestionBankWithQuestions = await response.json();
   return data;
 };
 

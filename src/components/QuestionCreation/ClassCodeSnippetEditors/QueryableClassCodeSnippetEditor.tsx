@@ -5,19 +5,12 @@ interface QueryableCodeSnippetEditorProps {
     setQueryableCodeSnippet: (code: string) => void;
     setQueryableCodeRequiredLines: (lines: string[]) => void;
 }
-
-const queryableClassTemplate = `from typing import Any
-from question.queryable_class import QueryableClass
-
-
-class ClassName(QueryableClass):
+const queryableClassTemplate = `class SampleQueryable(Queryable):
     def query_method(self, input: Any) -> Any:
         # User code here
 `;
 
 const queryableClassRequiredLines = [
-  'from typing import Any',
-  'from question.queryable_class import QueryableClass'
 ];
 
 const QueryableClassCodeSnippetEditor: React.FC<QueryableCodeSnippetEditorProps> = ({ setQueryableCodeSnippet, setQueryableCodeRequiredLines}) => {

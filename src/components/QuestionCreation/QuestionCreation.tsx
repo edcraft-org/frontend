@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Card, CardContent, CardHeader, List, ListItem, Divider, Checkbox, Button, Tooltip, TextField, IconButton, Select, MenuItem } from '@mui/material';
+import { Box, Typography, Card, CardContent, CardHeader, List, ListItem, Divider, Checkbox, Button, Tooltip, TextField, IconButton, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ConfirmSelectionDialog from '../Dialogs/ConfirmSelectionDialog/ConfirmSelectionDialog';
 import { GridColDef } from '@mui/x-data-grid';
@@ -218,21 +218,20 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
               )}
             </List>
             <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
-            <Select
-              label="Answer"
-              value={qa.answer}
-              onChange={(e) => handleQuestionChange(index, 'answer', e.target.value as string)}
-              fullWidth
-              variant="outlined"
-              sx={{ marginBottom: 2 }}
-              disabled={editingIndex !== index}
-            >
-              {qa.options.map((option, idx) => (
-                <MenuItem key={idx} value={option}>
-                  {option}
-                </MenuItem>
-              ))}
-            </Select>
+            <FormControl fullWidth variant="outlined" sx={{ marginBottom: 2 }} disabled={editingIndex !== index}>
+              <InputLabel>Answer</InputLabel>
+              <Select
+                label="Answer"
+                value={qa.answer}
+                onChange={(e) => handleQuestionChange(index, 'answer', e.target.value as string)}
+              >
+                {qa.options.map((option, idx) => (
+                  <MenuItem key={idx} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </CardContent>
         </Card>
       ))}

@@ -66,10 +66,11 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         .catch(error => console.error('Error fetching subtopics:', error));
     } else {
       setSubtopics([]);
-      setSubtopic('');
       setQueryables([]);
-      setQueryable('');
     }
+    setSubtopic('');
+    setQueryable('');
+    setDescription('');
   }, [topic]);
 
   useEffect(() => {
@@ -80,17 +81,21 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         .catch(error => console.error('Error fetching queryables:', error));
     } else {
       setQueryables([]);
-      setQueryable('');
     }
-  }, [topic, subtopic]);
+    setQueryable('');
+    setDescription('');
+  }, [subtopic]);
 
   useEffect(() => {
     if (topic && subtopic && queryable) {
       getVariables(topic, subtopic, queryable)
       .then(setVariables)
       .catch(error => console.error('Error fetching variables:', error));
+    } else {
+      setVariables([]);
     }
-  }, [queryable, topic, subtopic, queryables]);
+    setDescription('');
+  }, [queryable]);
 
   useEffect(() => {
     if (!useSystemAlgorithm) {
@@ -98,6 +103,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         .then(setQueryables)
         .catch(error => console.error('Error fetching all queryables:', error));
     }
+    setGeneratedQuestions([]);
   }, [useSystemAlgorithm, userTopic]);
 
   useEffect(() => {
@@ -359,7 +365,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
               options={queryables.map((queryable) => queryable)}
               value={userQueryable}
               onChange={(event, newValue) => setUserQueryable(newValue || '')}
-              onInputChange={(event, newInputValue) => setUserQueryable(newInputValue)}
+              onInputChange={(event, newInputValue) => setUserQueryable(newInputValue || '')}
               renderInput={(params) => <TextField {...params} label="QueryableClass" variant="outlined" />}
               renderOption={(props, option) => (
                 <li {...props}>

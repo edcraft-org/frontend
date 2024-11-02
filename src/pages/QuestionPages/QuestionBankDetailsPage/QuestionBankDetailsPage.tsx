@@ -7,16 +7,15 @@ import ExportAssessmentsDialog from "../../../components/Dialogs/ExportAssessmen
 import ExportQuestionBankDialog from "../../../components/Dialogs/ExportQuestionBankDialog/ExportQuestionBankDialog";
 import QuestionList from "../../../components/QuestionList/QuestionList";
 import QuestionDialog from "../../../components/QuestionDialog/QuestionDialog";
-import { addExistingQuestionToQuestionBank, createQuestionBank, getQuestionBankById, getUserProjectQuestionBanks, NewQuestionBank, QuestionBank, QuestionBankList } from "../../../utils/api/QuestionBankAPI";
+import { addExistingQuestionToQuestionBank, createQuestionBank, getQuestionBankById, getUserProjectQuestionBanks, NewQuestionBank, QuestionBank, QuestionBankWithQuestions, removeQuestionFromQuestionBank } from "../../../utils/api/QuestionBankAPI";
 import { AuthContext } from "../../../context/Authcontext";
 import { Question } from "../../../utils/api/QuestionAPI";
-import { addExistingQuestionToAssessment, AssessmentList, createAssessment, getUserAssessments, NewAssessment } from "../../../utils/api/AssessmentAPI";
+import { addExistingQuestionToAssessment, AssessmentList, createAssessment, getUserProjectAssessments, NewAssessment } from "../../../utils/api/AssessmentAPI";
 
 
 const QuestionBankDetailsPage: React.FC = () => {
   const { projectId, questionBankId } = useParams<{ projectId: string, questionBankId: string }>();
-  const [questionBankDetails, setQuestionBankDetails] = useState<QuestionBank | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([])
+  const [questionBankDetails, setQuestionBankDetails] = useState<QuestionBankWithQuestions | null>(null);
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
   const [selectAll, setSelectAll] = useState(false);
 
@@ -29,8 +28,8 @@ const QuestionBankDetailsPage: React.FC = () => {
   const [selectedAssessments, setSelectedAssessments] = useState<AssessmentList[]>([]);
   const [newAssessmentTitle, setNewAssessmentTitle] = useState<string>('');
 
-  const [questionBanks, setQuestionBanks] = useState<QuestionBankList[]>([]);
-  const [selectedQuestionBanks, setSelectedQuestionBanks] = useState<QuestionBankList[]>([]);
+  const [questionBanks, setQuestionBanks] = useState<QuestionBank[]>([]);
+  const [selectedQuestionBanks, setSelectedQuestionBanks] = useState<QuestionBank[]>([]);
   const [newQuestionBankTitle, setNewQuestionBankTitle] = useState<string>('');
 
   const { user } = useContext(AuthContext);
@@ -38,21 +37,21 @@ const QuestionBankDetailsPage: React.FC = () => {
   const location = useLocation();
   const { projectTitle } = location.state || {};
 
+  const fetchQuestionBankQuestions = async () => {
+    if (questionBankId) {
+      const questionBank = await getQuestionBankById(questionBankId);
+      setQuestionBankDetails(questionBank)
+    }
+  };
+
   useEffect(() => {
-    const fetchQuestionBankQuestions = async () => {
-      if (questionBankId) {
-        const questionBank = await getQuestionBankById(questionBankId);
-        setQuestionBankDetails(questionBank);
-        setQuestions(questionBank.questions);
-      }
-    };
     fetchQuestionBankQuestions();
   }, [questionBankId]);
 
   useEffect(() => {
     const fetchAssessmentList = async () => {
-      if (user) {
-        const userAssessments = await getUserAssessments(user.id);
+      if (user && projectId) {
+        const userAssessments = await getUserProjectAssessments(user.id, projectId);
         setAssessments(userAssessments);
       }
     };
@@ -91,7 +90,7 @@ const QuestionBankDetailsPage: React.FC = () => {
     if (selectAll) {
       setSelectedQuestions([]);
     } else {
-      setSelectedQuestions(questions);
+      setSelectedQuestions(questionBankDetails?.full_questions || []);
     }
     setSelectAll(!selectAll);
   };
@@ -188,6 +187,15 @@ const QuestionBankDetailsPage: React.FC = () => {
     setExportQuestionBankDialogOpen(false);
   };
 
+  const handleRemoveQuestion = async (questionId: string) => {
+    try {
+      await removeQuestionFromQuestionBank(questionBankId, questionId);
+      fetchQuestionBankQuestions();
+    } catch (error) {
+      console.error('Failed to remove question:', error);
+    }
+  };
+
   // const importQuestions = () => {
   //   alert("Import questions from the question bank");
   // };
@@ -212,12 +220,13 @@ const QuestionBankDetailsPage: React.FC = () => {
           </Button>
         </Box>
         <QuestionList
-          questions={questions}
+          questions={questionBankDetails?.full_questions || []}
           selectedQuestions={selectedQuestions}
           handleQuestionClick={handleQuestionClick}
           selectAll={selectAll}
           handleSelectAll={handleSelectAll}
           onQuestionClick={handleQuestionClickDialog}
+          handleRemoveQuestion={handleRemoveQuestion}
         />
         <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
           {/* <Button variant="contained" color="primary" onClick={importQuestions} sx={{ marginRight: 2 }}>
@@ -252,7 +261,7 @@ const QuestionBankDetailsPage: React.FC = () => {
         onClose={handleExportQuestionBankDialogClose}
         selectedQuestions={selectedQuestions}
         questionBanks={questionBanks}
-        // selectedQuestionBanks={selectedQuestionBanks}
+        currentQuestionBankId={questionBankId}
         newQuestionBankTitle={newQuestionBankTitle}
         handleNewQuestionBankChange={handleNewQuestionBankChange}
         handleExport={handleExportQuestionBank}

@@ -7,9 +7,6 @@ import { addExistingQuestionToAssessment } from '../../utils/api/AssessmentAPI';
 import { addExistingQuestionToQuestionBank } from '../../utils/api/QuestionBankAPI';
 
 interface ManualCreationProps {
-  description: string;
-  setDescription: (description: string) => void;
-  type: string;
   marks: number;
   project: { id: string, title: string };
   assessmentId?: string;
@@ -18,9 +15,6 @@ interface ManualCreationProps {
 
 
 const ManualCreation: React.FC<ManualCreationProps> = ({
-  description,
-  setDescription,
-  type,
   marks,
   project,
   assessmentId,

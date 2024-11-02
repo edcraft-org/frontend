@@ -19,7 +19,7 @@ const QuestionCreationPage: React.FC = () => {
     return <div>Error: Project ID is missing</div>;
   }
 
-  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: string) => {
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
     setCreationMethod(newValue);
   };
 
@@ -47,9 +47,7 @@ const QuestionCreationPage: React.FC = () => {
         ) : (
           <ManualCreation
           project= {{id: projectId, title: projectTitle}}
-          description={description}
-          setDescription={setDescription}
-          type={type} marks={marks}
+          marks={marks}
           assessmentId={assessmentId}
           questionBankId={questionBankId}
           />

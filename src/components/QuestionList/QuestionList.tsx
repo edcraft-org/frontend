@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Grid, Typography, Checkbox} from "@mui/material";
+import { Box, Grid, Typography, Checkbox, IconButton } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Question } from '../../utils/api/QuestionAPI';
 
 interface QuestionListProps {
@@ -9,9 +10,10 @@ interface QuestionListProps {
   selectAll: boolean;
   handleSelectAll: () => void;
   onQuestionClick: (question: Question, index: number) => void;
+  handleRemoveQuestion: (questionId: string) => void;
 }
 
-const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestions, handleQuestionClick, selectAll, handleSelectAll, onQuestionClick }) => {
+const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestions, handleQuestionClick, selectAll, handleSelectAll, onQuestionClick, handleRemoveQuestion }) => {
   return (
     <Grid container spacing={2} sx={{ margin: '0 auto', maxWidth: '1200px' }}>
       <Grid item xs={12}>
@@ -48,11 +50,21 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestion
           >
             <Box sx={{ marginBottom: 2, backgroundColor: '#e0e0e0', paddingY: '8px', paddingLeft: '16px', borderRadius: '8px 8px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="h6" sx={{ color: '#1e88e5' }}>Question {index + 1}</Typography>
-              <Checkbox
-                checked={selectedQuestions.includes(question)}
-                onClick={(e) => e.stopPropagation()}
-                onChange={() => handleQuestionClick(question)}
-              />
+              <Box>
+                <Checkbox
+                  checked={selectedQuestions.includes(question)}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={() => handleQuestionClick(question)}
+                />
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveQuestion(question._id);
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
             </Box>
             <Box sx={{ paddingBottom: '16px', paddingLeft: '16px', borderRadius: '0 0 8px 8px' }}>
               <Typography variant="body2" sx={{ color: '#555' }}>{question.text}</Typography>
@@ -60,7 +72,6 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestion
                 Answer: {question.answer}
               </Typography>
             </Box>
-
           </Box>
         </Grid>
       ))}

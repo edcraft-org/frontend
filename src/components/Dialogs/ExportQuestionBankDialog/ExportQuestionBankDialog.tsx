@@ -2,17 +2,18 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField, Paper } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Question } from '../../../utils/api/QuestionAPI';
-import { QuestionBankList } from '../../../utils/api/QuestionBankAPI';
+import { QuestionBank } from '../../../utils/api/QuestionBankAPI';
 
 interface ExportQuestionBankDialogProps {
   open: boolean;
   onClose: () => void;
   selectedQuestions: Question[];
-  questionBanks: QuestionBankList[];
+  questionBanks: QuestionBank[];
+  currentQuestionBankId: string;
   newQuestionBankTitle: string;
   handleNewQuestionBankChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleExport: () => void;
-  setSelectedQuestionBanks: (questionBanks: QuestionBankList[]) => void;
+  setSelectedQuestionBanks: (questionBanks: QuestionBank[]) => void;
 }
 
 const ExportQuestionBankDialog: React.FC<ExportQuestionBankDialogProps> = ({
@@ -20,6 +21,7 @@ const ExportQuestionBankDialog: React.FC<ExportQuestionBankDialogProps> = ({
   onClose,
   selectedQuestions,
   questionBanks,
+  currentQuestionBankId,
   newQuestionBankTitle,
   handleNewQuestionBankChange,
   handleExport,
@@ -35,6 +37,8 @@ const ExportQuestionBankDialog: React.FC<ExportQuestionBankDialogProps> = ({
   ];
 
   const paginationModel = { page: 0, pageSize: 5 };
+
+  const filteredQuestionBanks = questionBanks.filter(qb => qb._id !== currentQuestionBankId);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -53,7 +57,7 @@ const ExportQuestionBankDialog: React.FC<ExportQuestionBankDialogProps> = ({
         <Typography variant="h6" sx={{ marginBottom: 2 }}>Select Question Banks</Typography>
         <Paper sx={{ width: '100%', marginBottom: 2}}>
           <DataGrid
-            rows={questionBanks.map((questionBank) => ({ id: questionBank._id, title: questionBank.title }))}
+            rows={filteredQuestionBanks.map((questionBank) => ({ id: questionBank._id, title: questionBank.title }))}
             columns={questionBankColumns}
             initialState={{ pagination: { paginationModel } }}
             pageSizeOptions={[5, 10]}
