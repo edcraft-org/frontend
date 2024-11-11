@@ -4,12 +4,14 @@ import { QuestionCreationItem } from "./QuestionAPI";
 export type Topic = string;
 export type Subtopic = string;
 export type Queryable = string;
-export type Variables = string[];
+export type Variables = { [key: string]: string }[];
+export type Quantifiable = string;
 
 export interface GenerateQuestionRequest {
   topic: string;
   subtopic: string;
   queryable: string;
+  quantifiables: { [key: string]: string };
   question_description: string;
   question_type: string;
   marks: number
@@ -80,6 +82,19 @@ export const getVariables = async (topic: string, subtopic: string, queryable: s
 
   const data: Variables = await response.json();
   return data;
+};
+
+export const getQuantifiables = async (): Promise<Quantifiable[]> => {
+  const url = `${basePath}/question_generation/quantifiables`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: Quantifiable[] = await response.json();
+  return data.sort();
 };
 
 export const generateQuestion = async (request: GenerateQuestionRequest): Promise<QuestionCreationItem[]> => {

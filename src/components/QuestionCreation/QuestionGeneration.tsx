@@ -1,12 +1,12 @@
 import { useContext, useState, useEffect } from 'react';
 import { Box, TextField, Typography, Button, Autocomplete, Chip, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, CircularProgress, Switch, FormControlLabel, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { getTopics, getSubtopics, getQueryables, generateQuestion, Topic, Subtopic, Queryable, GenerateQuestionRequest, getVariables, getAllQueryables } from '../../utils/api/QuestionGenerationAPI';
+import { getTopics, getSubtopics, getQueryables, generateQuestion, Topic, Subtopic, Queryable, GenerateQuestionRequest, getVariables, getAllQueryables, Variables, Quantifiable, getQuantifiables } from '../../utils/api/QuestionGenerationAPI';
 import QuestionCreation from './QuestionCreation';
 import { createQuestion, QuestionCreationItem } from '../../utils/api/QuestionAPI';
 import { addExistingQuestionToAssessment } from '../../utils/api/AssessmentAPI';
 import { addExistingQuestionToQuestionBank } from '../../utils/api/QuestionBankAPI';
 import { AuthContext } from '../../context/Authcontext';
-import { formatText } from '../../utils/format';
+import { formatText, formatVariableType } from '../../utils/format';
 import ProcessorClassCodeSnippetEditor from './ClassCodeSnippetEditors/ProcessorClassCodeSnippetEditor';
 import QueryableClassCodeSnippetEditor from './ClassCodeSnippetEditors/QueryableClassCodeSnippetEditor';
 
@@ -41,7 +41,9 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   const [processorCodeSnippet, setProcessorCodeSnippet] = useState<string>("");
   const [queryableCodeRequiredLines, setQueryableCodeRequiredLines] = useState<string[]>([]);
   const [processorCodeRequiredLines, setProcessorCodeRequiredLines] = useState<string[]>([]);
-  const [variables, setVariables] = useState<string[]>([]);
+  const [variables, setVariables] = useState<Variables>([]);
+  const [quantifiables, setQuantifiables] = useState<Quantifiable[]>([]);
+  const [selectedQuantifiables, setSelectedQuantifiables] = useState<{ [key: string]: string }>({});
   const [topics, setTopics] = useState<Topic[]>([]);
   const [subtopics, setSubtopics] = useState<Subtopic[]>([]);
   const [queryables, setQueryables] = useState<Queryable[]>([]);
@@ -91,6 +93,9 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       getVariables(topic, subtopic, queryable)
       .then(setVariables)
       .catch(error => console.error('Error fetching variables:', error));
+      getQuantifiables()
+      .then(setQuantifiables)
+      .catch(error => console.error('Error fetching quantifiables:', error));
     } else {
       setVariables([]);
     }
@@ -124,7 +129,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     }
 
     // Check if all variables are used in the description
-    const allVariablesUsed = variables.every((variable) => description.includes(`{${variable}}`));
+    const allVariablesUsed = variables.every((variable) => description.includes(`{${variable.name}}`));
 
     if (!allVariablesUsed) {
       alert('Please use all variables in the question description.');
@@ -136,6 +141,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       topic: currentTopic,
       subtopic: currentSubtopic,
       queryable: currentQueryable,
+      quantifiables: selectedQuantifiables,
       question_description: description,
       question_type: type,
       marks,
@@ -246,6 +252,18 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     setUserSubtopic('');
     setUserQueryable('');
   };
+
+  const handleQuantifiableChange = (variableName: string, value: string) => {
+    setSelectedQuantifiables((prev) => ({
+      ...prev,
+      [variableName]: value,
+    }));
+  };
+
+  const isQuantifiable = (type: string): boolean => {
+    return type === 'Quantifiable' || type.includes('Quantifiable');
+  };
+
 
   return (
     <Box
@@ -394,18 +412,41 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         </Typography>
       </Tooltip>
       <TableContainer component={Paper} sx={{ marginBottom: 2, border: '1px solid #ccc' }}>
-        <Table size="small">
+      <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Variable Index</TableCell>
-              <TableCell>Variable Name</TableCell>
+              <TableCell sx={{ width: '33.33%' }}>Variable Name</TableCell>
+              <TableCell sx={{ width: '33.33%' }}>Variable Type</TableCell>
+              <TableCell sx={{ width: '33.33%' }}>Quantifiable</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {variables.map((variable, index) => (
               <TableRow key={index}>
-                <TableCell>{index}</TableCell>
-                <TableCell>{variable}</TableCell>
+                <TableCell sx={{ width: '33.33%' }}>{variable.name}</TableCell>
+                <TableCell sx={{ width: '33.33%' }}>{variable.type}</TableCell>
+                <TableCell sx={{ width: '33.33%' }}>
+                  {isQuantifiable(variable.type) ? (
+                    <FormControl fullWidth>
+                      <Select
+                        value={selectedQuantifiables[variable.name] || ''}
+                        onChange={(e) => handleQuantifiableChange(variable.name, e.target.value)}
+                      >
+                        {quantifiables.map((quantifiable) => (
+                          <MenuItem key={quantifiable} value={quantifiable}>
+                            {quantifiable}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  ) : (
+                    <TextField
+                      fullWidth
+                      value="N/A"
+                      disabled
+                    />
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
