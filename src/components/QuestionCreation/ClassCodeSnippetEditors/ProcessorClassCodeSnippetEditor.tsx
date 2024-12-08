@@ -6,9 +6,8 @@ interface ProcessorCodeSnippetEditorProps {
   setProcessorCodeRequiredLines: (lines: string[]) => void;
 }
 
-const processorClassTemplate = `class ClassName(Processor, SampleQueryable):
-    def algo(self):
-        # User code here
+const processorClassTemplate = `class ClassName(Algo, Question, Output):
+    def algo(self, input):
 `;
 
 const processorClassRequiredLines = [];

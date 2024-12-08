@@ -35,6 +35,11 @@ const QuestionGroupPage: React.FC<QuestionGroupPageProps> = ({ questionNumber, q
         <Typography variant="h6" gutterBottom>
           {question.text}
         </Typography>
+        {question.svg && (
+          <Box sx={{ marginBottom: 2 }}>
+            <img src={`data:image/svg+xml;base64,${btoa(question.svg)}`} alt="Question SVG" />
+          </Box>
+        )}
         <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
         <RadioGroup value={selectedOption} onChange={handleOptionChange}>
           {question.options.map((option, index) => (

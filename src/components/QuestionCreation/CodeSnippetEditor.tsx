@@ -13,7 +13,7 @@ const CodeSnippetEditor: React.FC<CodeSnippetEditorProps> = ({ codeSnippet, setC
   return (
     <Box sx={{ marginBottom: 2 }}>
       <Typography variant="subtitle1" sx={{ marginBottom: 2 }}>
-        {title} Python Code Snippet
+        Python Code Snippet
       </Typography>
       <Box sx={{ marginBottom: 2, border: '1px solid #ccc', borderRadius: '4px' }}>
         <Editor

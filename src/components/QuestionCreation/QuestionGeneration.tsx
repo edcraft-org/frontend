@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
-import { Box, TextField, Typography, Button, Autocomplete, Chip, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, CircularProgress, Switch, FormControlLabel, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Box, TextField, Typography, Button, Autocomplete, Chip, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Tooltip, CircularProgress, FormControl, InputLabel, Select, MenuItem, Tabs, Tab } from '@mui/material';
 import { getTopics, getSubtopics, getQueryables, generateQuestion, Topic, Subtopic, Queryable, GenerateQuestionRequest, getVariables, getAllQueryables, Variables, Quantifiable, getQuantifiables } from '../../utils/api/QuestionGenerationAPI';
 import QuestionCreation from './QuestionCreation';
 import { createQuestion, QuestionCreationItem } from '../../utils/api/QuestionAPI';
@@ -44,12 +44,13 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   const [variables, setVariables] = useState<Variables>([]);
   const [quantifiables, setQuantifiables] = useState<Quantifiable[]>([]);
   const [selectedQuantifiables, setSelectedQuantifiables] = useState<{ [key: string]: string }>({});
+  const [selectedSubclasses, setSelectedSubclasses] = useState<{ [key: string]: string }>({});
   const [topics, setTopics] = useState<Topic[]>([]);
   const [subtopics, setSubtopics] = useState<Subtopic[]>([]);
   const [queryables, setQueryables] = useState<Queryable[]>([]);
   const [generatedQuestions, setGeneratedQuestions] = useState<QuestionCreationItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [useSystemAlgorithm, setUseSystemAlgorithm] = useState<boolean>(true);
+  const [tabValue, setTabValue] = useState<number>(0);
 
   const { user } = useContext(AuthContext);
 
@@ -73,6 +74,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     setSubtopic('');
     setQueryable('');
     setDescription('');
+    setSelectedQuantifiables({});
+    setSelectedSubclasses({});
   }, [topic]);
 
   useEffect(() => {
@@ -86,6 +89,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     }
     setQueryable('');
     setDescription('');
+    setSelectedQuantifiables({});
+    setSelectedSubclasses({});
   }, [subtopic]);
 
   useEffect(() => {
@@ -100,16 +105,18 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       setVariables([]);
     }
     setDescription('');
+    setSelectedQuantifiables({});
+    setSelectedSubclasses({});
   }, [queryable]);
 
   useEffect(() => {
-    if (!useSystemAlgorithm) {
+    if (tabValue === 1) {
       getAllQueryables()
         .then(setQueryables)
         .catch(error => console.error('Error fetching all queryables:', error));
     }
     setGeneratedQuestions([]);
-  }, [useSystemAlgorithm, userTopic]);
+  }, [tabValue, userTopic]);
 
   useEffect(() => {
     if (type === 'true or false') {
@@ -119,12 +126,25 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
 
   const handleGenerate = async () => {
     // Validate that all required fields are defined
-    const currentTopic = useSystemAlgorithm ? topic : userTopic;
-    const currentSubtopic = useSystemAlgorithm ? subtopic : userSubtopic;
-    const currentQueryable = useSystemAlgorithm ? queryable : userQueryable;
+    const currentTopic =  tabValue === 0 ? topic : userTopic;
+    const currentSubtopic =  tabValue === 0 ? subtopic : userSubtopic;
+    const currentQueryable =  tabValue === 0 ? queryable : userQueryable;
 
     if (!currentTopic || !currentSubtopic || !currentQueryable || !description || !type || !marks || !numOptions || !numQuestions) {
       alert('Please fill in all required fields.');
+      return;
+    }
+
+    // Check if all required subclasses are selected
+    const allSubclassesSelected = variables.every((variable) => {
+      if (variable.subclasses && variable.subclasses.length > 0) {
+        return selectedSubclasses[variable.name];
+      }
+      return true;
+    });
+
+    if (!allSubclassesSelected) {
+      alert('Please select a subclass for all variables that have subclasses.');
       return;
     }
 
@@ -141,7 +161,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       topic: currentTopic,
       subtopic: currentSubtopic,
       queryable: currentQueryable,
-      quantifiables: selectedQuantifiables,
+      element_type: selectedQuantifiables,
+      subclasses: selectedSubclasses,
       question_description: description,
       question_type: type,
       marks,
@@ -173,10 +194,10 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     try {
       setLoading(true);
 
-      if (!validateCodeSnippet(queryableCodeSnippet, queryableCodeRequiredLines)) {
-        alert(`Please include the required lines in the QueryableClass code snippet:\n${queryableCodeRequiredLines.join('\n')}`);
-        return;
-      }
+      // if (!validateCodeSnippet(queryableCodeSnippet, queryableCodeRequiredLines)) {
+      //   alert(`Please include the required lines in the QueryableClass code snippet:\n${queryableCodeRequiredLines.join('\n')}`);
+      //   return;
+      // }
 
       if (!validateCodeSnippet(processorCodeSnippet, processorCodeRequiredLines)) {
         alert(`Please include the required lines in the ProcessorClass code snippet:\n${processorCodeRequiredLines.join('\n')}`);
@@ -220,7 +241,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           options: selectedQuestion.options,
           answer: selectedQuestion.answer,
           marks: selectedQuestion.marks,
-          user_id: user.id
+          user_id: user.id,
+          svg: selectedQuestion.svg,
         };
 
         // Create the question
@@ -243,18 +265,16 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     }
   };
 
-  const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUseSystemAlgorithm(event.target.checked);
-    setTopic('');
-    setSubtopic('');
-    setQueryable('');
-    setUserTopic('');
-    setUserSubtopic('');
-    setUserQueryable('');
-  };
 
   const handleQuantifiableChange = (variableName: string, value: string) => {
     setSelectedQuantifiables((prev) => ({
+      ...prev,
+      [variableName]: value,
+    }));
+  };
+
+  const handleSubclassChange = (variableName: string, value: string) => {
+    setSelectedSubclasses((prev) => ({
       ...prev,
       [variableName]: value,
     }));
@@ -265,31 +285,31 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   };
 
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
+
+  const hasQuantifiable = variables.some(variable => isQuantifiable(variable.type));
+  const hasSubclasses = variables.some(variable => variable.subclasses && variable.subclasses.length > 0);
+
   return (
     <Box
       sx={{
         marginBottom: 2,
-        border: '1px solid #ccc', // Outline color
-        borderRadius: '4px', // Optional: to make the corners rounded
-        padding: 2, // Optional: to add some padding inside the box
+        border: '1px solid #ccc',
+        borderRadius: '4px',
+        padding: 2,
       }}
     >
       <Typography variant="h6" gutterBottom sx={{ marginBottom: 2 }}>
         Question Generation
       </Typography>
-      <FormControlLabel
-        control={
-          <Switch
-            checked={useSystemAlgorithm}
-            onChange={handleSwitchChange}
-            color="primary"
-          />
-        }
-        label={useSystemAlgorithm ? 'Defined Algorithms' : 'New algorithm'}
-        sx={{ marginBottom: 2 }}
-      />
+      <Tabs value={tabValue} onChange={handleTabChange} aria-label="algorithm type tabs" sx={{ marginBottom: 2 }}>
+        <Tab label="Defined Algorithms" />
+        <Tab label="New Algorithm" />
+      </Tabs>
       <Box sx={{ display: 'flex', gap: 2 }}>
-        {useSystemAlgorithm ? (
+        {tabValue === 0 ? (
           <>
             <FormControl fullWidth sx={{ marginBottom: 2 }}>
               <InputLabel id="topic-label">Topic</InputLabel>
@@ -395,11 +415,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           </>
         )}
       </Box>
-      {!useSystemAlgorithm && userTopic && userSubtopic && userQueryable && (
+      {tabValue === 1 && userTopic && userSubtopic && userQueryable && (
         <>
-          {!queryables.includes(userQueryable) && (
-            <QueryableClassCodeSnippetEditor setQueryableCodeSnippet={setQueryableCodeSnippet} setQueryableCodeRequiredLines={setQueryableCodeRequiredLines} />
-          )}
           <ProcessorClassCodeSnippetEditor setProcessorCodeSnippet={setProcessorCodeSnippet} setProcessorCodeRequiredLines={setProcessorCodeRequiredLines}/>
           <Button variant="contained" color="primary" onClick={handleSaveCodeSnippet} disabled={loading} sx={{ marginBottom: 2}}>
             {loading ? <CircularProgress size={24} /> : 'Save Algorithm'}
@@ -415,38 +432,67 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell sx={{ width: '33.33%' }}>Variable Name</TableCell>
-              <TableCell sx={{ width: '33.33%' }}>Variable Type</TableCell>
-              <TableCell sx={{ width: '33.33%' }}>Quantifiable</TableCell>
+              <TableCell sx={{ width: hasQuantifiable || hasSubclasses ? '25%' : '50%' }}>Variable Name</TableCell>
+              <TableCell sx={{ width: hasQuantifiable || hasSubclasses ? '25%' : '50%' }}>Variable Type</TableCell>
+              {hasQuantifiable && <TableCell sx={{ width: '25%' }}>Quantifiable</TableCell>}
+              {hasSubclasses && <TableCell sx={{ width: '25%' }}>Subclass</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
             {variables.map((variable, index) => (
               <TableRow key={index}>
-                <TableCell sx={{ width: '33.33%' }}>{variable.name}</TableCell>
-                <TableCell sx={{ width: '33.33%' }}>{variable.type}</TableCell>
-                <TableCell sx={{ width: '33.33%' }}>
-                  {isQuantifiable(variable.type) ? (
-                    <FormControl fullWidth>
-                      <Select
-                        value={selectedQuantifiables[variable.name] || ''}
-                        onChange={(e) => handleQuantifiableChange(variable.name, e.target.value)}
-                      >
-                        {quantifiables.map((quantifiable) => (
-                          <MenuItem key={quantifiable} value={quantifiable}>
-                            {quantifiable}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  ) : (
-                    <TextField
-                      fullWidth
-                      value="N/A"
-                      disabled
-                    />
-                  )}
+                <TableCell sx={{ width: hasQuantifiable || hasSubclasses ? '25%' : '50%' }}>{variable.name}</TableCell>
+                <TableCell sx={{ width: hasQuantifiable || hasSubclasses ? '25%' : '50%' }}>
+                  {variable.type}
                 </TableCell>
+                {hasQuantifiable && (
+                  <TableCell sx={{ width: '25%' }}>
+                    {isQuantifiable(variable.type) ? (
+                      <FormControl fullWidth>
+                        <Select
+                          value={selectedQuantifiables[variable.name] || ''}
+                          onChange={(e) => handleQuantifiableChange(variable.name, e.target.value)}
+                        >
+                          {quantifiables.map((quantifiable) => (
+                            <MenuItem key={quantifiable} value={quantifiable}>
+                              {quantifiable}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    ) : (
+                      <TextField
+                        fullWidth
+                        value="N/A"
+                        disabled
+                      />
+                    )}
+                  </TableCell>
+                )}
+                {hasSubclasses && (
+                  <TableCell sx={{ width: '25%' }}>
+                    {variable.subclasses && variable.subclasses.length > 0 ? (
+                      <FormControl fullWidth>
+                        <Select
+                          value={selectedSubclasses[variable.name] || ''}
+                          onChange={(e) => handleSubclassChange(variable.name, e.target.value)}
+                        >
+                          {variable.subclasses.map((subclass) => (
+                            <MenuItem key={subclass} value={subclass}>
+                              {subclass}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    ) : (
+                      <TextField
+                        fullWidth
+                        value="N/A"
+                        disabled
+                      />
+                    )}
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

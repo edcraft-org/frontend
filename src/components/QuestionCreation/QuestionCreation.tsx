@@ -181,6 +181,11 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
               sx={{ marginBottom: 2 }}
               disabled={editingIndex !== index}
             />
+            {qa.svg && (
+            <Box sx={{ marginBottom: 2 }}>
+              <img src={`data:image/svg+xml;base64,${btoa(qa.svg)}`} alt="Question SVG" />
+            </Box>
+            )}
             <Divider sx={{ marginBottom: 2 }} />
             <Typography variant="body1" gutterBottom sx={{ color: '#777' }}>
               Options:
