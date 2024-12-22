@@ -7,7 +7,7 @@ export interface Question {
   answer: string;
   user_id: string;
   marks: number;
-  svg?: string;
+  svg?: SVGContent;
 }
 
 interface NewQuestion {
@@ -16,7 +16,12 @@ interface NewQuestion {
   answer: string;
   user_id: string;
   marks: number;
-  svg?: string;
+  svg?: SVGContent;
+}
+
+interface SVGContent {
+  graph?: string;
+  table?: string;
 }
 
 export interface QuestionCreationItem {
@@ -24,7 +29,7 @@ export interface QuestionCreationItem {
   answer: string;
   options: string[];
   marks: number;
-  svg?: string;
+  svg?: SVGContent;
 }
 
 export const createQuestion = async (newQuestion: NewQuestion): Promise<Question> => {

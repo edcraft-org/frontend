@@ -4,7 +4,15 @@ import { QuestionCreationItem } from "./QuestionAPI";
 export type Topic = string;
 export type Subtopic = string;
 export type Queryable = string;
-export type Variables = { name: string; type: string; subclasses?: string[] }[];
+export type Variables = {
+  name: string;
+  type: string;
+  subclasses?: {
+    name: string;
+    arguments: { name: string; type: string }[];
+  }[];
+  arguments?: { name: string; type: string }[];
+}[];
 export type Quantifiable = string;
 
 export interface GenerateQuestionRequest {
@@ -13,6 +21,7 @@ export interface GenerateQuestionRequest {
   queryable: string;
   element_type: { [key: string]: string };
   subclasses: { [key: string]: string };
+  arguments: { [key: string]: any };
   question_description: string;
   question_type: string;
   marks: number

@@ -70,7 +70,12 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestion
               <Typography variant="body2" sx={{ color: '#555' }}>{question.text}</Typography>
               {question.svg && (
                 <Box sx={{ marginBottom: 2 }}>
-                  <img src={`data:image/svg+xml;base64,${btoa(question.svg)}`} alt="Question SVG" />
+                  {question.svg.table && (
+                    <img src={`data:image/svg+xml;base64,${btoa(question.svg.table)}`} alt="Table SVG" />
+                  )}
+                  {question.svg.graph && (
+                    <img src={`data:image/svg+xml;base64,${btoa(question.svg.graph)}`} alt="Graph SVG" />
+                  )}
                 </Box>
               )}
               <Typography variant="body2" sx={{ marginTop: 2, color: '#888' }}>

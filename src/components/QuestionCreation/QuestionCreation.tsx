@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Card, CardContent, CardHeader, List, ListItem, Divider, Checkbox, Button, Tooltip, TextField, IconButton, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Box, Typography, Card, CardContent, CardHeader, List, ListItem, Divider, Checkbox, Button, Tooltip, TextField, IconButton, Select, MenuItem, FormControl, InputLabel, FormControlLabel } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ConfirmSelectionDialog from '../Dialogs/ConfirmSelectionDialog/ConfirmSelectionDialog';
 import { GridColDef } from '@mui/x-data-grid';
@@ -23,6 +23,8 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [editableQuestions, setEditableQuestions] = useState<QuestionCreationItem[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(isManualCreation ? 0 : null);
+  const [includeGraph, setIncludeGraph] = useState<{ [key: number]: boolean }>({});
+  const [includeTable, setIncludeTable] = useState<{ [key: number]: boolean }>({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,7 +48,16 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
   };
 
   const handleConfirmSelection = async () => {
-    const selected = selectedQuestions.map(index => editableQuestions[index]);
+    const selected = selectedQuestions.map(index => {
+      const question = { ...editableQuestions[index] };
+      if (!includeGraph[index] && question.svg?.graph) {
+        delete question.svg.graph;
+      }
+      if (!includeTable[index] && question.svg?.table) {
+        delete question.svg.table;
+      }
+      return question;
+    });
     setDialogOpen(false);
     try {
       await onAddQuestion(selected);
@@ -119,6 +130,19 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
     setEditingIndex(null);
   };
 
+  useEffect(() => {
+    setEditableQuestions(questions);
+    const initialIncludeGraph: { [key: number]: boolean } = {};
+    const initialIncludeTable: { [key: number]: boolean } = {};
+    questions.forEach((_, index) => {
+      initialIncludeGraph[index] = true;
+      initialIncludeTable[index] = true;
+    });
+    setIncludeGraph(initialIncludeGraph);
+    setIncludeTable(initialIncludeTable);
+  }, [questions]);
+
+
   const selectedQuestionRows = selectedQuestions.map(index => ({
     id: index,
     question: editableQuestions[index].question,
@@ -182,9 +206,28 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
               disabled={editingIndex !== index}
             />
             {qa.svg && (
-            <Box sx={{ marginBottom: 2 }}>
-              <img src={`data:image/svg+xml;base64,${btoa(qa.svg)}`} alt="Question SVG" />
-            </Box>
+              <>
+                {qa.svg.table && (
+                  <FormControlLabel
+                    control={<Checkbox checked={includeTable[index]} onChange={(e) => setIncludeTable(prev => ({ ...prev, [index]: e.target.checked }))} />}
+                    label="Include Table SVG"
+                  />
+                )}
+                {qa.svg.graph && (
+                  <FormControlLabel
+                    control={<Checkbox checked={includeGraph[index]} onChange={(e) => setIncludeGraph(prev => ({ ...prev, [index]: e.target.checked }))} />}
+                    label="Include Graph SVG"
+                  />
+                )}
+                <Box sx={{ display: 'flex'}}>
+                  {includeTable[index] && qa.svg.table && (
+                    <img src={`data:image/svg+xml;base64,${btoa(qa.svg.table)}`} alt="Table SVG" />
+                  )}
+                  {includeGraph[index] && qa.svg.graph && (
+                    <img src={`data:image/svg+xml;base64,${btoa(qa.svg.graph)}`} alt="Graph SVG" />
+                  )}
+                </Box>
+              </>
             )}
             <Divider sx={{ marginBottom: 2 }} />
             <Typography variant="body1" gutterBottom sx={{ color: '#777' }}>
