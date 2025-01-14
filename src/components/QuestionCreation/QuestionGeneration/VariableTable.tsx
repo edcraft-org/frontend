@@ -1,9 +1,10 @@
 import React from 'react';
 import { TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, FormControl, Select, MenuItem, TextField } from '@mui/material';
-import { Variables, Quantifiable } from '../../../utils/api/QuestionGenerationAPI';
+import { Variable, Quantifiable } from '../../../utils/api/QuestionGenerationAPI';
 
 interface VariableTableProps {
-  variables: Variables;
+  variables: Variable;
+  // variables: Variable[];
   quantifiables: Quantifiable[];
   selectedQuantifiables: { [key: string]: string };
   selectedSubclasses: { [key: string]: string };
@@ -91,7 +92,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
               variables
                 .find((v) => v.name === variable.name)
                 ?.subclasses?.find((s) => s.name === selectedSubclasses[variable.name])?.arguments ? (
-                <TableCell sx={{ width: '25%' }}>
+                <TableCell sx={{ width: '20%' }}>
                   {variables
                     .find((v) => v.name === variable.name)
                     ?.subclasses?.find((s) => s.name === selectedSubclasses[variable.name])?.arguments.map((arg) => (
@@ -107,7 +108,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
                 </TableCell>
               ) : (
                 variable.arguments && (
-                  <TableCell sx={{ width: '25%' }}>
+                  <TableCell sx={{ width: '20%' }}>
                     {variable.arguments.map((arg) => (
                       <TextField
                         key={arg.name}
@@ -115,7 +116,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
                         value={variableArguments[variable.name]?.[arg.name] || ''}
                         onChange={(e) => handleArgumentChange(variable.name, arg.name, e.target.value)}
                         fullWidth
-                        sx={{ marginBottom: 2 }}
+                        // sx={{ marginBottom: 2 }}
                       />
                     ))}
                   </TableCell>

@@ -7,7 +7,7 @@ import { addExistingQuestionToAssessment } from '../../utils/api/AssessmentAPI';
 import { addExistingQuestionToQuestionBank } from '../../utils/api/QuestionBankAPI';
 
 interface ManualCreationProps {
-  marks: number;
+  // marks: number;
   project: { id: string, title: string };
   assessmentId?: string;
   questionBankId?: string;
@@ -15,7 +15,7 @@ interface ManualCreationProps {
 
 
 const ManualCreation: React.FC<ManualCreationProps> = ({
-  marks,
+  // marks,
   project,
   assessmentId,
   questionBankId
@@ -31,7 +31,7 @@ const ManualCreation: React.FC<ManualCreationProps> = ({
 
       for (const selectedQuestion of selectedQuestions) {
         const newQuestion = {
-          text: selectedQuestion.question,
+          description: selectedQuestion.question,
           options: selectedQuestion.options,
           answer: selectedQuestion.answer,
           marks: selectedQuestion.marks,
@@ -71,14 +71,15 @@ const ManualCreation: React.FC<ManualCreationProps> = ({
       <Typography variant="h6" gutterBottom sx={{ marginBottom: 2 }}>
         Manual Creation
       </Typography>
-      <QuestionCreation
+      {/* To be fixed */}
+      {/* <QuestionCreation
           project={project}
-          questions={[{ question: '', answer: '', options: [], marks: marks }]}
+          questions={[{ description: '', answer: '', options: [], marks: 1 }]}
           onAddQuestion={onAddQuestion}
           assessmentId={assessmentId}
           questionBankId={questionBankId}
           isManualCreation={true}
-      />
+      /> */}
 
     </Box>
   );

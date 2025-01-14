@@ -6,7 +6,7 @@ interface ConfirmSelectionDialogProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  selectedRows: { id: number; question: string; answer: string }[];
+  selectedRows: { id: number; description: string; answer: string }[];
   columns: GridColDef[];
 }
 

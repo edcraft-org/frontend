@@ -1,10 +1,10 @@
 import { basePath } from "./Constants";
-import { QuestionCreationItem } from "./QuestionAPI";
+import { GenerateQuestionResponse } from "./QuestionAPI";
 
 export type Topic = string;
 export type Subtopic = string;
 export type Queryable = string;
-export type Variables = {
+export type Variable = {
   name: string;
   type: string;
   subclasses?: {
@@ -13,20 +13,44 @@ export type Variables = {
   }[];
   arguments?: { name: string; type: string }[];
 }[];
+
 export type Quantifiable = string;
 
+export type ContextRequest = {
+  selectedTopic: string;
+  selectedSubtopic: string;
+  selectedSubclasses: { [key: string]: string };
+  selectedQuantifiables: { [key: string]: string };
+  arguments: { [key: string]: any };
+  argumentsInit?: { [key: string]: { [arg: string]: any } };
+}
+
+export type QuestionDetails = {
+  marks: number;
+  number_of_options: number;
+  // question_type: string;
+}
+
+export interface SubQuestion {
+  description: string;
+  queryable: string;
+  context: ContextRequest;
+  questionDetails: QuestionDetails;
+}
+
 export interface GenerateQuestionRequest {
+  description: string;
+  context: ContextRequest;
+  sub_questions?: SubQuestion[];
+}
+
+export interface GenerateVariableRequest {
   topic: string;
   subtopic: string;
-  queryable: string;
   element_type: { [key: string]: string };
   subclasses: { [key: string]: string };
   arguments: { [key: string]: any };
   question_description: string;
-  question_type: string;
-  marks: number
-  number_of_options: number;
-  number_of_questions: number;
 }
 
 
@@ -81,7 +105,33 @@ export const getAllQueryables = async (): Promise<Queryable[]> => {
   return data;
 };
 
-export const getVariables = async (topic: string, subtopic: string, queryable: string): Promise<Variables> => {
+// export const getQueryableVariables = async (topic: string, subtopic: string, queryable: string): Promise<VariablesResponse> => {
+//   const url = `${basePath}/question_generation/topics/${topic}/subtopics/${subtopic}/queryables/${queryable}/variables`;
+//   const response = await fetch(url);
+
+//   if (!response.ok) {
+//     const message = `An error has occurred: ${response.status}`;
+//     throw new Error(message);
+//   }
+
+//   const data: VariablesResponse = await response.json();
+//   return data;
+// };
+
+export const getAlgoVariables = async (topic: string, subtopic: string): Promise<Variable> => {
+  const url = `${basePath}/question_generation/topics/${topic}/subtopics/${subtopic}/variables`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: Variable = await response.json();
+  return data;
+};
+
+export const getQueryableVariables = async (topic: string, subtopic: string, queryable: string): Promise<Variable> => {
   const url = `${basePath}/question_generation/topics/${topic}/subtopics/${subtopic}/queryables/${queryable}/variables`;
   const response = await fetch(url);
 
@@ -90,7 +140,7 @@ export const getVariables = async (topic: string, subtopic: string, queryable: s
     throw new Error(message);
   }
 
-  const data: Variables = await response.json();
+  const data: Variable = await response.json();
   return data;
 };
 
@@ -107,8 +157,28 @@ export const getQuantifiables = async (): Promise<Quantifiable[]> => {
   return data.sort();
 };
 
-export const generateQuestion = async (request: GenerateQuestionRequest): Promise<QuestionCreationItem[]> => {
+export const generateQuestion = async (request: GenerateQuestionRequest): Promise<GenerateQuestionResponse> => {
   const url = `${basePath}/question_generation/generate`;
+  console.log(request)
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: GenerateQuestionResponse = await response.json();
+  return data;
+};
+
+export const generateVariable = async (request: GenerateVariableRequest): Promise<any> => {
+  const url = `${basePath}/question_generation/generate_variable`;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -123,6 +193,6 @@ export const generateQuestion = async (request: GenerateQuestionRequest): Promis
     throw new Error(message);
   }
 
-  const data: QuestionCreationItem[] = await response.json();
+  const data = await response.json();
   return data;
 };

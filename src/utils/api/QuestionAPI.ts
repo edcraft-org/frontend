@@ -1,27 +1,31 @@
 import { basePath } from "./Constants";
 
-export interface Question {
-  _id: string;
-  text: string;
-  options: string[];
-  answer: string;
-  user_id: string;
-  marks: number;
-  svg?: SVGContent;
-}
-
-interface NewQuestion {
-  text: string;
-  options: string[];
-  answer: string;
-  user_id: string;
-  marks: number;
-  svg?: SVGContent;
-}
-
 interface SVGContent {
   graph?: string;
   table?: string;
+}
+
+export interface SubQuestion {
+  description: string;
+  options: string[];
+  answer: string;
+  marks: number;
+  svg?: SVGContent;
+}
+
+export interface Question {
+  _id: string;
+  user_id: string;
+  description: string;
+  svg?: SVGContent;
+  subquestions?: SubQuestion[];
+}
+
+export interface NewQuestion {
+  user_id: string;
+  description: string;
+  svg?: SVGContent;
+  subquestions?: SubQuestion[];
 }
 
 export interface QuestionCreationItem {
@@ -30,6 +34,12 @@ export interface QuestionCreationItem {
   options: string[];
   marks: number;
   svg?: SVGContent;
+}
+
+export interface GenerateQuestionResponse {
+  description: string;
+  svg?: SVGContent;
+  subquestions?: SubQuestion[];
 }
 
 export const createQuestion = async (newQuestion: NewQuestion): Promise<Question> => {

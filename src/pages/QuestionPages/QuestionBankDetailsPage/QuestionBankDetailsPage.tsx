@@ -241,7 +241,7 @@ const QuestionBankDetailsPage: React.FC = () => {
       <QuestionDialog
         open={questionDialogOpen}
         onClose={handleQuestionDialogClose}
-        question={currentQuestion.question}
+        question={currentQuestion.description}
         questionNumber={currentQuestion.index}
       />
 

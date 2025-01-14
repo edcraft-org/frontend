@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, TextField, Button, CircularProgress } from '@mui/material';
+import QuestionDescriptionInput from './QuestionDescriptionInput';
 
 interface QuestionGenerationFormProps {
   description: string;
@@ -26,16 +27,11 @@ const QuestionGenerationForm: React.FC<QuestionGenerationFormProps> = ({
 }) => {
   return (
     <Box>
-      <TextField
-        fullWidth
-        label="Question Description"
-        variant="outlined"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        required
-        sx={{ marginBottom: 2 }}
+      <QuestionDescriptionInput
+        description={description}
+        setDescription={setDescription}
       />
-      <TextField
+      {/* <TextField
         fullWidth
         label="Number of Options"
         variant="outlined"
@@ -55,7 +51,7 @@ const QuestionGenerationForm: React.FC<QuestionGenerationFormProps> = ({
         onChange={(e) => setNumQuestions(Number(e.target.value))}
         required
         sx={{ marginBottom: 2 }}
-      />
+      /> */}
       <Button variant="contained" color="primary" onClick={handleGenerate} disabled={loading}>
         {loading ? <CircularProgress size={24} /> : 'Generate'}
       </Button>

@@ -6,38 +6,28 @@ interface QuestionCategorySelectorProps {
   tabValue: number;
   topics: string[];
   subtopics: string[];
-  queryables: string[];
   topic: string;
   subtopic: string;
-  queryable: string;
   userTopic: string;
   userSubtopic: string;
-  userQueryable: string;
   setTopic: (value: string) => void;
   setSubtopic: (value: string) => void;
-  setQueryable: (value: string) => void;
   setUserTopic: (value: string) => void;
   setUserSubtopic: (value: string) => void;
-  setUserQueryable: (value: string) => void;
 }
 
 const QuestionCategorySelector: React.FC<QuestionCategorySelectorProps> = ({
   tabValue,
   topics,
   subtopics,
-  queryables,
   topic,
   subtopic,
-  queryable,
   userTopic,
   userSubtopic,
-  userQueryable,
   setTopic,
   setSubtopic,
-  setQueryable,
   setUserTopic,
   setUserSubtopic,
-  setUserQueryable,
 }) => {
   return (
     <>
@@ -76,23 +66,6 @@ const QuestionCategorySelector: React.FC<QuestionCategorySelectorProps> = ({
               ))}
             </Select>
           </FormControl>
-          <FormControl fullWidth sx={{ marginBottom: 2 }}>
-            <InputLabel id="queryable-label">Queryable</InputLabel>
-            <Select
-              labelId="queryable-label"
-              label="Queryable"
-              value={queryable}
-              onChange={(e) => setQueryable(e.target.value)}
-              disabled={!subtopic}
-              renderValue={(selected) => <Chip label={formatText(selected)} />}
-            >
-              {queryables.map((queryable) => (
-                <MenuItem key={queryable} value={queryable}>
-                  {formatText(queryable)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
         </>
       ) : (
         <>
@@ -122,21 +95,6 @@ const QuestionCategorySelector: React.FC<QuestionCategorySelectorProps> = ({
             onChange={(event, newValue) => setUserSubtopic(newValue || '')}
             onInputChange={(event, newInputValue) => setUserSubtopic(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Subtopic" variant="outlined" />}
-            renderOption={(props, option) => (
-              <li {...props}>
-                {formatText(option)}
-              </li>
-            )}
-            sx={{ marginBottom: 2 }}
-          />
-          <Autocomplete
-            freeSolo
-            fullWidth
-            options={queryables}
-            value={userQueryable}
-            onChange={(event, newValue) => setUserQueryable(newValue || '')}
-            onInputChange={(event, newInputValue) => setUserQueryable(newInputValue || '')}
-            renderInput={(params) => <TextField {...params} label="QueryableClass" variant="outlined" />}
             renderOption={(props, option) => (
               <li {...props}>
                 {formatText(option)}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Box, Typography, Card, CardContent, CardHeader, List, ListItem, Divider, Checkbox, Button, Tooltip, TextField, IconButton, Select, MenuItem, FormControl, InputLabel, FormControlLabel } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ConfirmSelectionDialog from '../Dialogs/ConfirmSelectionDialog/ConfirmSelectionDialog';
@@ -7,11 +7,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-import { QuestionCreationItem } from '../../utils/api/QuestionAPI';
+import { SubQuestion, GenerateQuestionResponse, NewQuestion } from '../../utils/api/QuestionAPI';
+import { numberToAlphabet } from '../../utils/format';
+import { AuthContext } from '../../context/Authcontext';
 
 interface QuestionCreationProps {
-  questions: QuestionCreationItem[];
-  onAddQuestion: (selectedQuestions: QuestionCreationItem[]) => void;
+  questions: GenerateQuestionResponse;
+  onAddQuestion: (newQuestion: NewQuestion) => void;
   project: { id: string, title: string };
   assessmentId?: string;
   questionBankId?: string;
@@ -21,14 +23,31 @@ interface QuestionCreationProps {
 const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQuestion, project, assessmentId, questionBankId, isManualCreation }) => {
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const [editableQuestions, setEditableQuestions] = useState<QuestionCreationItem[]>([]);
+  const [editableQuestions, setEditableQuestions] = useState<SubQuestion[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(isManualCreation ? 0 : null);
   const [includeGraph, setIncludeGraph] = useState<{ [key: number]: boolean }>({});
   const [includeTable, setIncludeTable] = useState<{ [key: number]: boolean }>({});
   const navigate = useNavigate();
-
+  const { user } = useContext(AuthContext);
+  console.log(questions)
   useEffect(() => {
-    setEditableQuestions(questions);
+    const combinedQuestions: SubQuestion[] = [];
+
+    // Add subquestions
+    if (questions.subquestions) {
+      combinedQuestions.push(...questions.subquestions);
+    }
+
+    setEditableQuestions(combinedQuestions);
+
+    const initialIncludeGraph: { [key: number]: boolean } = {};
+    const initialIncludeTable: { [key: number]: boolean } = {};
+    combinedQuestions.forEach((_, index) => {
+      initialIncludeGraph[index] = true;
+      initialIncludeTable[index] = true;
+    });
+    setIncludeGraph(initialIncludeGraph);
+    setIncludeTable(initialIncludeTable);
   }, [questions]);
 
   const handleSelectQuestion = (index: number) => {
@@ -48,7 +67,10 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
   };
 
   const handleConfirmSelection = async () => {
-    const selected = selectedQuestions.map(index => {
+    const selected = selectedQuestions
+    .slice()
+    .sort((a, b) => a - b)
+    .map(index => {
       const question = { ...editableQuestions[index] };
       if (!includeGraph[index] && question.svg?.graph) {
         delete question.svg.graph;
@@ -58,9 +80,15 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
       }
       return question;
     });
+    const newQuestion: NewQuestion = {
+      user_id: user?.id || '',
+      description: questions.description,
+      svg: questions.svg,
+      subquestions: selected,
+    };
     setDialogOpen(false);
     try {
-      await onAddQuestion(selected);
+      await onAddQuestion(newQuestion);
       if (assessmentId) {
         navigate(`/projects/${project.id}/assessments/${assessmentId}`, {
           state: { projectTitle: project.title }
@@ -130,28 +158,18 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
     setEditingIndex(null);
   };
 
-  useEffect(() => {
-    setEditableQuestions(questions);
-    const initialIncludeGraph: { [key: number]: boolean } = {};
-    const initialIncludeTable: { [key: number]: boolean } = {};
-    questions.forEach((_, index) => {
-      initialIncludeGraph[index] = true;
-      initialIncludeTable[index] = true;
-    });
-    setIncludeGraph(initialIncludeGraph);
-    setIncludeTable(initialIncludeTable);
-  }, [questions]);
-
-
-  const selectedQuestionRows = selectedQuestions.map(index => ({
-    id: index,
-    question: editableQuestions[index].question,
-    answer: editableQuestions[index].answer,
-  }));
+  const selectedQuestionRows = selectedQuestions
+    .slice()
+    .sort((a, b) => a - b)
+    .map(index => ({
+      id: index,
+      description: editableQuestions[index].description,
+      answer: editableQuestions[index].answer,
+    }));
 
   const questionColumns: GridColDef[] = [
     {
-      field: 'question',
+      field: 'description',
       headerName: 'Question',
       flex: 1,
       renderCell: (params) => (
@@ -171,10 +189,33 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
 
   return (
     <Box>
+      {questions.description && (
+        <Card variant="outlined" sx={{ marginBottom: 4, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
+          <CardHeader
+            title="Q"
+            sx={{ backgroundColor: '#e8e8e8', padding: 1 }}
+          />
+          <CardContent>
+            <Typography variant="body1" gutterBottom>
+              {questions.description}
+            </Typography>
+            {questions.svg && (
+              <Box sx={{ display: 'flex' }}>
+                {questions.svg.table && (
+                  <img src={`data:image/svg+xml;base64,${btoa(questions.svg.table)}`} alt="Table SVG" />
+                )}
+                {questions.svg.graph && (
+                  <img src={`data:image/svg+xml;base64,${btoa(questions.svg.graph)}`} alt="Graph SVG" />
+                )}
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      )}
       {editableQuestions.map((qa, index) => (
         <Card key={index} variant="outlined" sx={{ marginBottom: 4, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
           <CardHeader
-            title={`Question ${index + 1}`}
+            title={`${numberToAlphabet(index).toLowerCase()}.`}
             sx={{ backgroundColor: '#e8e8e8', padding: 1 }}
             action={
               <>
@@ -197,7 +238,7 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
           <CardContent>
             <TextField
               label="Question"
-              value={qa.question}
+              value={qa.description}
               onChange={(e) => handleQuestionChange(index, 'question', e.target.value)}
               fullWidth
               margin="normal"
