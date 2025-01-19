@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, Tooltip, CircularProgress, Tabs, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, FormControlLabel, Checkbox, TextField } from '@mui/material';
-import ProcessorClassCodeSnippetEditor from '../ClassCodeSnippetEditors/ProcessorClassCodeSnippetEditor';
+import { Box, Typography, Button, Tooltip, CircularProgress, Tabs, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, FormControlLabel, Checkbox } from '@mui/material';
+// import ProcessorClassCodeSnippetEditor from '../ClassCodeSnippetEditors/ProcessorClassCodeSnippetEditor';
 import VariableTable from './VariableTable';
 import QuestionCategorySelector from './QuestionCategorySelector';
-import { Quantifiable, Variable, GenerateVariableRequest, generateVariable } from '../../../utils/api/QuestionGenerationAPI';
+import { GenerateVariableRequest, generateVariable } from '../../../utils/api/QuestionGenerationAPI';
 import { convertArguments, formatValue } from '../../../utils/format';
 import { ContextBlockType } from '../../../reducer/questionGenerationReducer';
 
@@ -63,9 +63,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       const data = await generateVariable(request);
       // setGeneratedVariables(data.context);
       setGeneratedVariables({ context: data.context, context_init: data.context_init });
-      console.log(data.context_init, 'data.context')
       handleArgumentInit(data.context_init, index);
-      console.log(generatedVariables, 'generateVariable')
     } catch (error) {
       console.error('Error generating variables:', error);
     } finally {

@@ -45,7 +45,6 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
   removeSubQuestion,
   contextActions
 }) => {
-  {console.log(subQuestion)}
   const [addContext, setAddContext] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [marks, setMarks] = useState<number>(1);

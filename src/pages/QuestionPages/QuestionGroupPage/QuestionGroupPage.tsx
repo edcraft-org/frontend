@@ -43,6 +43,16 @@ const QuestionGroupPage: React.FC<QuestionGroupPageProps> = ({ questionNumber, q
       <Typography variant="body2" sx={{ color: '#888' }}>
         Answer: {subQuestion.answer}
       </Typography>
+      {subQuestion.answer_svg && (
+        <Box sx={{ marginBottom: 2 }}>
+          {subQuestion.answer_svg.table && (
+            <img src={`data:image/svg+xml;base64,${btoa(subQuestion.answer_svg.table)}`} alt="Table SVG" />
+          )}
+          {subQuestion.answer_svg.graph && (
+            <img src={`data:image/svg+xml;base64,${btoa(subQuestion.answer_svg.graph)}`} alt="Graph SVG" />
+          )}
+        </Box>
+      )}
       <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
     </Box>
   );

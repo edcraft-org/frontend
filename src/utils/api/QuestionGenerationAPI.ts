@@ -159,7 +159,6 @@ export const getQuantifiables = async (): Promise<Quantifiable[]> => {
 
 export const generateQuestion = async (request: GenerateQuestionRequest): Promise<GenerateQuestionResponse> => {
   const url = `${basePath}/question_generation/generate`;
-  console.log(request)
   const response = await fetch(url, {
     method: 'POST',
     headers: {

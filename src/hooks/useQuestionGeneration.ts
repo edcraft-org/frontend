@@ -1,6 +1,6 @@
 import { useReducer, useEffect } from 'react';
-import { reducer, initialState, QuestionBlock, Action } from '../reducer/questionGenerationReducer';
-import { getTopics, getSubtopics, getQueryables, getAlgoVariables, getQueryableVariables, getAllQueryables, getQuantifiables } from '../utils/api/QuestionGenerationAPI';
+import { reducer, initialState } from '../reducer/questionGenerationReducer';
+import { getTopics, getSubtopics, getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables } from '../utils/api/QuestionGenerationAPI';
 
 const useQuestionGeneration = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -143,7 +143,6 @@ const useQuestionGeneration = () => {
     if (index !== undefined) {
       dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedQuantifiables', value: { ...state.subQuestions[index].context.selectedQuantifiables, [variableName]: value } });
     } else {
-      console.log('variableName', variableName, 'value', value);
       dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedQuantifiables', value: { ...state.context.selectedQuantifiables, [variableName]: value } });
     }
   };

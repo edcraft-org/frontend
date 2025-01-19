@@ -1,7 +1,7 @@
 import React from 'react';
-import { Box, Grid, Typography, Checkbox, IconButton } from "@mui/material";
+import { Box, Grid, Typography, Checkbox, IconButton, Divider } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Question } from '../../utils/api/QuestionAPI';
+import { Question, SubQuestion } from '../../utils/api/QuestionAPI';
 
 interface QuestionListProps {
   questions: Question[];
@@ -14,6 +14,39 @@ interface QuestionListProps {
 }
 
 const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestions, handleQuestionClick, selectAll, handleSelectAll, onQuestionClick, handleRemoveQuestion }) => {
+
+  const renderSubQuestion = (subQuestion: SubQuestion, index: number) => (
+    <Box key={index} sx={{ marginBottom: 2, paddingLeft: '16px' }}>
+      <Typography variant="h6" gutterBottom>
+       {String.fromCharCode(97 + index)}. [{subQuestion.marks} {subQuestion.marks == 1 ? 'mark' : 'marks'}] {subQuestion.description}
+      </Typography>
+      {subQuestion.svg && (
+        <Box sx={{ marginBottom: 2 }}>
+          {subQuestion.svg.table && (
+            <img src={`data:image/svg+xml;base64,${btoa(subQuestion.svg.table)}`} alt="Table SVG" />
+          )}
+          {subQuestion.svg.graph && (
+            <img src={`data:image/svg+xml;base64,${btoa(subQuestion.svg.graph)}`} alt="Graph SVG" />
+          )}
+        </Box>
+      )}
+      <Typography variant="body2" sx={{ color: '#888' }}>
+        Answer: {subQuestion.answer}
+      </Typography>
+      {subQuestion.answer_svg && (
+        <Box sx={{ marginBottom: 2 }}>
+          {subQuestion.answer_svg.table && (
+            <img src={`data:image/svg+xml;base64,${btoa(subQuestion.answer_svg.table)}`} alt="Table SVG" />
+          )}
+          {subQuestion.answer_svg.graph && (
+            <img src={`data:image/svg+xml;base64,${btoa(subQuestion.answer_svg.graph)}`} alt="Graph SVG" />
+          )}
+        </Box>
+      )}
+      <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
+    </Box>
+  );
+
   return (
     <Grid container spacing={2} sx={{ margin: '0 auto', maxWidth: '1200px' }}>
       <Grid item xs={12}>
@@ -67,7 +100,7 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestion
               </Box>
             </Box>
             <Box sx={{ paddingBottom: '16px', paddingLeft: '16px', borderRadius: '0 0 8px 8px' }}>
-              <Typography variant="body2" sx={{ color: '#555' }}>{question.text}</Typography>
+              <Typography variant="body2" sx={{ color: '#555' }}>{question.description}</Typography>
               {question.svg && (
                 <Box sx={{ marginBottom: 2 }}>
                   {question.svg.table && (
@@ -78,9 +111,7 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestion
                   )}
                 </Box>
               )}
-              <Typography variant="body2" sx={{ marginTop: 2, color: '#888' }}>
-                Answer: {question.answer}
-              </Typography>
+              {question.subquestions?.map((subQuestion, index) => renderSubQuestion(subQuestion, index))}
             </Box>
           </Box>
         </Grid>

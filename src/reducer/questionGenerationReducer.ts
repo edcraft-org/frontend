@@ -110,17 +110,19 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
       return { ...state, context: { ...state.context, quantifiables: action.quantifiables } };
     case 'SET_GENERATED_QUESTIONS':
       return { ...state, generatedQuestions: action.generatedQuestions };
-    case 'SET_SUB_QUESTION_FIELD':
+    case 'SET_SUB_QUESTION_FIELD': {
       const updatedSubQuestions = [...state.subQuestions];
       updatedSubQuestions[action.index] = { ...updatedSubQuestions[action.index], [action.field]: action.value };
       return { ...state, subQuestions: updatedSubQuestions };
-    case 'SET_SUB_QUESTION_CONTEXT_FIELD':
+    }
+    case 'SET_SUB_QUESTION_CONTEXT_FIELD': {
       const updatedSubQuestionsWithContext = [...state.subQuestions];
       updatedSubQuestionsWithContext[action.index] = {
         ...updatedSubQuestionsWithContext[action.index],
         context: { ...updatedSubQuestionsWithContext[action.index].context, [action.field]: action.value },
       };
       return { ...state, subQuestions: updatedSubQuestionsWithContext };
+    }
     case 'ADD_SUB_QUESTION':
       return {
         ...state,

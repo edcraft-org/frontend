@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, TextField, Button, CircularProgress } from '@mui/material';
+import { Box, Button, CircularProgress } from '@mui/material';
 import QuestionDescriptionInput from './QuestionDescriptionInput';
 
 interface QuestionGenerationFormProps {

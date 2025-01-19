@@ -1,17 +1,16 @@
-import { useContext, useState, useEffect } from 'react';
-import { Box, Typography, Button, Tooltip, CircularProgress, Tabs, Tab } from '@mui/material';
-import { getTopics, getSubtopics, getQueryables, generateQuestion, Topic, Subtopic, Queryable, GenerateQuestionRequest, getAlgoVariables, getQueryableVariables, getAllQueryables, Variable, Quantifiable, getQuantifiables, VariablesResponse } from '../../utils/api/QuestionGenerationAPI';
+import { useContext } from 'react';
+import { Box, Typography, Button } from '@mui/material';
+import { generateQuestion, GenerateQuestionRequest } from '../../utils/api/QuestionGenerationAPI';
 import QuestionCreation from './QuestionCreation';
 import { createQuestion, NewQuestion } from '../../utils/api/QuestionAPI';
 import { addExistingQuestionToAssessment } from '../../utils/api/AssessmentAPI';
 import { addExistingQuestionToQuestionBank } from '../../utils/api/QuestionBankAPI';
 import { AuthContext } from '../../context/Authcontext';
 import { convertArguments } from '../../utils/format';
-import ProcessorClassCodeSnippetEditor from './ClassCodeSnippetEditors/ProcessorClassCodeSnippetEditor';
-import QueryableClassCodeSnippetEditor from './ClassCodeSnippetEditors/QueryableClassCodeSnippetEditor';
+// import ProcessorClassCodeSnippetEditor from './ClassCodeSnippetEditors/ProcessorClassCodeSnippetEditor';
+// import QueryableClassCodeSnippetEditor from './ClassCodeSnippetEditors/QueryableClassCodeSnippetEditor';
 import QuestionDescriptionInput from './QuestionGeneration/QuestionDescriptionInput';
 import CodeBlock from './QuestionGeneration/CodeBlock';
-import QuestionBlock from './QuestionGeneration/QuestionBlock';
 import SubQuestion from './QuestionGeneration/SubQuestion';
 import useQuestionGeneration from '../../hooks/useQuestionGeneration';
 
@@ -63,9 +62,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     try {
       dispatch({ type: 'SET_FIELD', field: 'loading', value: true });
       const data = await generateQuestion(requestPayload);
-      console.log(data, 'data')
       dispatch({ type: 'SET_GENERATED_QUESTIONS', generatedQuestions: data });
-      console.log(state.generatedQuestions, 'state.generatedQuestions')
     } catch (error) {
       console.error('Error generating question:', error);
     } finally {

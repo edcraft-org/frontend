@@ -11,6 +11,7 @@ export interface SubQuestion {
   answer: string;
   marks: number;
   svg?: SVGContent;
+  answer_svg?: SVGContent;
 }
 
 export interface Question {

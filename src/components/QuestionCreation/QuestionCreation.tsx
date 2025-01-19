@@ -29,7 +29,6 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
   const [includeTable, setIncludeTable] = useState<{ [key: number]: boolean }>({});
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  console.log(questions)
   useEffect(() => {
     const combinedQuestions: SubQuestion[] = [];
 
@@ -321,6 +320,12 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
                 ))}
               </Select>
             </FormControl>
+            {qa.answer_svg?.table && (
+              <img src={`data:image/svg+xml;base64,${btoa(qa.answer_svg.table)}`} alt="Table SVG" />
+            )}
+            {qa.answer_svg?.graph && (
+              <img src={`data:image/svg+xml;base64,${btoa(qa.answer_svg.graph)}`} alt="Graph SVG" />
+            )}
           </CardContent>
         </Card>
       ))}
