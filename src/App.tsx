@@ -1,45 +1,30 @@
-// import { useState } from 'react'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-// import './App.css'
-
-// function App() {
-//   const [count, setCount] = useState(0)
-
-//   return (
-//     <>
-//       <div>
-//         <a href="https://vitejs.dev" target="_blank">
-//           <img src={viteLogo} className="logo" alt="Vite logo" />
-//         </a>
-//         <a href="https://react.dev" target="_blank">
-//           <img src={reactLogo} className="logo react" alt="React logo" />
-//         </a>
-//       </div>
-//       <h1>Vite + React</h1>
-//       <div className="card">
-//         <button onClick={() => setCount((count) => count + 1)}>
-//           count is {count}
-//         </button>
-//         <p>
-//           Edit <code>src/App.tsx</code> and save to test HMR
-//         </p>
-//       </div>
-//       <p className="read-the-docs">
-//         Click on the Vite and React logos to learn more
-//       </p>
-//     </>
-//   )
-// }
-
-// export default App
+import { useContext } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
+import { supabase } from "../supabaseClient";
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { AuthContext } from './context/Authcontext';
 
 function App() {
-  return (
-    <RouterProvider router={router} />
-  )
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="auth-container">
+        <h2 className="auth-title">Welcome to EdCraft!</h2>
+        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google', 'azure', 'github']} />
+      </div>
+    );
+  } else {
+    return (
+      <RouterProvider router={router} />
+    );
+  }
 }
 
-export default App
+export default App;

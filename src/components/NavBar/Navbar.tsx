@@ -14,6 +14,7 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import questionsImage from '../../assets/question.png';
 import { AuthContext } from '../../context/Authcontext';
+import { supabase } from '../../../supabaseClient';
 
 interface NavBarProps {
   isProjectAssessment?: boolean;
@@ -105,6 +106,11 @@ function NavBar({ project, assessment, questionBank, isProjectAssessment, isProj
     setAnchorElUser(null);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
+
   return (
     <AppBar position="fixed" sx={{ backgroundColor: '#fafafa' }} >
       <Container maxWidth={false}>
@@ -172,7 +178,10 @@ function NavBar({ project, assessment, questionBank, isProjectAssessment, isProj
               onClose={handleCloseUserMenu}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                <MenuItem
+                  key={setting}
+                  onClick={setting === 'Logout' ? handleLogout : handleCloseUserMenu}
+                >
                   <Typography textAlign="center">{setting}</Typography>
                 </MenuItem>
               ))}

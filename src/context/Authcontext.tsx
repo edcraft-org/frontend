@@ -1,4 +1,6 @@
 import { createContext, useEffect, useReducer, ReactNode, Dispatch } from "react";
+import { supabase } from "../../supabaseClient";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 
 // Define a type for the user object
 interface User {
@@ -22,15 +24,8 @@ type AuthAction =
   | { type: "FAILURE"; payload: string }
   | { type: "LOGOUT" };
 
-const DEFAULT_USER: User = {
-  id: "66dd222448be1d6689fb2822",
-  email: "john.doe@example.com",
-  name: "John Doe",
-  role: "educator",
-};
-
 const INITIAL_STATE: AuthState = {
-  user: JSON.parse(localStorage.getItem("user") as string) || DEFAULT_USER,
+  user: JSON.parse(localStorage.getItem("user") as string) || null,
   loading: false,
   error: null,
 };
@@ -90,9 +85,45 @@ interface AuthContextProviderProps {
 
 export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
+
+  useEffect(() => {
+    const getUser = async () => {
+      dispatch({ type: "LOGIN_START" });
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        dispatch({ type: "FAILURE", payload: error.message });
+      } else if (session) {
+        const user = mapSupabaseUserToUser(session.user);
+        dispatch({ type: "LOGIN_SUCCESS", payload: user });
+      }
+    };
+
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        const user = mapSupabaseUserToUser(session.user);
+        dispatch({ type: "SUCCESS", payload: user });
+      } else {
+        dispatch({ type: "LOGOUT" });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   useEffect(() => {
     localStorage.setItem("user", JSON.stringify(state.user));
   }, [state.user]);
+
+  const mapSupabaseUserToUser = (supabaseUser: SupabaseUser): User => {
+    return {
+      id: supabaseUser.id,
+      email: supabaseUser.email || "",
+      name: supabaseUser.user_metadata.full_name || "",
+      role: supabaseUser.user_metadata.role || "user",
+    };
+  };
 
   return (
     <AuthContext.Provider
