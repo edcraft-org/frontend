@@ -198,6 +198,10 @@ const useQuestionGeneration = () => {
     }
   };
 
+  const handleNumOptionsChange = (numOptions: number, index: number) => {
+    dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'numOptions', value: numOptions });
+  };
+
   return {
     state,
     dispatch,
@@ -209,6 +213,7 @@ const useQuestionGeneration = () => {
     handleArgumentChange,
     handleArgumentInit,
     handleDescriptionChange,
+    handleNumOptionsChange,
   };
 };
 

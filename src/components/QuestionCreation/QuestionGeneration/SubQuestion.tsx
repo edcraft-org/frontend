@@ -16,6 +16,7 @@ interface SubQuestionProps {
   setDescription: (description: string, index: number) => void;
   setQueryable: (index: number, queryable: string) => void;
   setUserQueryable: (index: number, userQueryable: string) => void;
+  handleNumOptionsChange: (numOptions: number) => void;
   handleGenerate: () => void;
   removeSubQuestion: (index: number) => void;
   topics: string[];
@@ -41,6 +42,7 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
   setDescription,
   setQueryable,
   setUserQueryable,
+  handleNumOptionsChange,
   handleGenerate,
   removeSubQuestion,
   contextActions
@@ -138,6 +140,8 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
         marks={marks}
         setType={setType}
         setMarks={setMarks}
+        numOptions={subQuestion.numOptions}
+        setNumOptions={handleNumOptionsChange}
       />
       {/* <Button variant="contained" color="primary" onClick={handleGenerate} sx={{ marginTop: 2 }}>
         Preview Question

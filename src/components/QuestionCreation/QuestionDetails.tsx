@@ -6,9 +6,11 @@ interface QuestionDetailsProps {
   marks: number;
   setType: (type: string) => void;
   setMarks: (marks: number) => void;
+  numOptions: number;
+  setNumOptions: (numOptions: number) => void;
 }
 
-const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType, setMarks }) => {
+const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType, setMarks, numOptions, setNumOptions }) => {
   return (
     <Box
       sx={{
@@ -33,9 +35,9 @@ const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType,
           )}
         >
           <MenuItem value="Multiple Choice">Multiple Choice</MenuItem>
-          <MenuItem value="True or False">True or False</MenuItem>
+          {/* <MenuItem value="True or False">True or False</MenuItem>
           <MenuItem value="Fill in the blank">Fill in the Blank</MenuItem>
-          <MenuItem value="Other">Other</MenuItem>
+          <MenuItem value="Other">Other</MenuItem> */}
         </Select>
       </FormControl>
       <TextField
@@ -48,6 +50,17 @@ const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType,
         required
         inputProps={{ min: 1 }}
         sx={{ marginTop: 2 }}
+      />
+      <TextField
+        fullWidth
+        label="Number of Options"
+        variant="outlined"
+        type="number"
+        value={numOptions}
+        onChange={(e) => setNumOptions(Number(e.target.value))}
+        required
+        sx={{ marginBottom: 2 }}
+        disabled={type === 'true or false'}
       />
     </Box>
   );

@@ -26,7 +26,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   questionBankId
 }) => {
 
-  const { state, dispatch, handleSubQuestionQueryableChange, handleTopicChange, handleSubtopicChange, handleQuantifiableChange, handleSubclassChange, handleArgumentChange, handleArgumentInit, handleDescriptionChange } = useQuestionGeneration();
+  const { state, dispatch, handleSubQuestionQueryableChange, handleTopicChange, handleSubtopicChange, handleQuantifiableChange, handleSubclassChange, handleArgumentChange, handleArgumentInit, handleDescriptionChange, handleNumOptionsChange } = useQuestionGeneration();
   const { user } = useContext(AuthContext);
 
   const handleGenerate = async () => {
@@ -195,6 +195,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           setDescription={handleDescriptionChange}
           setQueryable={(index, value) => handleSubQuestionChange(index, 'queryable', value)}
           setUserQueryable={(index, value) => handleSubQuestionChange(index, 'queryable', value)}
+          handleNumOptionsChange={(value) => handleNumOptionsChange(value, index)}
           handleGenerate={() => {}}
           removeSubQuestion={removeSubQuestion}
           topics={subQuestion.context.topics}
