@@ -23,6 +23,9 @@ export type ContextRequest = {
   selectedQuantifiables: { [key: string]: string };
   arguments: { [key: string]: any };
   argumentsInit?: { [key: string]: { [arg: string]: any } };
+  userAlgoCode?: string;
+  userEnvCode?: string;
+
 }
 
 export type QuestionDetails = {
@@ -36,6 +39,7 @@ export interface SubQuestion {
   queryable: string;
   context: ContextRequest;
   questionDetails: QuestionDetails;
+  userQueryableCode?: string;
 }
 
 export interface GenerateQuestionRequest {
@@ -51,8 +55,12 @@ export interface GenerateVariableRequest {
   subclasses: { [key: string]: string };
   arguments: { [key: string]: any };
   question_description: string;
+  userAlgoCode?: string;
 }
 
+export interface UserQueryableRequest {
+  userAlgoCode: string;
+}
 
 export const getTopics = async (): Promise<Topic[]> => {
   const url = `${basePath}/question_generation/topics`;
@@ -92,6 +100,25 @@ export const getQueryables = async (topic: string, subtopic: string): Promise<Qu
   return data;
 };
 
+export const getUserQueryables = async (userAlgoCode: string): Promise<Queryable[]> => {
+  const url = `${basePath}/question_generation/user/queryables`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ userAlgoCode }),
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: Queryable[] = await response.json();
+  return data;
+};
+
 export const getAllQueryables = async (): Promise<Queryable[]> => {
   const url = `${basePath}/question_generation/queryable_classes`;
   const response = await fetch(url);
@@ -121,6 +148,25 @@ export const getAllQueryables = async (): Promise<Queryable[]> => {
 export const getAlgoVariables = async (topic: string, subtopic: string): Promise<Variable> => {
   const url = `${basePath}/question_generation/topics/${topic}/subtopics/${subtopic}/variables`;
   const response = await fetch(url);
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: Variable = await response.json();
+  return data;
+};
+
+export const getUserAlgoVariables = async (userAlgoCode: string): Promise<Variable> => {
+  const url = `${basePath}/question_generation/user/algoVariables`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ userAlgoCode }),
+  });
 
   if (!response.ok) {
     const message = `An error has occurred: ${response.status}`;

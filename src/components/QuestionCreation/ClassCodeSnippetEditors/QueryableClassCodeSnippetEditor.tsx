@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import CodeSnippetEditor from '../CodeSnippetEditor';
 
 interface QueryableCodeSnippetEditorProps {
@@ -10,12 +10,13 @@ const queryableClassTemplate = `class SampleQueryable(Queryable):
         # User code here
 `;
 
-const queryableClassRequiredLines = [
-];
+const queryableClassRequiredLines: string[] = [];
 
 const QueryableClassCodeSnippetEditor: React.FC<QueryableCodeSnippetEditorProps> = ({ setQueryableCodeSnippet, setQueryableCodeRequiredLines}) => {
-  setQueryableCodeSnippet(queryableClassTemplate);
-  setQueryableCodeRequiredLines(queryableClassRequiredLines);
+  useEffect(() => {
+    setQueryableCodeSnippet(queryableClassTemplate);
+    setQueryableCodeRequiredLines(queryableClassRequiredLines);
+  }, []);
 
   return (
     <CodeSnippetEditor

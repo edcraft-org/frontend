@@ -12,8 +12,6 @@ interface QuestionCategorySelectorProps {
   userSubtopic: string;
   setTopic: (value: string) => void;
   setSubtopic: (value: string) => void;
-  setUserTopic: (value: string) => void;
-  setUserSubtopic: (value: string) => void;
 }
 
 const QuestionCategorySelector: React.FC<QuestionCategorySelectorProps> = ({
@@ -26,8 +24,6 @@ const QuestionCategorySelector: React.FC<QuestionCategorySelectorProps> = ({
   userSubtopic,
   setTopic,
   setSubtopic,
-  setUserTopic,
-  setUserSubtopic,
 }) => {
   return (
     <>
@@ -75,10 +71,9 @@ const QuestionCategorySelector: React.FC<QuestionCategorySelectorProps> = ({
             options={topics}
             value={userTopic}
             onChange={(event, newValue) => {
-              setUserTopic(newValue || '');
               setTopic(newValue || '');
             }}
-            onInputChange={(event, newInputValue) => setUserTopic(newInputValue)}
+            onInputChange={(event, newInputValue) => setTopic(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Topic" variant="outlined" />}
             renderOption={(props, option) => (
               <li {...props}>
@@ -92,8 +87,10 @@ const QuestionCategorySelector: React.FC<QuestionCategorySelectorProps> = ({
             fullWidth
             options={subtopics}
             value={userSubtopic}
-            onChange={(event, newValue) => setUserSubtopic(newValue || '')}
-            onInputChange={(event, newInputValue) => setUserSubtopic(newInputValue)}
+            onChange={(event, newValue) => {
+              setSubtopic(newValue || '');
+            }}
+            onInputChange={(event, newInputValue) => setSubtopic(newInputValue)}
             renderInput={(params) => <TextField {...params} label="Subtopic" variant="outlined" />}
             renderOption={(props, option) => (
               <li {...props}>

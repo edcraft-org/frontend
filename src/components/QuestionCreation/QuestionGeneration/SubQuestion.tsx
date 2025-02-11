@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, Tooltip, FormControlLabel, Checkbox, Collapse, TextField, IconButton } from '@mui/material';
+import { Box, Typography, Button, Tooltip, FormControlLabel, Checkbox, Collapse, IconButton } from '@mui/material';
 import { ExpandMore, ExpandLess, Delete } from '@mui/icons-material';
 import QuestionDescriptionInput from './QuestionDescriptionInput';
 import QuestionQueryableSelector from './QuestionQueryableSelector';
 import { numberToAlphabet } from '../../../utils/format';
 import VariableTable from './VariableTable';
-import { Variable } from '../../../utils/api/QuestionGenerationAPI';
 import CodeBlock from './CodeBlock';
 import QuestionDetails from '../QuestionDetails';
 import { SubQuestionType } from '../../../reducer/questionGenerationReducer';
@@ -15,7 +14,6 @@ interface SubQuestionProps {
   subQuestion: SubQuestionType;
   setDescription: (description: string, index: number) => void;
   setQueryable: (index: number, queryable: string) => void;
-  setUserQueryable: (index: number, userQueryable: string) => void;
   handleNumOptionsChange: (numOptions: number) => void;
   handleGenerate: () => void;
   removeSubQuestion: (index: number) => void;
@@ -24,16 +22,17 @@ interface SubQuestionProps {
   contextActions: {
     setTopic: (value: string) => void;
     setSubtopic: (value: string) => void;
-    setUserTopic: (value: string) => void;
-    setUserSubtopic: (value: string) => void;
-    setProcessorCodeSnippet: (value: string) => void;
-    setProcessorCodeRequiredLines: (value: string[]) => void;
-    handleSaveCodeSnippet: () => void;
     handleQuantifiableChange: (variableName: string, value: string) => void;
     handleSubclassChange: (variableName: string, subclassName: string) => void;
     handleArgumentChange: (variableName: string, argName: string, value: any) => void;
     handleArgumentInit: (argumentsInit: { [key: string]: { [arg: string]: any } }, index?: number) => void;
+    setUserAlgoCode: (userAlgoCode: string, index?: number) => void;
+    setUserEnvCode: (userEnvCode: string, index?: number) => void;
+    setUserQueryableCode: (userQueryableCode: string, index?: number) => void;
   };
+  tabValue: number;
+  handleTabChange: (event: React.SyntheticEvent, newValue: number) => void;
+  loading: boolean;
 }
 
 const SubQuestion: React.FC<SubQuestionProps> = ({
@@ -41,11 +40,12 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
   subQuestion,
   setDescription,
   setQueryable,
-  setUserQueryable,
   handleNumOptionsChange,
-  handleGenerate,
   removeSubQuestion,
-  contextActions
+  contextActions,
+  tabValue,
+  handleTabChange,
+  loading
 }) => {
   const [addContext, setAddContext] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -94,8 +94,8 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
           </Box>
           <Collapse in={expanded}>
             <CodeBlock
-              tabValue={0}
-              handleTabChange={() => {}}
+              tabValue={tabValue}
+              handleTabChange={handleTabChange}
               context = {subQuestion.context}
               {...contextActions}
               index = {index}
@@ -109,12 +109,12 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
         setDescription={(desc) => setDescription(desc, index)}
       />
       <QuestionQueryableSelector
-        tabValue={0}
+        tabValue={tabValue}
         queryables={subQuestion.queryables}
         queryable={subQuestion.selectedQueryable}
-        userQueryable={''}
         setQueryable={(q) => setQueryable(index, q)}
-        setUserQueryable={(uq) => setUserQueryable(index, uq)}
+        setUserQueryableCode={(userQueryableCode) => contextActions.setUserQueryableCode(userQueryableCode, index)}
+        loading={loading}
       />
       {subQuestion.queryVariables.length > 0 && (
         <>
@@ -143,9 +143,6 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
         numOptions={subQuestion.numOptions}
         setNumOptions={handleNumOptionsChange}
       />
-      {/* <Button variant="contained" color="primary" onClick={handleGenerate} sx={{ marginTop: 2 }}>
-        Preview Question
-      </Button> */}
     </Box>
   );
 };

@@ -9,8 +9,7 @@ export type SubQuestionType = {
   queryables: Queryable[];
   selectedQueryable: Queryable;
   queryVariables: Variable;
-  userQueryable: string;
-  codeSnippet: string;
+  userQueryableCode?: string;
   requiredLines: string[];
 };
 
@@ -25,12 +24,15 @@ export type ContextBlockType = {
   selectedSubclasses: { [key: string]: string };
   variableArguments: { [key: string]: { [arg: string]: any } };
   argumentsInit?: { [key: string]: { [arg: string]: any } };
+  userAlgoCode?: string;
+  userEnvCode?: string;
 };
 
 export type QuestionBlock = {
   description: string;
   context: ContextBlockType;
   queryables: Queryable[];
+  userQueryableCode?: string;
   subQuestions: SubQuestionType[];
   loading: boolean;
   tabValue: number;
@@ -49,8 +51,12 @@ export const initialState: QuestionBlock = {
     selectedQuantifiables: {},
     selectedSubclasses: {},
     variableArguments: {},
+    argumentsInit: {},
+    userAlgoCode: '',
+    userEnvCode: '',
   },
   queryables: [],
+  userQueryableCode: '',
   subQuestions: [
     {
       description: '',
@@ -64,14 +70,16 @@ export const initialState: QuestionBlock = {
         selectedQuantifiables: {},
         selectedSubclasses: {},
         variableArguments: {},
+        argumentsInit: {},
+        userAlgoCode: '',
+        userEnvCode: '',
       },
       marks: 1,
       numOptions: 4,
       queryables: [],
+      userQueryableCode: '',
       selectedQueryable: '',
       queryVariables: [],
-      userQueryable: '',
-      codeSnippet: '',
       requiredLines: [],
     },
   ],
@@ -92,7 +100,9 @@ export type Action =
   | { type: 'SET_SUB_QUESTION_FIELD'; index: number; field: keyof SubQuestionType; value: any }
   | { type: 'SET_SUB_QUESTION_CONTEXT_FIELD'; index: number; field: keyof ContextBlockType; value: any }
   | { type: 'ADD_SUB_QUESTION' }
-  | { type: 'REMOVE_SUB_QUESTION'; index: number };
+  | { type: 'REMOVE_SUB_QUESTION'; index: number }
+  | { type: 'UPDATE_ALL_SUB_QUESTIONS'; field: keyof ContextBlockType; value: any }
+  | { type: 'RESET_STATE' };
 
 export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => {
   switch (action.type) {
@@ -146,18 +156,31 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
             queryables: state.queryables,
             selectedQueryable: '',
             queryVariables: [],
-            userQueryable: '',
-            codeSnippet: '',
             requiredLines: [],
           },
         ],
       };
-    case 'REMOVE_SUB_QUESTION':
+    case 'REMOVE_SUB_QUESTION': {
       const newSubQuestions = state.subQuestions.filter((_, i) => i !== action.index);
       return {
         ...state,
         subQuestions: newSubQuestions,
       };
+    }
+    case 'UPDATE_ALL_SUB_QUESTIONS': {
+      return {
+        ...state,
+        subQuestions: state.subQuestions.map(subQuestion => ({
+          ...subQuestion,
+          context: {
+            ...subQuestion.context,
+            [action.field]: action.value
+          }
+        }))
+      }
+    }
+    case 'RESET_STATE':
+      return initialState;
     default:
       return state;
   }

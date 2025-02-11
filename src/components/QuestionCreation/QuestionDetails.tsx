@@ -35,8 +35,8 @@ const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType,
           )}
         >
           <MenuItem value="Multiple Choice">Multiple Choice</MenuItem>
-          {/* <MenuItem value="True or False">True or False</MenuItem>
           <MenuItem value="Fill in the blank">Fill in the Blank</MenuItem>
+          {/* <MenuItem value="Multiple Response">Multiple Response></MenuItem>
           <MenuItem value="Other">Other</MenuItem> */}
         </Select>
       </FormControl>

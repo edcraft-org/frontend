@@ -1,24 +1,38 @@
-import React from 'react';
-import { FormControl, InputLabel, Select, MenuItem, Chip, Autocomplete, TextField } from '@mui/material';
+import React, { useState } from 'react';
+import { FormControl, InputLabel, Select, MenuItem, Chip, Autocomplete, TextField, Accordion, AccordionSummary, Typography, AccordionDetails, Button, CircularProgress } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { formatText } from '../../../utils/format';
+import QueryableClassCodeSnippetEditor from '../ClassCodeSnippetEditors/QueryableClassCodeSnippetEditor';
 
 interface QuestionQueryableSelectorProps {
   tabValue: number;
   queryables: string[];
   queryable: string;
-  userQueryable: string;
   setQueryable: (value: string) => void;
-  setUserQueryable: (value: string) => void;
+  setUserQueryableCode: (userQueryableCode: string, index?: number) => void;
+  loading: boolean;
+  index?: number;
 }
 
 const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
   tabValue,
   queryables,
   queryable,
-  userQueryable,
   setQueryable,
-  setUserQueryable,
+  setUserQueryableCode,
+  loading,
+  index,
 }) => {
+  const [queryableCodeSnippet, setQueryableCodeSnippetState] = useState<string>('');
+
+  const handleSaveCodeSnippet = () => {
+    setUserQueryableCode(queryableCodeSnippet, index);
+  };
+
+  const handleSnippetChange = (code: string) => {
+    setQueryableCodeSnippetState(code);
+  };
+
   return (
     <>
       {tabValue === 0 ? (
@@ -39,21 +53,37 @@ const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
           </Select>
         </FormControl>
       ) : (
-        <Autocomplete
-          freeSolo
-          fullWidth
-          options={queryables}
-          value={userQueryable}
-          onChange={(event, newValue) => setUserQueryable(newValue || '')}
-          onInputChange={(event, newInputValue) => setUserQueryable(newInputValue || '')}
-          renderInput={(params) => <TextField {...params} label="QueryableClass" variant="outlined" />}
-          renderOption={(props, option) => (
-            <li {...props}>
-              {formatText(option)}
-            </li>
-          )}
-          sx={{ marginBottom: 2 }}
-        />
+        <>
+          <Autocomplete
+            freeSolo
+            fullWidth
+            options={queryables}
+            value={queryable}
+            onChange={(event, newValue) => setQueryable(newValue || '')}
+            onInputChange={(event, newInputValue) => setQueryable(newInputValue || '')}
+            renderInput={(params) => <TextField {...params} label="Queryable Class" variant="outlined" />}
+            renderOption={(props, option) => (
+              <li {...props}>
+                {formatText(option)}
+              </li>
+            )}
+            sx={{ marginBottom: 2 }}
+          />
+          {/* <Accordion sx={{ marginBottom: 2 }}>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              sx={{ flexDirection: 'row-reverse' }}
+            >
+              <Typography>Define Code Snippet</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <QueryableClassCodeSnippetEditor setQueryableCodeSnippet={handleSnippetChange} setQueryableCodeRequiredLines={()=>{}} />
+              <Button variant="contained" color="primary" onClick={handleSaveCodeSnippet} disabled={loading} sx={{ marginBottom: 2 }}>
+                {loading ? <CircularProgress size={24} /> : 'Update Algorithm'}
+              </Button>
+            </AccordionDetails>
+          </Accordion> */}
+        </>
       )}
     </>
   );

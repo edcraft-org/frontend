@@ -7,8 +7,6 @@ import { addExistingQuestionToAssessment } from '../../utils/api/AssessmentAPI';
 import { addExistingQuestionToQuestionBank } from '../../utils/api/QuestionBankAPI';
 import { AuthContext } from '../../context/Authcontext';
 import { convertArguments } from '../../utils/format';
-// import ProcessorClassCodeSnippetEditor from './ClassCodeSnippetEditors/ProcessorClassCodeSnippetEditor';
-// import QueryableClassCodeSnippetEditor from './ClassCodeSnippetEditors/QueryableClassCodeSnippetEditor';
 import QuestionDescriptionInput from './QuestionGeneration/QuestionDescriptionInput';
 import CodeBlock from './QuestionGeneration/CodeBlock';
 import SubQuestion from './QuestionGeneration/SubQuestion';
@@ -26,12 +24,28 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   questionBankId
 }) => {
 
-  const { state, dispatch, handleSubQuestionQueryableChange, handleTopicChange, handleSubtopicChange, handleQuantifiableChange, handleSubclassChange, handleArgumentChange, handleArgumentInit, handleDescriptionChange, handleNumOptionsChange } = useQuestionGeneration();
+  const {
+    state,
+    dispatch,
+    handleSubQuestionQueryableChange,
+    handleTopicChange,
+    handleSubtopicChange,
+    handleQuantifiableChange,
+    handleSubclassChange,
+    handleArgumentChange,
+    handleArgumentInit,
+    handleDescriptionChange,
+    handleNumOptionsChange,
+    setUserAlgoCode,
+    setUserEnvCode,
+    setUserQueryableCode,
+    resetState
+  } = useQuestionGeneration();
+
   const { user } = useContext(AuthContext);
 
   const handleGenerate = async () => {
     const { description, context, subQuestions } = state;
-
     const requestPayload: GenerateQuestionRequest = {
       description,
       context: {
@@ -41,10 +55,13 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         selectedQuantifiables: context.selectedQuantifiables,
         arguments: convertArguments(context.variableArguments, context.algoVariables, context.selectedSubclasses),
         argumentsInit: context.argumentsInit || {},
+        userAlgoCode: context.userAlgoCode || '',
+        userEnvCode: context.userEnvCode || '',
       },
       sub_questions: subQuestions.map(subQuestion => ({
         description: subQuestion.description,
         queryable: subQuestion.selectedQueryable,
+        userQueryableCode: subQuestion.userQueryableCode || '',
         context: {
           selectedTopic: subQuestion.context.selectedTopic,
           selectedSubtopic: subQuestion.context.selectedSubtopic,
@@ -52,6 +69,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           selectedQuantifiables: subQuestion.context.selectedQuantifiables,
           arguments: convertArguments(subQuestion.context.variableArguments, subQuestion.context.algoVariables, subQuestion.context.selectedSubclasses),
           argumentsInit: subQuestion.context.argumentsInit || {},
+          userAlgoCode: subQuestion.context.userAlgoCode || '',
+          userEnvCode: subQuestion.context.userEnvCode|| '',
         },
         questionDetails: {
           marks: subQuestion.marks,
@@ -70,28 +89,28 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     }
   };
 
-  const validateCodeSnippet = (code: string, requiredLines: string[]): boolean => {
-    for (const line of requiredLines) {
-      if (!code.includes(line)) {
-        return false;
-      }
-    }
-    return true;
-  };
+  // const validateCodeSnippet = (code: string, requiredLines: string[]): boolean => {
+  //   for (const line of requiredLines) {
+  //     if (!code.includes(line)) {
+  //       return false;
+  //     }
+  //   }
+  //   return true;
+  // };
 
-  const handleSaveCodeSnippet = async () => {
-    try {
-      dispatch({ type: 'SET_FIELD', field: 'loading', value: true });
+  // const handleSaveCodeSnippet = async () => {
+  //   try {
+  //     dispatch({ type: 'SET_FIELD', field: 'loading', value: true });
 
-      // if (!validateCodeSnippet(state.processorCodeSnippet, state.processorCodeRequiredLines)) {
-      //   alert(`Please include the required lines in the ProcessorClass code snippet:\n${state.processorCodeRequiredLines.join('\n')}`);
-      //   return;
-      // }
-    } catch (error) {
-      console.error('Error saving code snippet:', error);
-      throw error;
-    }
-  };
+  //     // if (!validateCodeSnippet(state.processorCodeSnippet, state.processorCodeRequiredLines)) {
+  //     //   alert(`Please include the required lines in the ProcessorClass code snippet:\n${state.processorCodeRequiredLines.join('\n')}`);
+  //     //   return;
+  //     // }
+  //   } catch (error) {
+  //     console.error('Error saving code snippet:', error);
+  //     throw error;
+  //   }
+  // };
 
   const onAddQuestion = async (newQuestion: NewQuestion) => {
     try {
@@ -144,15 +163,12 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   const contextActions = {
     setTopic: handleTopicChange,
     setSubtopic: handleSubtopicChange,
-    setUserTopic: (value: string) => {},
-    setUserSubtopic: (value: string) => {},
-    setProcessorCodeSnippet: (value: string) => {},
-    setProcessorCodeRequiredLines: (value: string[]) => {},
-    handleSaveCodeSnippet: handleSaveCodeSnippet,
     handleQuantifiableChange: handleQuantifiableChange,
     handleSubclassChange: handleSubclassChange,
     handleArgumentChange: handleArgumentChange,
     handleArgumentInit: handleArgumentInit,
+    setUserAlgoCode: setUserAlgoCode,
+    setUserEnvCode: setUserEnvCode,
   };
 
   const getSubQuestionActions = (index: number) => ({
@@ -194,7 +210,6 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           subQuestion={subQuestion}
           setDescription={handleDescriptionChange}
           setQueryable={(index, value) => handleSubQuestionChange(index, 'queryable', value)}
-          setUserQueryable={(index, value) => handleSubQuestionChange(index, 'queryable', value)}
           handleNumOptionsChange={(value) => handleNumOptionsChange(value, index)}
           handleGenerate={() => {}}
           removeSubQuestion={removeSubQuestion}
@@ -203,7 +218,11 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           contextActions={{
             ...contextActions,
             ...getSubQuestionActions(index),
+            setUserQueryableCode,
           }}
+          tabValue={state.tabValue}
+          handleTabChange={handleTabChange}
+          loading={state.loading}
         />
       ))}
       <Button variant="contained" color="primary" onClick={addSubQuestion} sx={{ marginTop: 2 }}>

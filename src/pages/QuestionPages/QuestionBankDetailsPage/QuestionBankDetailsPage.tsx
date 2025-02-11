@@ -56,7 +56,7 @@ const QuestionBankDetailsPage: React.FC = () => {
       }
     };
     fetchAssessmentList();
-  }, [user]);
+  }, [user, projectId]);
 
   useEffect(() => {
     const fetchQuestionBanksList = async () => {

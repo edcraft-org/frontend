@@ -1,6 +1,6 @@
 import { useReducer, useEffect } from 'react';
 import { reducer, initialState } from '../reducer/questionGenerationReducer';
-import { getTopics, getSubtopics, getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables } from '../utils/api/QuestionGenerationAPI';
+import { getTopics, getSubtopics, getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables, getUserQueryables, getUserAlgoVariables } from '../utils/api/QuestionGenerationAPI';
 
 const useQuestionGeneration = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -9,8 +9,10 @@ const useQuestionGeneration = () => {
     getTopics()
       .then(topics => {
         dispatch({ type: 'SET_TOPICS', topics });
-        state.subQuestions.forEach((_, index) => {
-          dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'topics', value: topics });
+        dispatch({
+          type: 'UPDATE_ALL_SUB_QUESTIONS',
+          field: 'topics',
+          value: topics
         });
       })
       .catch(error => console.error('Error fetching topics:', error));
@@ -45,7 +47,14 @@ const useQuestionGeneration = () => {
             dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: queryables });
           });
         })
-        .catch(error => console.error('Error fetching queryables:', error));
+        .catch(error => {
+          dispatch({ type: 'SET_FIELD', field: 'queryables', value: [] })
+          state.subQuestions.forEach((_, index) => {
+            dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: [] });
+            dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
+          });
+          console.error('Error fetching queryables:', error)
+        });
     } else {
       dispatch({ type: 'SET_ALGO_VARIABLES', algoVariables: [] });
       state.subQuestions.forEach((_, index) => {
@@ -130,7 +139,11 @@ const useQuestionGeneration = () => {
           .catch(error => console.error('Error fetching quantifiables:', error));
         getQueryables(selectedTopic, subtopic)
           .then(queryables => dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: queryables }))
-          .catch(error => console.error('Error fetching queryables:', error));
+          .catch(error => {
+            dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: [] })
+            dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
+            console.error('Error fetching queryables:', error)
+          });
       } catch (error) {
         console.error('Error fetching queryables for subquestion:', error);
       }
@@ -202,6 +215,52 @@ const useQuestionGeneration = () => {
     dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'numOptions', value: numOptions });
   };
 
+
+  const setUserAlgoCode = (userAlgoCode: string, index?: number) => {
+    if (index !== undefined) {
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'userAlgoCode', value: userAlgoCode });
+      getUserAlgoVariables(userAlgoCode)
+        .then(algoVariables => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'algoVariables', value: algoVariables }))
+        .catch(error => console.error('Error fetching algorithm variables:', error));
+      getUserQueryables(userAlgoCode)
+        .then(queryables => dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: queryables }))
+        .catch(error => console.error('Error fetching user queryables:', error));
+    } else {
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'userAlgoCode', value: userAlgoCode });
+      getUserAlgoVariables(userAlgoCode)
+        .then(algoVariables => dispatch({ type: 'SET_ALGO_VARIABLES', algoVariables }))
+        .catch(error => console.error('Error fetching algorithm variables:', error));
+      getUserQueryables(userAlgoCode)
+        .then(queryables => {
+          dispatch({ type: 'SET_FIELD', field: 'queryables', value: queryables });
+          state.subQuestions.forEach((_, index) => {
+            dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: queryables });
+          });
+        })
+        .catch(error => console.error('Error fetching user queryables:', error));
+    }
+  };
+
+  const setUserEnvCode = (userEnvCode: string, index?: number) => {
+    if (index !== undefined) {
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'userEnvCode', value: userEnvCode });
+    } else {
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'userEnvCode', value: userEnvCode });
+    }
+  };
+
+  const setUserQueryableCode = (userQueryableCode: string, index?: number) => {
+    if (index !== undefined) {
+      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'userQueryableCode', value: userQueryableCode });
+    } else {
+      dispatch({ type: 'SET_FIELD', field: 'userQueryableCode', value: userQueryableCode });
+    }
+  };
+
+  const resetState = () => {
+    dispatch({ type: 'RESET_STATE' });
+  }
+
   return {
     state,
     dispatch,
@@ -214,6 +273,10 @@ const useQuestionGeneration = () => {
     handleArgumentInit,
     handleDescriptionChange,
     handleNumOptionsChange,
+    setUserAlgoCode,
+    setUserEnvCode,
+    setUserQueryableCode,
+    resetState,
   };
 };
 
