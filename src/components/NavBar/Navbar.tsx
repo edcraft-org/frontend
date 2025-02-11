@@ -34,13 +34,12 @@ interface NavBarProps {
   }
 }
 
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = ['Account', 'Logout'];
 
 function NavBar({ project, assessment, questionBank, isProjectAssessment, isProjectQuestionBank, isQuestionCreation }: NavBarProps) {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-
   const breadcrumbs = [
     <Link key="1" color="inherit" onClick={() => navigate('/')}>
       Projects
@@ -157,7 +156,7 @@ function NavBar({ project, assessment, questionBank, isProjectAssessment, isProj
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar sx={{ bgcolor: "primary.main", width: 40, height: 40 }}>
-                  {user.name[0]}
+                  {user.name[0] || user.email.split('@')[0][0]}
                 </Avatar>
               </IconButton>
             </Tooltip>

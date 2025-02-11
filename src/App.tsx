@@ -17,7 +17,7 @@ function App() {
     return (
       <div className="auth-container">
         <h2 className="auth-title">Welcome to EdCraft!</h2>
-        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google', 'azure', 'github']} />
+        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['google', 'azure']} />
       </div>
     );
   } else {
