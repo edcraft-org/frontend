@@ -62,20 +62,10 @@ export interface UserQueryableRequest {
   userAlgoCode: string;
 }
 
-export const getTopics = async (): Promise<Topic[]> => {
-  const url = `${basePath}/question_generation/topics`;
-  const response = await fetch(url);
+export type ClassKeyData = { [key: string]: string | ClassKeyData };
 
-  if (!response.ok) {
-    const message = `An error has occurred: ${response.status}`;
-    throw new Error(message);
-  }
-  const data: Topic[] = await response.json();
-  return data;
-};
-
-export const getSubtopics = async (topic: string): Promise<Subtopic[]> => {
-  const url = `${basePath}/question_generation/topics/${topic}/subtopics`;
+export const listAlgos = async (): Promise<ClassKeyData> => {
+  const url = `${basePath}/question_generation/algos`;
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -83,7 +73,7 @@ export const getSubtopics = async (topic: string): Promise<Subtopic[]> => {
     throw new Error(message);
   }
 
-  const data: Subtopic[] = await response.json();
+  const data: ClassKeyData = await response.json();
   return data;
 };
 

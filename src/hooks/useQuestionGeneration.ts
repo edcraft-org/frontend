@@ -1,36 +1,9 @@
 import { useReducer, useEffect } from 'react';
 import { reducer, initialState } from '../reducer/questionGenerationReducer';
-import { getTopics, getSubtopics, getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables, getUserQueryables, getUserAlgoVariables } from '../utils/api/QuestionGenerationAPI';
+import { getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables, getUserQueryables, getUserAlgoVariables } from '../utils/api/QuestionGenerationAPI';
 
 const useQuestionGeneration = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
-
-  useEffect(() => {
-    getTopics()
-      .then(topics => {
-        dispatch({ type: 'SET_TOPICS', topics });
-        dispatch({
-          type: 'UPDATE_ALL_SUB_QUESTIONS',
-          field: 'topics',
-          value: topics
-        });
-      })
-      .catch(error => console.error('Error fetching topics:', error));
-  }, []);
-
-  useEffect(() => {
-    if (state.context.selectedTopic) {
-      getSubtopics(state.context.selectedTopic)
-        .then(subtopics => dispatch({ type: 'SET_SUBTOPICS', subtopics }))
-        .catch(error => console.error('Error fetching subtopics:', error));
-    } else {
-      dispatch({ type: 'SET_SUBTOPICS', subtopics: [] });
-    }
-    dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedSubtopic', value: '' });
-    dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedQuantifiables', value: {} });
-    dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedSubclasses', value: {} });
-    dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: {} });
-  }, [state.context.selectedTopic]);
 
   useEffect(() => {
     if (state.context.selectedSubtopic) {
@@ -109,8 +82,6 @@ const useQuestionGeneration = () => {
     if (index !== undefined) {
       dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedTopic', value: topic });
       try {
-        const subtopics = await getSubtopics(topic);
-        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'subtopics', value: subtopics });
         dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedSubtopic', value: '' });
         dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
         dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: [] });

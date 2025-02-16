@@ -87,12 +87,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       <Box sx={{ display: 'flex', gap: 2 }}>
         <QuestionCategorySelector
           tabValue={tabValue}
-          topics={context.topics}
-          subtopics={context.subtopics}
-          topic={context.selectedTopic}
-          subtopic={context.selectedSubtopic}
-          userTopic={context.selectedTopic}
-          userSubtopic={context.selectedSubtopic}
           setTopic={setTopic}
           setSubtopic={setSubtopic}
         />

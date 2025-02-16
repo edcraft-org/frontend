@@ -18,6 +18,7 @@ export type ContextBlockType = {
   subtopics: Subtopic[];
   selectedTopic: string;
   selectedSubtopic: string;
+  // algoPath: { [key: string]: { [arg: string]: any } };
   algoVariables: Variable;
   quantifiables: Quantifiable[];
   selectedQuantifiables: { [key: string]: string };
@@ -46,6 +47,7 @@ export const initialState: QuestionBlock = {
     subtopics: [],
     selectedTopic: '',
     selectedSubtopic: '',
+    // algoPath: {},
     algoVariables: [],
     quantifiables: [],
     selectedQuantifiables: {},
@@ -102,6 +104,7 @@ export type Action =
   | { type: 'ADD_SUB_QUESTION' }
   | { type: 'REMOVE_SUB_QUESTION'; index: number }
   | { type: 'UPDATE_ALL_SUB_QUESTIONS'; field: keyof ContextBlockType; value: any }
+  | { type: 'SET_ALGO_PATH'; algoPath: { [key: string]: { [arg: string]: any } } }
   | { type: 'RESET_STATE' };
 
 export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => {
@@ -145,6 +148,7 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
               subtopics: [],
               selectedTopic: '',
               selectedSubtopic: '',
+              // algoPath: {},
               algoVariables: [],
               quantifiables: [],
               selectedQuantifiables: {},
@@ -179,6 +183,8 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
         }))
       }
     }
+    // case 'SET_ALGO_PATH':
+    //   return { ...state, context: { ...state.context, algoPath: action.algoPath } };
     case 'RESET_STATE':
       return initialState;
     default:
