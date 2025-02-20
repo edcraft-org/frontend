@@ -25,6 +25,8 @@ export type ContextBlockType = {
   selectedSubclasses: { [key: string]: string };
   variableArguments: { [key: string]: { [arg: string]: any } };
   argumentsInit?: { [key: string]: { [arg: string]: any } };
+  inputVariableArguments: { [key: string]: { [arg: string]: any } };
+  inputInit?: { [key: string]: { [arg: string]: any } };
   userAlgoCode?: string;
   userEnvCode?: string;
 };
@@ -54,6 +56,8 @@ export const initialState: QuestionBlock = {
     selectedSubclasses: {},
     variableArguments: {},
     argumentsInit: {},
+    inputVariableArguments: {},
+    inputInit: {},
     userAlgoCode: '',
     userEnvCode: '',
   },
@@ -73,6 +77,8 @@ export const initialState: QuestionBlock = {
         selectedSubclasses: {},
         variableArguments: {},
         argumentsInit: {},
+        inputVariableArguments: {},
+        inputInit: {},
         userAlgoCode: '',
         userEnvCode: '',
       },
@@ -154,6 +160,9 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
               selectedQuantifiables: {},
               selectedSubclasses: {},
               variableArguments: {},
+              argumentsInit: {},
+              inputVariableArguments: {},
+              inputInit: {},
             },
             marks: 1,
             numOptions: 4,

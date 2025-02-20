@@ -25,7 +25,11 @@ interface SubQuestionProps {
     handleQuantifiableChange: (variableName: string, value: string) => void;
     handleSubclassChange: (variableName: string, subclassName: string) => void;
     handleArgumentChange: (variableName: string, argName: string, value: any) => void;
+    handleInputArgumentChange: (variableName: string, argName: string, value: any) => void;
+    copyInputArgument: (variableName: string, inputName: string, argName: string) => void;
     handleArgumentInit: (argumentsInit: { [key: string]: { [arg: string]: any } }, index?: number) => void;
+    handleInputInit: (inputInit: { [key: string]: { [arg: string]: any } }, index?: number) => void;
+    copyInputInit: (variableName: string, inputName: string, index?: number) => void;
     setUserAlgoCode: (userAlgoCode: string, index?: number) => void;
     setUserEnvCode: (userEnvCode: string, index?: number) => void;
     setUserQueryableCode: (userQueryableCode: string, index?: number) => void;
@@ -132,6 +136,14 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
             handleQuantifiableChange={contextActions.handleQuantifiableChange}
             handleSubclassChange={contextActions.handleSubclassChange}
             handleArgumentChange={contextActions.handleArgumentChange}
+            isAlgoTable={false}
+            context={subQuestion.context}
+            copyInputArgument={contextActions.copyInputArgument}
+            copyInputInit={contextActions.copyInputInit}
+            useGeneratedInput={{}}
+            setUseGeneratedInput={()=>{}}
+            checkArgumentType={()=> false}
+            setInputInit={()=>{}}
           />
         </>
       )}

@@ -33,13 +33,16 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     handleQuantifiableChange,
     handleSubclassChange,
     handleArgumentChange,
+    handleInputArgumentChange,
+    copyInputArgument,
     handleArgumentInit,
+    handleInputInit,
+    copyInputInit,
     handleDescriptionChange,
     handleNumOptionsChange,
     setUserAlgoCode,
     setUserEnvCode,
     setUserQueryableCode,
-    resetState
   } = useQuestionGeneration();
 
   const { user } = useContext(AuthContext);
@@ -68,7 +71,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           selectedSubclasses: subQuestion.context.selectedSubclasses,
           selectedQuantifiables: subQuestion.context.selectedQuantifiables,
           arguments: convertArguments(subQuestion.context.variableArguments, subQuestion.context.algoVariables, subQuestion.context.selectedSubclasses),
-          argumentsInit: subQuestion.context.argumentsInit || {},
+          argumentsInit: subQuestion.context.inputInit || {},
           userAlgoCode: subQuestion.context.userAlgoCode || '',
           userEnvCode: subQuestion.context.userEnvCode|| '',
         },
@@ -88,29 +91,6 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       dispatch({ type: 'SET_FIELD', field: 'loading', value: false });
     }
   };
-
-  // const validateCodeSnippet = (code: string, requiredLines: string[]): boolean => {
-  //   for (const line of requiredLines) {
-  //     if (!code.includes(line)) {
-  //       return false;
-  //     }
-  //   }
-  //   return true;
-  // };
-
-  // const handleSaveCodeSnippet = async () => {
-  //   try {
-  //     dispatch({ type: 'SET_FIELD', field: 'loading', value: true });
-
-  //     // if (!validateCodeSnippet(state.processorCodeSnippet, state.processorCodeRequiredLines)) {
-  //     //   alert(`Please include the required lines in the ProcessorClass code snippet:\n${state.processorCodeRequiredLines.join('\n')}`);
-  //     //   return;
-  //     // }
-  //   } catch (error) {
-  //     console.error('Error saving code snippet:', error);
-  //     throw error;
-  //   }
-  // };
 
   const onAddQuestion = async (newQuestion: NewQuestion) => {
     try {
@@ -166,7 +146,11 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     handleQuantifiableChange: handleQuantifiableChange,
     handleSubclassChange: handleSubclassChange,
     handleArgumentChange: handleArgumentChange,
+    handleInputArgumentChange: handleInputArgumentChange,
+    copyInputArgument: copyInputArgument,
     handleArgumentInit: handleArgumentInit,
+    handleInputInit: handleInputInit,
+    copyInputInit: copyInputInit,
     setUserAlgoCode: setUserAlgoCode,
     setUserEnvCode: setUserEnvCode,
   };
@@ -177,6 +161,9 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     handleQuantifiableChange: (variableName: string, value: string) => handleQuantifiableChange(variableName, value, index),
     handleSubclassChange: (variableName: string, subclassName: string) => handleSubclassChange(variableName, subclassName, index),
     handleArgumentChange: (variableName: string, argName: string, value: any) => handleArgumentChange(variableName, argName, value, index),
+    handleInputArgumentChange: (variableName: string, argName: string, value: any) => handleInputArgumentChange(variableName, argName, value, index),
+    copyInputArgument: (variableName: string, inputName: string, argName: string) => copyInputArgument(variableName, inputName, argName, index),
+    copyInputInit: (variableName: string, inputName: string) => copyInputInit(variableName, inputName, index),
   });
 
   return (

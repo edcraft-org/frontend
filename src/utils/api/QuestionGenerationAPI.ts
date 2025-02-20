@@ -4,6 +4,15 @@ import { GenerateQuestionResponse } from "./QuestionAPI";
 export type Topic = string;
 export type Subtopic = string;
 export type Queryable = string;
+export type VariableItem = {
+  name: string;
+  type: string;
+  subclasses?: {
+    name: string;
+    arguments: { name: string; type: string }[];
+  }[];
+  arguments?: { name: string; type: string }[];
+};
 export type Variable = {
   name: string;
   type: string;
@@ -54,12 +63,22 @@ export interface GenerateVariableRequest {
   element_type: { [key: string]: string };
   subclasses: { [key: string]: string };
   arguments: { [key: string]: any };
+  arguments_init?: { [key: string]: { [arg: string]: any } };
   question_description: string;
   userAlgoCode?: string;
 }
 
 export interface UserQueryableRequest {
   userAlgoCode: string;
+}
+
+export interface InputRequest {
+  input_path: { [key: string]: any };
+}
+
+export interface GenerateInputRequest {
+  input_path: { [key: string]: any };
+  variable_options: { [key: string]: { [arg: string]: any } };
 }
 
 export type ClassKeyData = { [key: string]: string | ClassKeyData };
@@ -74,6 +93,38 @@ export const listAlgos = async (): Promise<ClassKeyData> => {
   }
 
   const data: ClassKeyData = await response.json();
+  return data;
+};
+
+export const listInputs = async (): Promise<ClassKeyData> => {
+  const url = `${basePath}/question_generation/input`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: ClassKeyData = await response.json();
+  return data;
+};
+
+export const listInputVariable = async (request: InputRequest): Promise<Variable> => {
+  const url = `${basePath}/question_generation/input`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: Variable = await response.json();
   return data;
 };
 
@@ -214,6 +265,26 @@ export const generateQuestion = async (request: GenerateQuestionRequest): Promis
 
 export const generateVariable = async (request: GenerateVariableRequest): Promise<any> => {
   const url = `${basePath}/question_generation/generate_variable`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const generateInput = async (request: GenerateInputRequest): Promise<any> => {
+  const url = `${basePath}/question_generation/generate_input`;
 
   const response = await fetch(url, {
     method: 'POST',

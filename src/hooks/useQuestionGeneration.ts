@@ -40,29 +40,8 @@ const useQuestionGeneration = () => {
     dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedQuantifiables', value: {} });
     dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedSubclasses', value: {} });
     dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: {} });
+    dispatch({ type: 'SET_CONTEXT_FIELD', field: 'argumentsInit', value: {} });
   }, [state.context.selectedSubtopic]);
-
-  // useEffect(() => {
-  //   if (state.context.selectedTopic && state.context.selectedSubtopic && state.context.selectedQueryable) {
-  //     getQueryableVariables(state.context.selectedTopic, state.context.selectedSubtopic, state.context.selectedQueryable)
-  //       .then(queryVariables => dispatch({ type: 'SET_CONTEXT_FIELD', field: 'queryVariables', value: queryVariables }))
-  //       .catch(error => console.error('Error fetching queryable variables:', error));
-  //   } else {
-  //     dispatch({ type: 'SET_CONTEXT_FIELD', field: 'queryVariables', value: [] });
-  //   }
-  //   dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedQuantifiables', value: {} });
-  //   dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedSubclasses', value: {} });
-  //   dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: {} });
-  // }, [state.context.selectedQueryable]);
-
-  // useEffect(() => {
-  //   if (state.tabValue === 1) {
-  //     getAllQueryables()
-  //       .then(queryables => dispatch({ type: 'SET_QUERYABLES', queryables }))
-  //       .catch(error => console.error('Error fetching all queryables:', error));
-  //   }
-  //   dispatch({ type: 'SET_GENERATED_QUESTIONS', generatedQuestions: [] });
-  // }, [state.tabValue, state.context.selectedTopic]);
 
   const handleSubQuestionQueryableChange = async (index: number, queryable: string) => {
     if (state.context.selectedTopic && state.context.selectedSubtopic && queryable) {
@@ -115,6 +94,7 @@ const useQuestionGeneration = () => {
             dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
             console.error('Error fetching queryables:', error)
           });
+        handleArgumentInit({}, index);
       } catch (error) {
         console.error('Error fetching queryables for subquestion:', error);
       }
@@ -165,6 +145,23 @@ const useQuestionGeneration = () => {
     }
   };
 
+  const handleInputArgumentChange = (variableName: string, argName: string, value: any, index?: number) => {
+    if (index !== undefined) {
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputVariableArguments', value: { ...state.subQuestions[index].context.inputVariableArguments, [variableName]: { ...state.subQuestions[index].context.inputVariableArguments[variableName], [argName]: value } } });
+    } else {
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputVariableArguments', value: { ...state.context.inputVariableArguments, [variableName]: { ...state.context.inputVariableArguments[variableName], [argName]: value } } });
+    }
+  };
+
+  const copyInputArgument = (variableName: string, inputName: string, argName: string, index?: number) => {
+    if (index !== undefined) {
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { ...state.subQuestions[index].context.variableArguments, [variableName]: { ...state.subQuestions[index].context.variableArguments[variableName], [argName]: state.subQuestions[index].context.inputVariableArguments[inputName][argName] } }});
+    } else {
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: { ...state.context.variableArguments, [variableName]: { ...state.context.variableArguments[variableName], [argName]: state.context.inputVariableArguments[inputName][argName] } }});
+    }
+  }
+
+
   const handleArgumentInit = (argumentsInit: { [key: string]: { [arg: string]: any } }, index?: number) => {
     if (index !== undefined) {
       dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'argumentsInit', value: argumentsInit });
@@ -173,6 +170,25 @@ const useQuestionGeneration = () => {
     }
   };
 
+  const handleInputInit = (inputInit: { [key: string]: { [arg: string]: any } }, index?: number) => {
+    if (index !== undefined) {
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputInit', value: inputInit });
+    } else {
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputInit', value: inputInit });
+    }
+  };
+
+  const copyInputInit = (variableName: string, inputName: string, index?: number) => {
+    if (index !== undefined) {
+      if (state.subQuestions[index].context.inputInit) {
+        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'argumentsInit', value: { ...state.subQuestions[index].context.argumentsInit, [variableName]: state.subQuestions[index].context.inputInit[inputName] } });
+      }
+    } else {
+      if (state.context.inputInit) {
+        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'argumentsInit', value: { ...state.context.argumentsInit, [variableName]: state.context.inputInit[inputName] } });
+      }
+    }
+  }
 
   const handleDescriptionChange = (description: string, index?: number) => {
     if (index !== undefined) {
@@ -241,7 +257,11 @@ const useQuestionGeneration = () => {
     handleQuantifiableChange,
     handleSubclassChange,
     handleArgumentChange,
+    handleInputArgumentChange,
+    copyInputArgument,
     handleArgumentInit,
+    handleInputInit,
+    copyInputInit,
     handleDescriptionChange,
     handleNumOptionsChange,
     setUserAlgoCode,

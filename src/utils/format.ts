@@ -60,3 +60,9 @@ export const convertArguments = (
     return acc;
   }, {} as { [key: string]: { [arg: string]: any } });
 };
+
+export const formatIdToNestedObject = (id: string):  { [key: string]: any } => {
+  const parts = id.split('__');
+  const lastPart = parts.pop();
+  return parts.reduceRight((acc, part) => ({ [part]: acc }), lastPart as any);
+};

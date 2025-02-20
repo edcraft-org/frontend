@@ -22,7 +22,7 @@ const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
     padding: theme.spacing(0.5, 1),
     margin: theme.spacing(0.2, 0),
     [`& .${treeItemClasses.label}`]: {
-      fontSize: '0.8rem',
+      fontSize: '1rem',
       fontWeight: 500,
     },
   },
@@ -126,7 +126,7 @@ const TreeViewSelector: React.FC<TreeViewSelectorProps> = ({
   };
 
   return (
-    <Box sx={{ minHeight: 200, minWidth: 400 }}>
+    <Box sx={{ minWidth: 400 }}>
       <RichTreeView
         defaultExpandedItems={['grid']}
         slots={{ item: CustomTreeItem }}

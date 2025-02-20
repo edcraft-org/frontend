@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { FormControl, InputLabel, Select, MenuItem, Chip, Autocomplete, TextField, Accordion, AccordionSummary, Typography, AccordionDetails, Button, CircularProgress } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { FormControl, InputLabel, Select, MenuItem, Chip, Autocomplete, TextField } from '@mui/material';
 import { formatText } from '../../../utils/format';
-import QueryableClassCodeSnippetEditor from '../ClassCodeSnippetEditors/QueryableClassCodeSnippetEditor';
 
 interface QuestionQueryableSelectorProps {
   tabValue: number;
@@ -19,19 +17,18 @@ const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
   queryables,
   queryable,
   setQueryable,
-  setUserQueryableCode,
-  loading,
-  index,
+  // setUserQueryableCode,
+  // index,
 }) => {
-  const [queryableCodeSnippet, setQueryableCodeSnippetState] = useState<string>('');
+  // const [queryableCodeSnippet, setQueryableCodeSnippetState] = useState<string>('');
 
-  const handleSaveCodeSnippet = () => {
-    setUserQueryableCode(queryableCodeSnippet, index);
-  };
+  // const handleSaveCodeSnippet = () => {
+  //   setUserQueryableCode(queryableCodeSnippet, index);
+  // };
 
-  const handleSnippetChange = (code: string) => {
-    setQueryableCodeSnippetState(code);
-  };
+  // const handleSnippetChange = (code: string) => {
+  //   setQueryableCodeSnippetState(code);
+  // };
 
   return (
     <>
