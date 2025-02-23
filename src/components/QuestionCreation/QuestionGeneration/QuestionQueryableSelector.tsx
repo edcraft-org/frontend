@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FormControl, InputLabel, Select, MenuItem, Chip, Autocomplete, TextField } from '@mui/material';
 import { formatText } from '../../../utils/format';
 
 interface QuestionQueryableSelectorProps {
+  title: string
   tabValue: number;
   queryables: string[];
   queryable: string;
@@ -13,6 +14,7 @@ interface QuestionQueryableSelectorProps {
 }
 
 const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
+  title,
   tabValue,
   queryables,
   queryable,
@@ -34,7 +36,7 @@ const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
     <>
       {tabValue === 0 ? (
         <FormControl fullWidth sx={{ marginBottom: 2 }}>
-          <InputLabel id="queryable-label">Queryable</InputLabel>
+          <InputLabel id="queryable-label">{title} Queryable</InputLabel>
           <Select
             labelId="queryable-label"
             label="Queryable"

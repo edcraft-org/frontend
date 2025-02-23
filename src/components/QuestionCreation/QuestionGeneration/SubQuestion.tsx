@@ -14,6 +14,7 @@ interface SubQuestionProps {
   subQuestion: SubQuestionType;
   setDescription: (description: string, index: number) => void;
   setQueryable: (index: number, queryable: string) => void;
+  setInputQueryable: (index: number, queryable: string) => void;
   handleNumOptionsChange: (numOptions: number) => void;
   handleGenerate: () => void;
   removeSubQuestion: (index: number) => void;
@@ -22,6 +23,7 @@ interface SubQuestionProps {
   contextActions: {
     setTopic: (value: string) => void;
     setSubtopic: (value: string) => void;
+    setInputPath: (inputPath: { [key: string]: any }) => void;
     handleQuantifiableChange: (variableName: string, value: string) => void;
     handleSubclassChange: (variableName: string, subclassName: string) => void;
     handleArgumentChange: (variableName: string, argName: string, value: any) => void;
@@ -33,6 +35,7 @@ interface SubQuestionProps {
     setUserAlgoCode: (userAlgoCode: string, index?: number) => void;
     setUserEnvCode: (userEnvCode: string, index?: number) => void;
     setUserQueryableCode: (userQueryableCode: string, index?: number) => void;
+    setInputQueryable: (inputPath: { [key: string]: any }, index?: number) => void;
   };
   tabValue: number;
   handleTabChange: (event: React.SyntheticEvent, newValue: number) => void;
@@ -44,6 +47,7 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
   subQuestion,
   setDescription,
   setQueryable,
+  setInputQueryable,
   handleNumOptionsChange,
   removeSubQuestion,
   contextActions,
@@ -67,7 +71,6 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
       setExpanded(true);
     }
   };
-
 
   return (
     <Box sx={{ marginBottom: 2, border: '1px solid #ccc', borderRadius: '4px', padding: 2 }}>
@@ -113,6 +116,43 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
         setDescription={(desc) => setDescription(desc, index)}
       />
       <QuestionQueryableSelector
+        title = {'Input'}
+        tabValue={tabValue}
+        queryables={subQuestion.inputQueryables}
+        queryable={subQuestion.selectedInputQueryable}
+        setQueryable={(q) => setInputQueryable(index, q)}
+        setUserQueryableCode={(userQueryableCode) => {}}
+        loading={loading}
+      />
+      {subQuestion.inputQueryVariables.length > 0 && (
+        <>
+          <Tooltip title="Query Variables are used to fetch data. Use {Input}, {Step}, etc. in your question description to represent these variables." placement="bottom-start">
+            <Typography variant="subtitle1">
+              Input Query Variables (Use variable name in question description)
+            </Typography>
+          </Tooltip>
+          <VariableTable
+            variables={subQuestion.inputQueryVariables}
+            quantifiables={subQuestion.context.quantifiables}
+            selectedQuantifiables={subQuestion.context.selectedQuantifiables}
+            selectedSubclasses={subQuestion.context.selectedSubclasses}
+            variableArguments={subQuestion.context.variableArguments}
+            handleQuantifiableChange={contextActions.handleQuantifiableChange}
+            handleSubclassChange={contextActions.handleSubclassChange}
+            handleArgumentChange={contextActions.handleArgumentChange}
+            isAlgoTable={false}
+            context={subQuestion.context}
+            copyInputArgument={contextActions.copyInputArgument}
+            copyInputInit={contextActions.copyInputInit}
+            useGeneratedInput={{}}
+            setUseGeneratedInput={()=>{}}
+            checkArgumentType={()=> false}
+            setInputInit={()=>{}}
+          />
+        </>
+      )}
+      <QuestionQueryableSelector
+        title={'Algo'}
         tabValue={tabValue}
         queryables={subQuestion.queryables}
         queryable={subQuestion.selectedQueryable}
@@ -124,7 +164,7 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
         <>
           <Tooltip title="Query Variables are used to fetch data. Use {Input}, {Step}, etc. in your question description to represent these variables." placement="bottom-start">
             <Typography variant="subtitle1">
-              Query Variables (Use variable name in question description)
+              Algo Query Variables (Use variable name in question description)
             </Typography>
           </Tooltip>
           <VariableTable

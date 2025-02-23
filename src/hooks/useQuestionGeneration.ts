@@ -1,6 +1,6 @@
 import { useReducer, useEffect } from 'react';
 import { reducer, initialState } from '../reducer/questionGenerationReducer';
-import { getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables, getUserQueryables, getUserAlgoVariables } from '../utils/api/QuestionGenerationAPI';
+import { getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables, getUserQueryables, getUserAlgoVariables, getInputQueryables, getInputQueryableVariables, listInputVariable } from '../utils/api/QuestionGenerationAPI';
 
 const useQuestionGeneration = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -44,16 +44,40 @@ const useQuestionGeneration = () => {
   }, [state.context.selectedSubtopic]);
 
   const handleSubQuestionQueryableChange = async (index: number, queryable: string) => {
-    if (state.context.selectedTopic && state.context.selectedSubtopic && queryable) {
+    const selectedTopic = state.subQuestions[index].context.selectedTopic ? state.subQuestions[index].context.selectedTopic : state.context.selectedTopic;
+    const selectedSubtopic = state.subQuestions[index].context.selectedSubtopic ? state.subQuestions[index].context.selectedSubtopic : state.context.selectedSubtopic;
+    {console.log(selectedTopic, selectedSubtopic, queryable)}
+    if (selectedTopic && selectedSubtopic && queryable) {
       try {
         dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: queryable });
-        const data = await getQueryableVariables(state.context.selectedTopic, state.context.selectedSubtopic, queryable);
+        const data = await getQueryableVariables(selectedTopic, selectedSubtopic, queryable);
         dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryVariables', value: data });
+        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedInputQueryable', value: '' });
+        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryVariables', value: [] });
       } catch (error) {
         console.error('Error fetching queryable variables for subquestion:', error);
       }
     } else {
       dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryVariables', value: [] });
+    }
+  };
+
+
+  const handleSubQuestionInputQueryableChange = async (index: number, queryable: string) => {
+    console.log(state)
+    const selectedInputPath = Object.keys(state.subQuestions[index].context.inputPath).length > 0 ? state.subQuestions[index].context.inputPath : state.context.inputPath;
+    if (Object.keys(selectedInputPath).length > 0  && queryable) {
+      try {
+        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedInputQueryable', value: queryable });
+        const data = await getInputQueryableVariables(selectedInputPath, queryable);
+        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryVariables', value: data });
+        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
+        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryVariables', value: [] });
+      } catch (error) {
+        console.error('Error fetching queryable variables for subquestion:', error);
+      }
+    } else {
+      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryVariables', value: [] });
     }
   };
 
@@ -80,7 +104,6 @@ const useQuestionGeneration = () => {
       dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedSubtopic', value: subtopic });
       try {
         const selectedTopic = state.subQuestions[index].context.selectedTopic;
-
         getAlgoVariables(selectedTopic, subtopic)
         .then(algoVariables => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'algoVariables', value: algoVariables }))
         .catch(error => console.error('Error fetching algorithm variables:', error));
@@ -102,6 +125,22 @@ const useQuestionGeneration = () => {
       dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedSubtopic', value: subtopic });
     }
   };
+
+  const handleInputPathChange = async (inputPath: { [key: string]: any }, index?: number) => {
+    if (index !== undefined) {
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputPath', value: inputPath });
+      listInputVariable({ input_path: inputPath })
+        .then(variable => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputVariables', value: variable }))
+        .catch(error => console.error('Error fetching input variables:', error));
+      setInputQueryable(inputPath, index);
+    } else {
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputPath', value: inputPath });
+      listInputVariable({ input_path: inputPath })
+        .then(variable => dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputVariables', value: variable }))
+        .catch(error => console.error('Error fetching input variables:', error));
+      setInputQueryable(inputPath);
+    }
+  }
 
   const handleQuantifiableChange = (variableName: string, value: string, index?: number) => {
     if (index !== undefined) {
@@ -248,12 +287,37 @@ const useQuestionGeneration = () => {
     dispatch({ type: 'RESET_STATE' });
   }
 
+  const setInputQueryable = (inputPath: { [key: string]: any }, index?: number) => {
+    if (index !== undefined) {
+      getInputQueryables({ input_path: inputPath })
+        .then(queryables => dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryables', value: queryables }))
+        .catch(error => console.error('Error fetching input queryables:', error));
+    } else {
+      getInputQueryables({ input_path: inputPath })
+      .then(queryables => {
+        dispatch({ type: 'SET_FIELD', field: 'inputQueryables', value: queryables });
+        state.subQuestions.forEach((_, index) => {
+          dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryables', value: queryables });
+        });
+      })
+      .catch(error => {
+        dispatch({ type: 'SET_FIELD', field: 'inputQueryables', value: [] })
+        state.subQuestions.forEach((_, index) => {
+          dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryables', value: [] });
+        });
+        console.error('Error fetching inputQueryables:', error)
+      });
+    }
+  }
+
   return {
     state,
     dispatch,
     handleSubQuestionQueryableChange,
+    handleSubQuestionInputQueryableChange,
     handleTopicChange,
     handleSubtopicChange,
+    handleInputPathChange,
     handleQuantifiableChange,
     handleSubclassChange,
     handleArgumentChange,
@@ -268,6 +332,7 @@ const useQuestionGeneration = () => {
     setUserEnvCode,
     setUserQueryableCode,
     resetState,
+    setInputQueryable
   };
 };
 

@@ -61,6 +61,22 @@ export const convertArguments = (
   }, {} as { [key: string]: { [arg: string]: any } });
 };
 
+export const convertInputArguments = (
+  inputVariableArguments: { [key: string]: { [arg: string]: any } },
+  inputVariables: Variable
+): { [key: string]: { [arg: string]: any } } => {
+  return Object.keys(inputVariableArguments).reduce((acc, variableName) => {
+    acc[variableName] = Object.keys(inputVariableArguments[variableName]).reduce((argAcc, argName) => {
+      const argType = inputVariables.find(v => v.name === variableName)?.arguments?.find(a => a.name === argName)?.type;
+      if (argType) {
+        argAcc[argName] = convertArgumentValue(argType, inputVariableArguments[variableName][argName]);
+      }
+      return argAcc;
+    }, {} as { [key: string]: any });
+    return acc;
+  }, {} as { [key: string]: { [arg: string]: any } });
+};
+
 export const formatIdToNestedObject = (id: string):  { [key: string]: any } => {
   const parts = id.split('__');
   const lastPart = parts.pop();

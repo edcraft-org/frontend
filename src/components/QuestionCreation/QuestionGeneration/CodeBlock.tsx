@@ -3,8 +3,8 @@ import { Box, Typography, Button, Tooltip, CircularProgress, Tabs, Tab, FormCont
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import VariableTable from './VariableTable';
 import QuestionCategorySelector from './QuestionCategorySelector';
-import { GenerateInputRequest, GenerateVariableRequest, Variable, generateInput, generateVariable } from '../../../utils/api/QuestionGenerationAPI';
-import { convertArguments, convertArgumentValue } from '../../../utils/format';
+import { GenerateInputRequest, GenerateVariableRequest, generateInput, generateVariable } from '../../../utils/api/QuestionGenerationAPI';
+import { convertArguments, convertInputArguments } from '../../../utils/format';
 import { ContextBlockType } from '../../../reducer/questionGenerationReducer';
 import ProcessorClassCodeSnippetEditor from '../ClassCodeSnippetEditors/ProcessorClassCodeSnippetEditor';
 import QuestionEnvSelector from './QuestionEnvSelector';
@@ -16,6 +16,7 @@ interface CodeBlockProps {
   context: ContextBlockType;
   setTopic: (value: string) => void;
   setSubtopic: (value: string) => void;
+  setInputPath: (inputPath: { [key: string]: any }) => void;
   loading: boolean;
   handleQuantifiableChange: (variableName: string, value: string) => void;
   handleSubclassChange: (variableName: string, subclassName: string) => void;
@@ -36,6 +37,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   context,
   setTopic,
   setSubtopic,
+  setInputPath,
   loading,
   handleQuantifiableChange,
   handleSubclassChange,
@@ -53,29 +55,17 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   const [generating, setGenerating] = useState<boolean>(false);
   const [useOuterContext, setUseOuterContext] = useState<boolean>(false);
   const [processorCodeSnippet, setProcessorCodeSnippetState] = useState<string>('');
-  const [inputVariable, setInputVariable] = useState<Variable>([]);
-  const [inputPath, setInputPath] = useState<{ [key: string]: any }>({});
   const [useGeneratedInput, setUseGeneratedInput] = useState<{ [key: string]: boolean }>({});
   const [inputInit, setInputInit] = useState<{ [key: string]: { [arg: string]: any } }>({});
   const handleGenerateInput = async () => {
     try {
-      if (inputVariable.length === 0) {
+      if (context.inputVariables.length === 0) {
         return;
       }
-      const convertedVariableArguments = Object.keys(context.inputVariableArguments).reduce((acc, variableName) => {
-        acc[variableName] = Object.keys(context.inputVariableArguments[variableName]).reduce((argAcc, argName) => {
-          const argType = inputVariable.find(v => v.name === variableName)?.arguments?.find(a => a.name === argName)?.type;
-          if (argType) {
-            argAcc[argName] = convertArgumentValue(argType, context.inputVariableArguments[variableName][argName]);
-          }
-          return argAcc;
-        }, {} as { [key: string]: any });
-        return acc;
-      }, {} as { [key: string]: { [arg: string]: any } });
 
       const request: GenerateInputRequest = {
-        input_path: { ...inputPath },
-        variable_options: convertedVariableArguments,
+        input_path: { ...context.inputPath },
+        variable_options: convertInputArguments(context.inputVariableArguments, context.inputVariables),
       };
       const data = await generateInput(request)
       setGeneratedInput({ context: data.context, context_init: data.context_init });
@@ -91,14 +81,20 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     const convertedArguments = convertArguments(context.variableArguments, context.algoVariables, context.selectedSubclasses);
     setGenerating(true);
     try {
+      const argumentsInit = Object.keys(inputInit).reduce((acc, key) => {
+        if (useGeneratedInput[key]) {
+          acc[key] = inputInit[key];
+        }
+        return acc;
+      }, {} as { [key: string]: { [arg: string]: any } });
+
       const request: GenerateVariableRequest = {
         topic: context.selectedTopic,
         subtopic: context.selectedSubtopic,
         element_type: context.selectedQuantifiables,
         subclasses: context.selectedSubclasses,
         arguments: convertedArguments,
-        // arguments_init: context.argumentsInit || {},
-        arguments_init: inputInit || {},
+        arguments_init: argumentsInit,
         question_description: '',
         userAlgoCode: context.userAlgoCode,
       };
@@ -129,6 +125,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         }
       }
     }
+    const inputVariable = context.inputVariables
     if (inputVariable.length > 0) {
       if (type.includes(inputVariable[0].type)) {
         return true;
@@ -136,7 +133,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     }
     return false
   }
-
 
   return (
     <Box sx={{ marginBottom: 2, border: '1px solid #ccc', borderRadius: '4px', padding: 2 }}>
@@ -155,12 +151,12 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <QuestionEnvSelector tabValue={tabValue} setInputVariable={setInputVariable} setInputPath={setInputPath}/>
+            <QuestionEnvSelector tabValue={tabValue} setInputPath={setInputPath}/>
           </Box>
         </AccordionDetails>
       </Accordion>
       <VariableTable
-          variables={inputVariable}
+          variables={context.inputVariables}
           quantifiables={context.quantifiables}
           selectedQuantifiables={context.selectedQuantifiables}
           selectedSubclasses={context.selectedSubclasses}
@@ -195,6 +191,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
               tabValue={tabValue}
               setTopic={setTopic}
               setSubtopic={setSubtopic}
+              context={context}
             />
           </Box>
         </AccordionDetails>

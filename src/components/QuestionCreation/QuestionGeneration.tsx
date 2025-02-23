@@ -6,7 +6,7 @@ import { createQuestion, NewQuestion } from '../../utils/api/QuestionAPI';
 import { addExistingQuestionToAssessment } from '../../utils/api/AssessmentAPI';
 import { addExistingQuestionToQuestionBank } from '../../utils/api/QuestionBankAPI';
 import { AuthContext } from '../../context/Authcontext';
-import { convertArguments } from '../../utils/format';
+import { convertArguments, convertInputArguments } from '../../utils/format';
 import QuestionDescriptionInput from './QuestionGeneration/QuestionDescriptionInput';
 import CodeBlock from './QuestionGeneration/CodeBlock';
 import SubQuestion from './QuestionGeneration/SubQuestion';
@@ -28,8 +28,10 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     state,
     dispatch,
     handleSubQuestionQueryableChange,
+    handleSubQuestionInputQueryableChange,
     handleTopicChange,
     handleSubtopicChange,
+    handleInputPathChange,
     handleQuantifiableChange,
     handleSubclassChange,
     handleArgumentChange,
@@ -43,6 +45,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     setUserAlgoCode,
     setUserEnvCode,
     setUserQueryableCode,
+    setInputQueryable,
   } = useQuestionGeneration();
 
   const { user } = useContext(AuthContext);
@@ -54,24 +57,31 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       context: {
         selectedTopic: context.selectedTopic,
         selectedSubtopic: context.selectedSubtopic,
+        inputPath: context.inputPath,
         selectedSubclasses: context.selectedSubclasses,
         selectedQuantifiables: context.selectedQuantifiables,
         arguments: convertArguments(context.variableArguments, context.algoVariables, context.selectedSubclasses),
+        inputArguments: convertInputArguments(context.inputVariableArguments, context.inputVariables),
         argumentsInit: context.argumentsInit || {},
+        inputInit: context.inputInit || {},
         userAlgoCode: context.userAlgoCode || '',
         userEnvCode: context.userEnvCode || '',
       },
       sub_questions: subQuestions.map(subQuestion => ({
         description: subQuestion.description,
         queryable: subQuestion.selectedQueryable,
+        inputQueryable: subQuestion.selectedInputQueryable,
         userQueryableCode: subQuestion.userQueryableCode || '',
         context: {
           selectedTopic: subQuestion.context.selectedTopic,
           selectedSubtopic: subQuestion.context.selectedSubtopic,
+          inputPath: subQuestion.context.inputPath,
           selectedSubclasses: subQuestion.context.selectedSubclasses,
           selectedQuantifiables: subQuestion.context.selectedQuantifiables,
           arguments: convertArguments(subQuestion.context.variableArguments, subQuestion.context.algoVariables, subQuestion.context.selectedSubclasses),
+          inputArguments: convertInputArguments(subQuestion.context.inputVariableArguments, subQuestion.context.inputVariables),
           argumentsInit: subQuestion.context.inputInit || {},
+          inputInit: subQuestion.context.inputInit || {},
           userAlgoCode: subQuestion.context.userAlgoCode || '',
           userEnvCode: subQuestion.context.userEnvCode|| '',
         },
@@ -129,20 +139,11 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     dispatch({ type: 'REMOVE_SUB_QUESTION', index });
   };
 
-  const handleSubQuestionChange = (index: number, field: string, value: string) => {
-    // const newSubQuestions = [...state.subQuestions];
-    // newSubQuestions[index] = { ...newSubQuestions[index], [field]: value };
-    // console.log(newSubQuestions, 'newSubQuestions')
-    // dispatch({ type: 'SET_FIELD', field: 'subQuestions', value: newSubQuestions });
-
-    if (field === 'queryable') {
-      handleSubQuestionQueryableChange(index, value);
-    }
-  };
 
   const contextActions = {
     setTopic: handleTopicChange,
     setSubtopic: handleSubtopicChange,
+    setInputPath: handleInputPathChange,
     handleQuantifiableChange: handleQuantifiableChange,
     handleSubclassChange: handleSubclassChange,
     handleArgumentChange: handleArgumentChange,
@@ -153,17 +154,20 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     copyInputInit: copyInputInit,
     setUserAlgoCode: setUserAlgoCode,
     setUserEnvCode: setUserEnvCode,
+    setInputQueryable: setInputQueryable,
   };
 
   const getSubQuestionActions = (index: number) => ({
     setTopic: (topic: string) => handleTopicChange(topic, index),
     setSubtopic: (subtopic: string) => handleSubtopicChange(subtopic, index),
+    setInputPath: (inputPath: { [key: string]: any }) => handleInputPathChange(inputPath, index),
     handleQuantifiableChange: (variableName: string, value: string) => handleQuantifiableChange(variableName, value, index),
     handleSubclassChange: (variableName: string, subclassName: string) => handleSubclassChange(variableName, subclassName, index),
     handleArgumentChange: (variableName: string, argName: string, value: any) => handleArgumentChange(variableName, argName, value, index),
     handleInputArgumentChange: (variableName: string, argName: string, value: any) => handleInputArgumentChange(variableName, argName, value, index),
     copyInputArgument: (variableName: string, inputName: string, argName: string) => copyInputArgument(variableName, inputName, argName, index),
     copyInputInit: (variableName: string, inputName: string) => copyInputInit(variableName, inputName, index),
+    setInputQueryable: (inputPath: { [key: string]: any }) =>  setInputQueryable(inputPath, index),
   });
 
   return (
@@ -196,7 +200,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           index={index}
           subQuestion={subQuestion}
           setDescription={handleDescriptionChange}
-          setQueryable={(index, value) => handleSubQuestionChange(index, 'queryable', value)}
+          setQueryable={(index, value) => handleSubQuestionQueryableChange(index, value)}
+          setInputQueryable={(index, value) => handleSubQuestionInputQueryableChange(index, value)}
           handleNumOptionsChange={(value) => handleNumOptionsChange(value, index)}
           handleGenerate={() => {}}
           removeSubQuestion={removeSubQuestion}

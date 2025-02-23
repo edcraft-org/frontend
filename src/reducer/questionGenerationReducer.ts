@@ -7,8 +7,11 @@ export type SubQuestionType = {
   marks: number;
   numOptions: number;
   queryables: Queryable[];
+  inputQueryables: Queryable[];
   selectedQueryable: Queryable;
+  selectedInputQueryable: Queryable;
   queryVariables: Variable;
+  inputQueryVariables: Variable;
   userQueryableCode?: string;
   requiredLines: string[];
 };
@@ -18,8 +21,9 @@ export type ContextBlockType = {
   subtopics: Subtopic[];
   selectedTopic: string;
   selectedSubtopic: string;
-  // algoPath: { [key: string]: { [arg: string]: any } };
+  inputPath: { [key: string]: any };
   algoVariables: Variable;
+  inputVariables: Variable;
   quantifiables: Quantifiable[];
   selectedQuantifiables: { [key: string]: string };
   selectedSubclasses: { [key: string]: string };
@@ -35,6 +39,7 @@ export type QuestionBlock = {
   description: string;
   context: ContextBlockType;
   queryables: Queryable[];
+  inputQueryables: Queryable[];
   userQueryableCode?: string;
   subQuestions: SubQuestionType[];
   loading: boolean;
@@ -49,8 +54,9 @@ export const initialState: QuestionBlock = {
     subtopics: [],
     selectedTopic: '',
     selectedSubtopic: '',
-    // algoPath: {},
+    inputPath: {},
     algoVariables: [],
+    inputVariables: [],
     quantifiables: [],
     selectedQuantifiables: {},
     selectedSubclasses: {},
@@ -62,6 +68,7 @@ export const initialState: QuestionBlock = {
     userEnvCode: '',
   },
   queryables: [],
+  inputQueryables: [],
   userQueryableCode: '',
   subQuestions: [
     {
@@ -71,7 +78,9 @@ export const initialState: QuestionBlock = {
         subtopics: [],
         selectedTopic: '',
         selectedSubtopic: '',
+        inputPath: {},
         algoVariables: [],
+        inputVariables: [],
         quantifiables: [],
         selectedQuantifiables: {},
         selectedSubclasses: {},
@@ -85,9 +94,12 @@ export const initialState: QuestionBlock = {
       marks: 1,
       numOptions: 4,
       queryables: [],
+      inputQueryables: [],
       userQueryableCode: '',
       selectedQueryable: '',
+      selectedInputQueryable: '',
       queryVariables: [],
+      inputQueryVariables: [],
       requiredLines: [],
     },
   ],
@@ -99,9 +111,6 @@ export const initialState: QuestionBlock = {
 export type Action =
   | { type: 'SET_FIELD'; field: keyof QuestionBlock; value: any }
   | { type: 'SET_CONTEXT_FIELD'; field: keyof ContextBlockType; value: any }
-  | { type: 'SET_TOPICS'; topics: Topic[] }
-  | { type: 'SET_SUBTOPICS'; subtopics: Subtopic[] }
-  | { type: 'SET_QUERYABLES'; queryables: Queryable[] }
   | { type: 'SET_ALGO_VARIABLES'; algoVariables: Variable }
   | { type: 'SET_QUANTIFIABLES'; quantifiables: Quantifiable[] }
   | { type: 'SET_GENERATED_QUESTIONS'; generatedQuestions: GenerateQuestionResponse }
@@ -109,8 +118,6 @@ export type Action =
   | { type: 'SET_SUB_QUESTION_CONTEXT_FIELD'; index: number; field: keyof ContextBlockType; value: any }
   | { type: 'ADD_SUB_QUESTION' }
   | { type: 'REMOVE_SUB_QUESTION'; index: number }
-  | { type: 'UPDATE_ALL_SUB_QUESTIONS'; field: keyof ContextBlockType; value: any }
-  | { type: 'SET_ALGO_PATH'; algoPath: { [key: string]: { [arg: string]: any } } }
   | { type: 'RESET_STATE' };
 
 export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => {
@@ -119,10 +126,6 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
       return { ...state, [action.field]: action.value };
     case 'SET_CONTEXT_FIELD':
       return { ...state, context: { ...state.context, [action.field]: action.value } };
-    case 'SET_TOPICS':
-      return { ...state, context: { ...state.context, topics: action.topics } };
-    case 'SET_SUBTOPICS':
-      return { ...state, context: { ...state.context, subtopics: action.subtopics } };
     case 'SET_ALGO_VARIABLES':
       return { ...state, context: { ...state.context, algoVariables: action.algoVariables } };
     case 'SET_QUANTIFIABLES':
@@ -154,8 +157,9 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
               subtopics: [],
               selectedTopic: '',
               selectedSubtopic: '',
-              // algoPath: {},
+              inputPath: {},
               algoVariables: [],
+              inputVariables: [],
               quantifiables: [],
               selectedQuantifiables: {},
               selectedSubclasses: {},
@@ -167,8 +171,11 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
             marks: 1,
             numOptions: 4,
             queryables: state.queryables,
+            inputQueryables: state.inputQueryables,
             selectedQueryable: '',
+            selectedInputQueryable: '',
             queryVariables: [],
+            inputQueryVariables: [],
             requiredLines: [],
           },
         ],
@@ -180,20 +187,6 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
         subQuestions: newSubQuestions,
       };
     }
-    case 'UPDATE_ALL_SUB_QUESTIONS': {
-      return {
-        ...state,
-        subQuestions: state.subQuestions.map(subQuestion => ({
-          ...subQuestion,
-          context: {
-            ...subQuestion.context,
-            [action.field]: action.value
-          }
-        }))
-      }
-    }
-    // case 'SET_ALGO_PATH':
-    //   return { ...state, context: { ...state.context, algoPath: action.algoPath } };
     case 'RESET_STATE':
       return initialState;
     default:
