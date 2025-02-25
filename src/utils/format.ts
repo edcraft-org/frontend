@@ -26,7 +26,11 @@ export const convertArgumentValue = (type: string, value: any) => {
     case 'bool':
       return value === 'true';
     default:
-      return JSON.parse(value);
+      try {
+        return JSON.parse(value);
+      } catch (e) {
+        return value;
+      }
   }
 };
 
@@ -46,6 +50,7 @@ export const convertArguments = (
   algoVariables: Variable,
   selectedSubclasses: { [key: string]: string }
 ): { [key: string]: { [arg: string]: any } } => {
+  console.log(variableArguments, algoVariables, selectedSubclasses)
   return Object.keys(variableArguments).reduce((acc, variableName) => {
     const variable = algoVariables.find(v => v.name === variableName);
     if (variable) {

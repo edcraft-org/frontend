@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, FormControl, Select, MenuItem, TextField, FormControlLabel, Checkbox } from '@mui/material';
 import { Variable, Quantifiable, VariableItem } from '../../../utils/api/QuestionGenerationAPI';
 import { ContextBlockType } from '../../../reducer/questionGenerationReducer';
+import CodeSnippetEditor from '../CodeSnippetEditor';
 
 interface VariableTableProps {
   variables: Variable;
@@ -44,6 +45,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
     return type === 'Quantifiable' || type.includes('Quantifiable');
   };
   const [inputName, setInputName] = useState<string>('');
+  const [codeSnippets, setCodeSnippets] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     if (context.inputInit) {
@@ -71,6 +73,14 @@ const VariableTable: React.FC<VariableTableProps> = ({
       }
     }
     setUseGeneratedInput((prev) => ({ ...prev, [variable.name]: checked }));
+  };
+
+  const handleCodeSnippetChange = (variableName: string, argName: string, code: string) => {
+    setCodeSnippets((prev) => ({
+      ...prev,
+      [`${variableName}_${argName}`]: code,
+    }));
+    handleArgumentChange(variableName, argName, code);
   };
 
   const hasQuantifiable = variables.some((variable) => isQuantifiable(variable.type));
@@ -144,30 +154,48 @@ const VariableTable: React.FC<VariableTableProps> = ({
                     {variables
                       .find((v) => v.name === variable.name)
                       ?.subclasses?.find((s) => s.name === selectedSubclasses[variable.name])?.arguments.map((arg) => (
-                        <TextField
-                          key={arg.name}
-                          label={`${arg.name} (${arg.type})`}
-                          value={variableArguments[variable.name]?.[arg.name] || ''}
-                          onChange={(e) => handleArgumentChange(variable.name, arg.name, e.target.value)}
-                          fullWidth
-                          sx={{ marginBottom: 2 }}
-                          disabled={disableFields}
-                        />
+                        arg.type.includes('typing.Callable') ? (
+                          <CodeSnippetEditor
+                            key={arg.name}
+                            title={`${arg.name} (${arg.type})`}
+                            codeSnippet={codeSnippets[`${variable.name}_${arg.name}`] || ''}
+                            setCodeSnippet={(code) => handleCodeSnippetChange(variable.name, arg.name, code)}
+                          />
+                        ) : (
+                          <TextField
+                            key={arg.name}
+                            label={`${arg.name} (${arg.type})`}
+                            value={variableArguments[variable.name]?.[arg.name] || ''}
+                            onChange={(e) => handleArgumentChange(variable.name, arg.name, e.target.value)}
+                            fullWidth
+                            sx={{ marginBottom: 2 }}
+                            disabled={disableFields}
+                          />
+                        )
                       ))}
                   </TableCell>
                 ) : (
                   variable.arguments && (
                     <TableCell sx={{ width: '20%' }}>
                       {variable.arguments.map((arg) => (
-                        <TextField
-                          key={arg.name}
-                          label={`${arg.name} (${arg.type})`}
-                          value={variableArguments[variable.name]?.[arg.name] || ''}
-                          onChange={(e) => handleArgumentChange(variable.name, arg.name, e.target.value)}
-                          fullWidth
-                          disabled={disableFields}
-                        />
-                      ))}
+                        arg.type === 'typing.Callable' ? (
+                          <CodeSnippetEditor
+                            key={arg.name}
+                            title=''
+                            codeSnippet={codeSnippets[`${variable.name}_${arg.name}`] || ''}
+                            setCodeSnippet={(code) => handleCodeSnippetChange(variable.name, arg.name, code)}
+                          />
+                        ) : (
+                          <TextField
+                            key={arg.name}
+                            label={`${arg.name} (${arg.type})`}
+                            value={variableArguments[variable.name]?.[arg.name] || ''}
+                            onChange={(e) => handleArgumentChange(variable.name, arg.name, e.target.value)}
+                            fullWidth
+                            disabled={disableFields}
+                          />
+                        )
+                        ))}
                     </TableCell>
                   )
                 )}

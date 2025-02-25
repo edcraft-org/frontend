@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import Editor from '@monaco-editor/react';
 
 interface CodeSnippetEditorProps {
@@ -8,13 +8,13 @@ interface CodeSnippetEditorProps {
   title: string;
 }
 
-const CodeSnippetEditor: React.FC<CodeSnippetEditorProps> = ({ codeSnippet, setCodeSnippet }) => {
+const CodeSnippetEditor: React.FC<CodeSnippetEditorProps> = ({ codeSnippet, setCodeSnippet, title }) => {
 
   return (
     <Box sx={{ marginBottom: 2 }}>
-      {/* <Typography variant="subtitle1" sx={{ marginBottom: 2 }}>
-        {title} Code Snippet
-      </Typography> */}
+      <Typography variant="subtitle1" sx={{ marginBottom: 2 }}>
+        {title}
+      </Typography>
       <Box sx={{ marginBottom: 2, border: '1px solid #ccc', borderRadius: '4px' }}>
         <Editor
           height="300px"
