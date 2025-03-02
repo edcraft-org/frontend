@@ -8,6 +8,7 @@ import QuestionGroupPage from "../../QuestionPages/QuestionGroupPage/QuestionGro
 import { AuthContext } from "../../../context/Authcontext";
 import { getAssessmentById, removeQuestionFromAssessment } from "../../../utils/api/AssessmentAPI";
 import { Question } from "../../../utils/api/QuestionAPI";
+import { generateRTF } from "../../../utils/export/rtf";
 
 interface AssessmentDetails {
   title: string;
@@ -48,16 +49,9 @@ const AssessmentDetailsPage: React.FC = () => {
     });
   };
 
-  const previewAssessment = () => {
-    alert("Preview assessment");
-  };
-
-  const publishAssessment = () => {
-    alert("Publish assessment");
-  };
-
   const exportAssessment = () => {
-    alert("Export assessment");
+    if (!assessmentDetails) return;
+    generateRTF(assessmentDetails);
   };
 
   const handleRemoveQuestion = async (questionId: string) => {
@@ -86,14 +80,8 @@ const AssessmentDetailsPage: React.FC = () => {
             {assessmentDetails ? assessmentDetails.title : 'Loading...'}
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-            <Button variant="contained" color="primary" onClick={previewAssessment} sx={{ marginBottom: 1, width: '150px' }}>
-                Preview
-            </Button>
-            <Button variant="contained" color="primary" onClick={publishAssessment} sx={{ marginBottom: 1, width: '150px' }}>
-                Publish
-            </Button>
             <Button variant="contained" color="primary" onClick={exportAssessment} sx={{ width: '150px' }}>
-                Export
+                Export as RTF
             </Button>
           </Box>
         </Box>

@@ -34,7 +34,7 @@ interface NavBarProps {
   }
 }
 
-const settings = ['Account', 'Logout'];
+const settings = ['Logout'];
 
 function NavBar({ project, assessment, questionBank, isProjectAssessment, isProjectQuestionBank, isQuestionCreation }: NavBarProps) {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -110,6 +110,10 @@ function NavBar({ project, assessment, questionBank, isProjectAssessment, isProj
     navigate('/');
   };
 
+  const handleLogoClick = () => {
+    navigate('/');
+  };
+
   return (
     <AppBar position="fixed" sx={{ backgroundColor: '#fafafa' }} >
       <Container maxWidth={false}>
@@ -124,12 +128,12 @@ function NavBar({ project, assessment, questionBank, isProjectAssessment, isProj
               width: { xs: '25px', md: '40px' },
               height: { xs: '25px', md: '40px' }
             }}
+            onClick={handleLogoClick}
         />
         <Typography
           variant="h6"
           noWrap
           component="a"
-          href="#app-bar-with-responsive-menu"
           sx={{
             mr: 2,
             display: { xs: 'flex', md: 'flex' },
@@ -141,6 +145,7 @@ function NavBar({ project, assessment, questionBank, isProjectAssessment, isProj
             textDecoration: 'none',
             fontSize: ['1.25rem', '1.25rem', '1.5rem', '1.5rem'],
           }}
+          onClick={handleLogoClick}
         >
           EdCraft
         </Typography>

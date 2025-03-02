@@ -155,24 +155,33 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           </Box>
         </AccordionDetails>
       </Accordion>
-      <VariableTable
-          variables={context.inputVariables}
-          quantifiables={context.quantifiables}
-          selectedQuantifiables={context.selectedQuantifiables}
-          selectedSubclasses={context.selectedSubclasses}
-          variableArguments={context.inputVariableArguments}
-          handleQuantifiableChange={handleQuantifiableChange}
-          handleSubclassChange={handleSubclassChange}
-          handleArgumentChange={handleInputArgumentChange}
-          isAlgoTable={false}
-          context={context}
-          copyInputArgument={copyInputArgument}
-          copyInputInit={copyInputInit}
-          useGeneratedInput={useGeneratedInput}
-          setUseGeneratedInput={setUseGeneratedInput}
-          checkArgumentType={checkArgumentType}
-          setInputInit={setInputInit}
-      />
+      {!useOuterContext && context.inputVariables.length > 0 && (
+        <>
+          <Tooltip title="Variables are placeholders in your question. Use {Input}, {Step}, etc. in your question description to represent these variables." placement="bottom-start">
+            <Typography variant="subtitle1">
+              Algorithm Variables (Use variable name in question description)
+            </Typography>
+          </Tooltip>
+          <VariableTable
+              variables={context.inputVariables}
+              quantifiables={context.quantifiables}
+              selectedQuantifiables={context.selectedQuantifiables}
+              selectedSubclasses={context.selectedSubclasses}
+              variableArguments={context.inputVariableArguments}
+              handleQuantifiableChange={handleQuantifiableChange}
+              handleSubclassChange={handleSubclassChange}
+              handleArgumentChange={handleInputArgumentChange}
+              isAlgoTable={false}
+              context={context}
+              copyInputArgument={copyInputArgument}
+              copyInputInit={copyInputInit}
+              useGeneratedInput={useGeneratedInput}
+              setUseGeneratedInput={setUseGeneratedInput}
+              checkArgumentType={checkArgumentType}
+              setInputInit={setInputInit}
+          />
+        </>
+      )}
       <Button variant="contained" color="primary" onClick={handleGenerateInput} disabled={generating} sx={{ marginBottom: 2 }}>
         {generating ? <CircularProgress size={24} /> : 'Generate Input'}
       </Button>
