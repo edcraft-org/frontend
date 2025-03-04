@@ -1,6 +1,6 @@
 import { useReducer, useEffect } from 'react';
-import { reducer, initialState } from '../reducer/questionGenerationReducer';
-import { getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables, getUserQueryables, getUserAlgoVariables, getInputQueryables, getInputQueryableVariables, listInputVariable } from '../utils/api/QuestionGenerationAPI';
+import { reducer, initialState, InputDetailsType } from '../reducer/questionGenerationReducer';
+import { getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables, getUserQueryables, getUserAlgoVariables, getInputQueryables, getInputQueryableVariables, listInputVariable, Variable } from '../utils/api/QuestionGenerationAPI';
 
 const useQuestionGeneration = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -46,7 +46,6 @@ const useQuestionGeneration = () => {
   const handleSubQuestionQueryableChange = async (index: number, queryable: string) => {
     const selectedTopic = state.subQuestions[index].context.selectedTopic ? state.subQuestions[index].context.selectedTopic : state.context.selectedTopic;
     const selectedSubtopic = state.subQuestions[index].context.selectedSubtopic ? state.subQuestions[index].context.selectedSubtopic : state.context.selectedSubtopic;
-    {console.log(selectedTopic, selectedSubtopic, queryable)}
     if (selectedTopic && selectedSubtopic && queryable) {
       try {
         dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: queryable });
@@ -64,10 +63,9 @@ const useQuestionGeneration = () => {
 
 
   const handleSubQuestionInputQueryableChange = async (index: number, queryable: string) => {
-    console.log(state)
-    const selectedInputPath = Object.keys(state.subQuestions[index].context.inputPath).length > 0 ? state.subQuestions[index].context.inputPath : state.context.inputPath;
-    if (Object.keys(selectedInputPath).length > 0  && queryable) {
+    if (state.subQuestions[index].context.inputDetails.length > 0 && Object.keys(state.subQuestions[index].context.inputDetails[0].inputPath).length > 0 && queryable) {
       try {
+        const selectedInputPath = state.subQuestions[index].context.inputDetails[0].inputPath;
         dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedInputQueryable', value: queryable });
         const data = await getInputQueryableVariables(selectedInputPath, queryable);
         dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryVariables', value: data });
@@ -127,20 +125,44 @@ const useQuestionGeneration = () => {
   };
 
   const handleInputPathChange = async (inputPath: { [key: string]: any }, index?: number) => {
+    const fetchInputVariables = async () => {
+      try {
+        return await listInputVariable({ input_path: inputPath });
+      } catch (error) {
+        console.error('Error fetching input variables:', error);
+        return [];
+      }
+    };
+
+    const updateInputDetails = async (inputDetails: InputDetailsType[]) => {
+      const inputVariables = await fetchInputVariables();
+      const lastInputDetail = inputDetails.length > 0 ? inputDetails[inputDetails.length - 1] : { inputPath: {}, inputVariables: [], inputVariableArguments: {}, inputInit: {} };
+
+      if (
+        Object.keys(lastInputDetail.inputVariableArguments).length === 0 &&
+        lastInputDetail.inputInit &&
+        Object.keys(lastInputDetail.inputInit).length === 0
+      ) {
+        inputDetails[inputDetails.length - 1] = { ...lastInputDetail, inputPath, inputVariables };
+      } else {
+        inputDetails.push({ inputPath, inputVariables, inputVariableArguments: {}, inputInit: {} });
+      }
+
+      return inputDetails;
+    };
+    const context = index !== undefined ? state.subQuestions[index].context : state.context;
+
     if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputPath', value: inputPath });
-      listInputVariable({ input_path: inputPath })
-        .then(variable => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputVariables', value: variable }))
-        .catch(error => console.error('Error fetching input variables:', error));
+      const updatedInputDetails = [{ inputPath, inputVariables: [] as Variable, inputVariableArguments: {}, inputInit: {} }];
+      const inputVariables = await fetchInputVariables();
+      updatedInputDetails[0].inputVariables = inputVariables;
+      dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails});
       setInputQueryable(inputPath, index);
     } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputPath', value: inputPath });
-      listInputVariable({ input_path: inputPath })
-        .then(variable => dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputVariables', value: variable }))
-        .catch(error => console.error('Error fetching input variables:', error));
-      setInputQueryable(inputPath);
+      const updatedInputDetails = await updateInputDetails([...context.inputDetails]);
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updatedInputDetails});
     }
-  }
+  };
 
   const handleQuantifiableChange = (variableName: string, value: string, index?: number) => {
     if (index !== undefined) {
@@ -185,21 +207,59 @@ const useQuestionGeneration = () => {
   };
 
   const handleInputArgumentChange = (variableName: string, argName: string, value: any, index?: number) => {
+    const updateInputDetails = (inputDetails: InputDetailsType[]) => {
+      if (inputDetails.length === 0) {
+        return inputDetails;
+      }
+
+      const updatedInputDetails = [...inputDetails];
+      const lastInputDetail = updatedInputDetails[updatedInputDetails.length - 1];
+      const inputVariableArguments = lastInputDetail.inputVariableArguments || {};
+
+      if (lastInputDetail.inputInit && Object.keys(lastInputDetail.inputInit).length === 0) {
+        updatedInputDetails[updatedInputDetails.length - 1] = {
+          ...lastInputDetail,
+          inputVariableArguments: {
+            ...inputVariableArguments,
+            [variableName]: {
+              ...inputVariableArguments[variableName],
+              [argName]: value,
+            },
+          },
+        };
+      } else {
+        updatedInputDetails.push({
+          inputPath: { ...lastInputDetail.inputPath },
+          inputVariables: [...lastInputDetail.inputVariables],
+          inputVariableArguments: {
+            ...inputVariableArguments,
+            [variableName]: {
+              ...inputVariableArguments[variableName],
+              [argName]: value,
+            },
+          },
+          inputInit: {},
+        });
+      }
+
+      return updatedInputDetails;
+      };
     if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputVariableArguments', value: { ...state.subQuestions[index].context.inputVariableArguments, [variableName]: { ...state.subQuestions[index].context.inputVariableArguments[variableName], [argName]: value } } });
+      const subQuestion = state.subQuestions[index];
+      const updatedInputDetails = [{...subQuestion.context.inputDetails[0], inputVariableArguments: { ...subQuestion.context.inputDetails[0].inputVariableArguments, [variableName]: { ...subQuestion.context.inputDetails[0].inputVariableArguments[variableName], [argName]: value } }}];
+      dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails});
     } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputVariableArguments', value: { ...state.context.inputVariableArguments, [variableName]: { ...state.context.inputVariableArguments[variableName], [argName]: value } } });
+      dispatch({type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updateInputDetails([...state.context.inputDetails])});
     }
   };
 
-  const copyInputArgument = (variableName: string, inputName: string, argName: string, index?: number) => {
+  const copyInputArgument = (variableName: string, inputName: string, argName: string, inputDetailIndex: number, index?: number) => {
     if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { ...state.subQuestions[index].context.variableArguments, [variableName]: { ...state.subQuestions[index].context.variableArguments[variableName], [argName]: state.subQuestions[index].context.inputVariableArguments[inputName][argName] } }});
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { ...state.subQuestions[index].context.variableArguments, [variableName]: { ...state.subQuestions[index].context.variableArguments[variableName], [argName]: state.subQuestions[index].context.inputDetails[inputDetailIndex].inputVariableArguments[inputName][argName] } }});
     } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: { ...state.context.variableArguments, [variableName]: { ...state.context.variableArguments[variableName], [argName]: state.context.inputVariableArguments[inputName][argName] } }});
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: { ...state.context.variableArguments, [variableName]: { ...state.context.variableArguments[variableName], [argName]: state.context.inputDetails[inputDetailIndex].inputVariableArguments[inputName][argName] } }});
     }
   }
-
 
   const handleArgumentInit = (argumentsInit: { [key: string]: { [arg: string]: any } }, index?: number) => {
     if (index !== undefined) {
@@ -210,21 +270,44 @@ const useQuestionGeneration = () => {
   };
 
   const handleInputInit = (inputInit: { [key: string]: { [arg: string]: any } }, index?: number) => {
+    const updateInputDetails = (inputDetails: InputDetailsType[]) => {
+      if (inputDetails.length === 0) {
+        return [{ inputPath: {}, inputVariables: [], inputVariableArguments: {}, inputInit }];
+      }
+
+      const lastInputDetail = { ...inputDetails[inputDetails.length - 1] };
+
+      if (lastInputDetail.inputInit && Object.keys(lastInputDetail.inputInit).length === 0) {
+        inputDetails[inputDetails.length - 1] = { ...lastInputDetail, inputInit };
+      } else {
+        inputDetails.push({
+          inputPath: { ...lastInputDetail.inputPath },
+          inputVariables: [...lastInputDetail.inputVariables],
+          inputVariableArguments: { ...lastInputDetail.inputVariableArguments },
+          inputInit,
+        });
+      }
+      return inputDetails;
+    };
+
     if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputInit', value: inputInit });
+      const subQuestion = state.subQuestions[index];
+      const updatedInputDetails = [{...subQuestion.context.inputDetails[0], inputInit}];
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails });
     } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputInit', value: inputInit });
+      const updatedInputDetails = updateInputDetails([...state.context.inputDetails]);
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updatedInputDetails });
     }
   };
 
-  const copyInputInit = (variableName: string, inputName: string, index?: number) => {
+  const copyInputInit = (variableName: string, inputName: string, inputDetailIndex: number, index?: number) => {
     if (index !== undefined) {
-      if (state.subQuestions[index].context.inputInit) {
-        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'argumentsInit', value: { ...state.subQuestions[index].context.argumentsInit, [variableName]: state.subQuestions[index].context.inputInit[inputName] } });
+      if (state.subQuestions[index].context.inputDetails[inputDetailIndex].inputInit) {
+        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'argumentsInit', value: { ...state.subQuestions[index].context.argumentsInit, [variableName]: state.subQuestions[index].context.inputDetails[inputDetailIndex].inputInit[inputName] } });
       }
     } else {
-      if (state.context.inputInit) {
-        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'argumentsInit', value: { ...state.context.argumentsInit, [variableName]: state.context.inputInit[inputName] } });
+      if (state.context.inputDetails[inputDetailIndex].inputInit) {
+        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'argumentsInit', value: { ...state.context.argumentsInit, [variableName]: state.context.inputDetails[inputDetailIndex].inputInit[inputName] } });
       }
     }
   }
@@ -310,6 +393,48 @@ const useQuestionGeneration = () => {
     }
   }
 
+  const removeInputDetailsItem = (inputDetailsIndex: number, index?: number) => {
+    const updateInputDetails = (inputDetails: InputDetailsType[]) => {
+      const removedItem = { ...inputDetails[inputDetailsIndex] };
+      inputDetails.splice(inputDetailsIndex, 1);
+      if (inputDetails.length === 0) {
+        inputDetails.push({
+          inputPath: removedItem.inputPath,
+          inputVariables: removedItem.inputVariables,
+          inputVariableArguments: {},
+          inputInit: {},
+        });
+      }
+      return inputDetails;
+    };
+
+    if (index !== undefined) {
+      const subQuestion = state.subQuestions[index];
+      const updatedInputDetails = updateInputDetails([...subQuestion.context.inputDetails]);
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails });
+    } else {
+      const updatedInputDetails = updateInputDetails([...state.context.inputDetails]);
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updatedInputDetails });
+    }
+  };
+
+  const copyInputDetailsItem = (inputDetailsItem: InputDetailsType, index?: number) => {
+    const updateInputDetails = (inputDetails: InputDetailsType[]) => {
+      const copiedItem = { ...inputDetailsItem };
+      inputDetails[inputDetails.length - 1] = copiedItem;
+      return inputDetails;
+    };
+
+    if (index !== undefined) {
+      const subQuestion = state.subQuestions[index];
+      const updatedInputDetails = updateInputDetails([...subQuestion.context.inputDetails]);
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails });
+    } else {
+      const updatedInputDetails = updateInputDetails([...state.context.inputDetails]);
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updatedInputDetails });
+    }
+  }
+
   return {
     state,
     dispatch,
@@ -332,7 +457,9 @@ const useQuestionGeneration = () => {
     setUserEnvCode,
     setUserQueryableCode,
     resetState,
-    setInputQueryable
+    setInputQueryable,
+    removeInputDetailsItem,
+    copyInputDetailsItem,
   };
 };
 

@@ -48,7 +48,7 @@ const QuestionCategorySelector: React.FC<QuestionCategorySelectorProps> = ({
     if (context.selectedTopic && selectedSubtopic) {
       setSubtopic(selectedSubtopic);
     }
-  }, [context.selectedTopic]);
+  }, [context.selectedTopic, selectedSubtopic]);
 
   return (
     <TreeViewSelector

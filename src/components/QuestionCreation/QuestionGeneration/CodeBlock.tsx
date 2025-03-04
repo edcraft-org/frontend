@@ -5,15 +5,17 @@ import VariableTable from './VariableTable';
 import QuestionCategorySelector from './QuestionCategorySelector';
 import { GenerateInputRequest, GenerateVariableRequest, generateInput, generateVariable } from '../../../utils/api/QuestionGenerationAPI';
 import { convertArguments, convertInputArguments } from '../../../utils/format';
-import { ContextBlockType } from '../../../reducer/questionGenerationReducer';
+import { ContextBlockType, initialState, InputDetailsType } from '../../../reducer/questionGenerationReducer';
 import ProcessorClassCodeSnippetEditor from '../ClassCodeSnippetEditors/ProcessorClassCodeSnippetEditor';
 import QuestionEnvSelector from './QuestionEnvSelector';
 import GeneratedVariablesTable from '../../Table/GeneratedVariablesTable';
+import { v4 as uuidv4 } from 'uuid';
 
 interface CodeBlockProps {
   tabValue: number;
   handleTabChange: (event: React.SyntheticEvent, newValue: number) => void;
   context: ContextBlockType;
+  outerContext: ContextBlockType;
   setTopic: (value: string) => void;
   setSubtopic: (value: string) => void;
   setInputPath: (inputPath: { [key: string]: any }) => void;
@@ -22,12 +24,17 @@ interface CodeBlockProps {
   handleSubclassChange: (variableName: string, subclassName: string) => void;
   handleArgumentChange: (variableName: string, argName: string, value: any) => void;
   handleInputArgumentChange: (variableName: string, argName: string, value: any) => void;
-  copyInputArgument: (variableName: string, inputName: string, argName: string) => void;
+  copyInputArgument: (variableName: string, inputName: string, argName: string, inputDetailIndex: number) => void;
   handleArgumentInit: (argumentsInit: { [key: string]: { [arg: string]: any } }, index?: number) => void;
   handleInputInit: (inputInit: { [key: string]: { [arg: string]: any } }, index?: number) => void;
-  copyInputInit: (variableName: string, inputName: string, index?: number) => void;
+  copyInputInit: (variableName: string, inputName: string, inputDetailIndex: number, index?: number) => void;
   setUserAlgoCode: (userAlgoCode: string, index?: number) => void;
   setUserEnvCode: (userEnvCode: string, index?: number) => void;
+  removeInputDetailsItem: (inputDetailIndex: number) => void;
+  copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => void;
+  generatedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>;
+  setGeneratedInputs: (value: React.SetStateAction<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>>) => void;
+  outerGeneratedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>;
   index?: number;
 }
 
@@ -35,6 +42,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   tabValue,
   handleTabChange,
   context,
+  outerContext,
   setTopic,
   setSubtopic,
   setInputPath,
@@ -48,27 +56,35 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   handleInputInit,
   copyInputInit,
   setUserAlgoCode,
+  removeInputDetailsItem,
+  copyInputDetailsItem,
+  generatedInputs,
+  setGeneratedInputs,
+  outerGeneratedInputs,
   index,
 }) => {
-  const [generatedInput, setGeneratedInput] = useState<{ context: { [key: string]: any }, context_init: { [key: string]: any } }>({ context: {}, context_init: {} });
-  const [generatedVariables, setGeneratedVariables] = useState<{ context: { [key: string]: any }, context_init: { [key: string]: any } }>({ context: {}, context_init: {} });
+  const [generatedVariables, setGeneratedVariables] = useState<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>({ id: '', type: 'algo', context: {}, context_init: {} });
   const [generating, setGenerating] = useState<boolean>(false);
   const [useOuterContext, setUseOuterContext] = useState<boolean>(false);
   const [processorCodeSnippet, setProcessorCodeSnippetState] = useState<string>('');
-  const [useGeneratedInput, setUseGeneratedInput] = useState<{ [key: string]: boolean }>({});
+  const [useGeneratedInput, setUseGeneratedInput] = useState<{ [key: string]: number }>({});
   const [inputInit, setInputInit] = useState<{ [key: string]: { [arg: string]: any } }>({});
   const handleGenerateInput = async () => {
     try {
-      if (context.inputVariables.length === 0) {
+      if (context.inputDetails.length === 0 || context.inputDetails[context.inputDetails.length-1].inputVariables.length === 0) {
         return;
       }
-
       const request: GenerateInputRequest = {
-        input_path: { ...context.inputPath },
-        variable_options: convertInputArguments(context.inputVariableArguments, context.inputVariables),
+        input_path: { ...context.inputDetails[context.inputDetails.length-1].inputPath },
+        variable_options: convertInputArguments(context.inputDetails[context.inputDetails.length-1].inputVariableArguments, context.inputDetails[context.inputDetails.length-1].inputVariables),
+        input_init: (outerContext.inputDetails.length > 0 && Object.keys(outerContext.inputDetails[0].inputPath).length > 0 && Object.values(useGeneratedInput)[0] !== -1) ? { ...context.inputDetails[context.inputDetails.length-1].inputInit } : undefined,
       };
-      const data = await generateInput(request)
-      setGeneratedInput({ context: data.context, context_init: data.context_init });
+      const data = await generateInput(request);
+      if (index !== undefined) {
+        setGeneratedInputs([{ id: uuidv4(), type: 'input', context: data.context, context_init: data.context_init }]);
+      } else {
+        setGeneratedInputs((prevInputs) => [...prevInputs, { id: uuidv4(), type: 'input', context: data.context, context_init: data.context_init }]);
+      }
       handleInputInit(data.context_init, index);
     } catch (error) {
       console.error('Error generating variables:', error);
@@ -82,12 +98,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     setGenerating(true);
     try {
       const argumentsInit = Object.keys(inputInit).reduce((acc, key) => {
-        if (useGeneratedInput[key]) {
-          acc[key] = inputInit[key];
-        }
+        acc[key] = inputInit[key];
         return acc;
       }, {} as { [key: string]: { [arg: string]: any } });
-
       const request: GenerateVariableRequest = {
         topic: context.selectedTopic,
         subtopic: context.selectedSubtopic,
@@ -99,7 +112,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         userAlgoCode: context.userAlgoCode,
       };
       const data = await generateVariable(request);
-      setGeneratedVariables({ context: data.context, context_init: data.context_init });
+      setGeneratedVariables({ id: uuidv4(), type: 'algo', context: data.context, context_init: data.context_init });
       handleArgumentInit(data.context_init, index);
     } catch (error) {
       console.error('Error generating variables:', error);
@@ -116,23 +129,25 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     setProcessorCodeSnippetState(code);
   };
 
-  const checkArgumentType = (type: string): boolean => {
-    if (context.inputInit) {
-      const inputInitKeys = Object.keys(context.inputInit);
-      if (inputInitKeys.length > 0) {
-        if (type.includes(inputInitKeys[0])) {
-          return true;
+
+  const handleDeleteGeneratedVariable = (id: string, variableName: string, index: number) => {
+    setGeneratedInputs((prevInputs) =>
+      prevInputs.reduce((acc, input) => {
+        if (input.id === id) {
+          const { [variableName]: _, ...rest } = input.context;
+          if (Object.keys(rest).length > 0) {
+            acc.push({ ...input, context: rest });
+          }
+        } else {
+          acc.push(input);
         }
-      }
-    }
-    const inputVariable = context.inputVariables
-    if (inputVariable.length > 0) {
-      if (type.includes(inputVariable[0].type)) {
-        return true;
-      }
-    }
-    return false
-  }
+        return acc;
+      }, [] as Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>)
+    );
+    setUseGeneratedInput({});
+    removeInputDetailsItem(index);
+    setInputInit({});
+  };
 
   return (
     <Box sx={{ marginBottom: 2, border: '1px solid #ccc', borderRadius: '4px', padding: 2 }}>
@@ -151,42 +166,54 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <QuestionEnvSelector tabValue={tabValue} setInputPath={setInputPath}/>
+            <QuestionEnvSelector tabValue={tabValue} setInputPath={setInputPath} />
           </Box>
         </AccordionDetails>
       </Accordion>
-      {!useOuterContext && context.inputVariables.length > 0 && (
+      {!useOuterContext && context.inputDetails.length > 0 && context.inputDetails[context.inputDetails.length-1].inputVariables.length > 0 && (
         <>
           <Tooltip title="Variables are placeholders in your question. Use {Input}, {Step}, etc. in your question description to represent these variables." placement="bottom-start">
             <Typography variant="subtitle1">
-              Algorithm Variables (Use variable name in question description)
+              Input Variables (Use variable name in question description)
             </Typography>
           </Tooltip>
           <VariableTable
-              variables={context.inputVariables}
-              quantifiables={context.quantifiables}
-              selectedQuantifiables={context.selectedQuantifiables}
-              selectedSubclasses={context.selectedSubclasses}
-              variableArguments={context.inputVariableArguments}
-              handleQuantifiableChange={handleQuantifiableChange}
-              handleSubclassChange={handleSubclassChange}
-              handleArgumentChange={handleInputArgumentChange}
-              isAlgoTable={false}
-              context={context}
-              copyInputArgument={copyInputArgument}
-              copyInputInit={copyInputInit}
-              useGeneratedInput={useGeneratedInput}
-              setUseGeneratedInput={setUseGeneratedInput}
-              checkArgumentType={checkArgumentType}
-              setInputInit={setInputInit}
+            variables={context.inputDetails[context.inputDetails.length-1].inputVariables}
+            quantifiables={context.quantifiables}
+            selectedQuantifiables={context.selectedQuantifiables}
+            selectedSubclasses={context.selectedSubclasses}
+            variableArguments={context.inputDetails[context.inputDetails.length-1].inputVariableArguments}
+            handleQuantifiableChange={handleQuantifiableChange}
+            handleSubclassChange={handleSubclassChange}
+            handleArgumentChange={handleInputArgumentChange}
+            isAlgoTable={false}
+            isInnerInputTable={index !== undefined}
+            context={context}
+            outerContext={outerContext}
+            copyInputArgument={copyInputArgument}
+            copyInputInit={copyInputInit}
+            useGeneratedInput={useGeneratedInput}
+            setUseGeneratedInput={setUseGeneratedInput}
+            setInputInit={setInputInit}
+            generatedInputs={generatedInputs}
+            outerGeneratedInputs={outerGeneratedInputs}
+            copyInputDetailsItem={copyInputDetailsItem}
           />
         </>
       )}
       <Button variant="contained" color="primary" onClick={handleGenerateInput} disabled={generating} sx={{ marginBottom: 2 }}>
         {generating ? <CircularProgress size={24} /> : 'Generate Input'}
       </Button>
-      {Object.keys(generatedInput.context).length > 0 && (
-        <GeneratedVariablesTable generatedVariables={generatedInput}/>
+
+      {generatedInputs.length > 0 && (
+        <>
+          <Typography variant="h6" gutterBottom>
+            Generated Variables
+          </Typography>
+          {generatedInputs.map((input, idx) => (
+            <GeneratedVariablesTable key={input.id} generatedVariables={input} onDelete={(id: string, variableName: string) => handleDeleteGeneratedVariable(id, variableName, idx)} />
+          ))}
+        </>
       )}
       <Accordion sx={{ marginBottom: 2, boxShadow: 2, borderRadius: '2px' }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse' }}>
@@ -214,7 +241,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             <Typography>Define Code Snippet</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <ProcessorClassCodeSnippetEditor setProcessorCodeSnippet={handleSnippetChange} setProcessorCodeRequiredLines={()=>{}} />
+            <ProcessorClassCodeSnippetEditor setProcessorCodeSnippet={handleSnippetChange} setProcessorCodeRequiredLines={() => { }} />
             <Button variant="contained" color="primary" onClick={handleSaveCodeSnippet} disabled={loading} sx={{ marginBottom: 2 }}>
               {loading ? <CircularProgress size={24} /> : 'Update Code'}
             </Button>
@@ -253,19 +280,23 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             handleSubclassChange={handleSubclassChange}
             handleArgumentChange={handleArgumentChange}
             isAlgoTable={true}
+            isInnerInputTable={false}
             context={context}
+            outerContext = {initialState.context}
             copyInputArgument={copyInputArgument}
             copyInputInit={copyInputInit}
             useGeneratedInput={useGeneratedInput}
             setUseGeneratedInput={setUseGeneratedInput}
-            checkArgumentType={checkArgumentType}
             setInputInit={setInputInit}
+            generatedInputs={generatedInputs}
+            outerGeneratedInputs={outerGeneratedInputs}
+            copyInputDetailsItem={copyInputDetailsItem}
           />
           <Button variant="contained" color="primary" onClick={handleGenerateVariables} disabled={generating} sx={{ marginTop: 2 }}>
             {generating ? <CircularProgress size={24} /> : 'Generate Variables'}
           </Button>
           {Object.keys(generatedVariables.context).length > 0 && (
-            <GeneratedVariablesTable generatedVariables={generatedVariables} />
+            <GeneratedVariablesTable generatedVariables={generatedVariables} onDelete={(_id: string, _variableName: string) => {}} />
           )}
         </>
       )}

@@ -55,6 +55,7 @@ const TreeViewSelector: React.FC<TreeViewSelectorProps> = ({
   const [treeItems, setTreeItems] = useState<TreeViewBaseItem[]>([]);
   const [newSubtopic, setNewSubtopic] = useState('');
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [previousSelectedNode, setPreviousSelectedNode] = useState<string | null>(null);
 
   useEffect(() => {
     const formattedData: TreeViewBaseItem[] = formatData(data);
@@ -63,17 +64,22 @@ const TreeViewSelector: React.FC<TreeViewSelectorProps> = ({
 
   const formatData = (data: ClassKeyData, parentKey: string = ''): TreeViewBaseItem[] => {
     return Object.keys(data).map((key) => {
-        const uniqueId = parentKey ? `${parentKey}__${key}` : key;
-        const value = data[key];
-        return {
-          id: uniqueId,
-          label: formatText(key),
-          children: typeof value === 'object' ? formatData(value, uniqueId) : [],
-        };
-      });
-    };
+      const uniqueId = parentKey ? `${parentKey}__${key}` : key;
+      const value = data[key];
+      return {
+        id: uniqueId,
+        label: formatText(key),
+        children: typeof value === 'object' ? formatData(value, uniqueId) : [],
+      };
+    });
+  };
 
-  const handleNodeSelect = (event: React.SyntheticEvent, nodeId: string) => {
+  const handleNodeSelect = (_event: React.SyntheticEvent, nodeId: string) => {
+    if (nodeId === previousSelectedNode) {
+      return;
+    }
+    setPreviousSelectedNode(nodeId);
+
     const node = findNodeById(treeItems, nodeId);
     if (node?.children?.length === 0) {
       const parent = findParentNode(treeItems, nodeId);

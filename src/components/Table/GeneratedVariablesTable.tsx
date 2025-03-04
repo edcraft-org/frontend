@@ -1,30 +1,39 @@
 import React from 'react';
-import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
+import { Box, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { formatValue } from '../../utils/format';
 
 interface GeneratedVariablesTableProps {
-  generatedVariables: { context: { [key: string]: any } };
+  generatedVariables: { id: string, type: 'input' | 'algo', context: { [key: string]: any } };
+  onDelete: (id: string, variableName: string) => void;
 }
 
-const GeneratedVariablesTable: React.FC<GeneratedVariablesTableProps> = ({ generatedVariables }) => {
+const GeneratedVariablesTable: React.FC<GeneratedVariablesTableProps> = ({ generatedVariables, onDelete }) => {
   return (
     <Box sx={{ marginY: 2 }}>
-      <Typography variant="h6" gutterBottom>
-        Generated Variables
-      </Typography>
       <TableContainer component={Paper}>
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Variable Name</TableCell>
-              <TableCell>Value</TableCell>
+              <TableCell sx={{ width: generatedVariables.type === 'input' ? '40%' : '50%' }}>Variable Name</TableCell>
+              <TableCell sx={{ width: generatedVariables.type === 'input' ? '40%' : '50%' }}>Value</TableCell>
+              {generatedVariables.type === 'input' && (
+                <TableCell sx={{ width: '20%' }}>Delete</TableCell>
+              )}
             </TableRow>
           </TableHead>
           <TableBody>
             {Object.entries(generatedVariables.context).map(([name, value]) => (
               <TableRow key={name}>
-                <TableCell>{name}</TableCell>
-                <TableCell>{formatValue(value)}</TableCell>
+                <TableCell sx={{ width: generatedVariables.type === 'input' ? '40%' : '50%' }}>{name}</TableCell>
+                <TableCell sx={{ width: generatedVariables.type === 'input' ? '40%' : '50%' }}>{formatValue(value)}</TableCell>
+                {generatedVariables.type === 'input' && (
+                  <TableCell sx={{ width: '20%' }}>
+                    <IconButton onClick={() => onDelete(generatedVariables.id, name)} aria-label="delete">
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

@@ -16,21 +16,25 @@ export type SubQuestionType = {
   requiredLines: string[];
 };
 
+export type InputDetailsType = {
+  inputPath: { [key: string]: any };
+  inputVariables: Variable;
+  inputVariableArguments: { [key: string]: { [arg: string]: any } };
+  inputInit?: { [key: string]: { [arg: string]: any } };
+}
+
 export type ContextBlockType = {
   topics: Topic[];
   subtopics: Subtopic[];
   selectedTopic: string;
   selectedSubtopic: string;
-  inputPath: { [key: string]: any };
   algoVariables: Variable;
-  inputVariables: Variable;
   quantifiables: Quantifiable[];
   selectedQuantifiables: { [key: string]: string };
   selectedSubclasses: { [key: string]: string };
   variableArguments: { [key: string]: { [arg: string]: any } };
   argumentsInit?: { [key: string]: { [arg: string]: any } };
-  inputVariableArguments: { [key: string]: { [arg: string]: any } };
-  inputInit?: { [key: string]: { [arg: string]: any } };
+  inputDetails: InputDetailsType[];
   userAlgoCode?: string;
   userEnvCode?: string;
 };
@@ -54,16 +58,20 @@ export const initialState: QuestionBlock = {
     subtopics: [],
     selectedTopic: '',
     selectedSubtopic: '',
-    inputPath: {},
     algoVariables: [],
-    inputVariables: [],
     quantifiables: [],
     selectedQuantifiables: {},
     selectedSubclasses: {},
     variableArguments: {},
     argumentsInit: {},
-    inputVariableArguments: {},
-    inputInit: {},
+    inputDetails: [
+      {
+        inputPath: {},
+        inputVariables: [],
+        inputVariableArguments: {},
+        inputInit: {},
+      },
+    ],
     userAlgoCode: '',
     userEnvCode: '',
   },
@@ -78,16 +86,20 @@ export const initialState: QuestionBlock = {
         subtopics: [],
         selectedTopic: '',
         selectedSubtopic: '',
-        inputPath: {},
         algoVariables: [],
-        inputVariables: [],
         quantifiables: [],
         selectedQuantifiables: {},
         selectedSubclasses: {},
         variableArguments: {},
         argumentsInit: {},
-        inputVariableArguments: {},
-        inputInit: {},
+        inputDetails: [
+          {
+            inputPath: {},
+            inputVariables: [],
+            inputVariableArguments: {},
+            inputInit: {},
+          },
+        ],
         userAlgoCode: '',
         userEnvCode: '',
       },
@@ -116,6 +128,7 @@ export type Action =
   | { type: 'SET_GENERATED_QUESTIONS'; generatedQuestions: GenerateQuestionResponse }
   | { type: 'SET_SUB_QUESTION_FIELD'; index: number; field: keyof SubQuestionType; value: any }
   | { type: 'SET_SUB_QUESTION_CONTEXT_FIELD'; index: number; field: keyof ContextBlockType; value: any }
+  | { type: 'SET_SUB_QUESTION_CONTEXT_INPUT_DETAILS'; index: number; field: keyof InputDetailsType; value: any }
   | { type: 'ADD_SUB_QUESTION' }
   | { type: 'REMOVE_SUB_QUESTION'; index: number }
   | { type: 'RESET_STATE' };
@@ -145,6 +158,19 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
       };
       return { ...state, subQuestions: updatedSubQuestionsWithContext };
     }
+    case 'SET_SUB_QUESTION_CONTEXT_INPUT_DETAILS': {
+      const updatedSubQuestionsWithContext = [...state.subQuestions];
+      updatedSubQuestionsWithContext[action.index] = {
+        ...updatedSubQuestionsWithContext[action.index],
+        context: {
+          ...updatedSubQuestionsWithContext[action.index].context,
+          inputDetails: updatedSubQuestionsWithContext[action.index].context.inputDetails.map((inputDetail, i) =>
+            i === action.index ? { ...inputDetail, [action.field]: action.value } : inputDetail
+          ),
+        },
+      };
+      return { ...state, subQuestions: updatedSubQuestionsWithContext };
+    }
     case 'ADD_SUB_QUESTION':
       return {
         ...state,
@@ -157,16 +183,13 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
               subtopics: [],
               selectedTopic: '',
               selectedSubtopic: '',
-              inputPath: {},
               algoVariables: [],
-              inputVariables: [],
               quantifiables: [],
               selectedQuantifiables: {},
               selectedSubclasses: {},
               variableArguments: {},
               argumentsInit: {},
-              inputVariableArguments: {},
-              inputInit: {},
+              inputDetails: [],
             },
             marks: 1,
             numOptions: 4,

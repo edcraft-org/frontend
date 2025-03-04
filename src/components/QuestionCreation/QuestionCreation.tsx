@@ -212,6 +212,7 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
         </Card>
       )}
       {editableQuestions.map((qa, index) => (
+        qa &&
         <Card key={index} variant="outlined" sx={{ marginBottom: 4, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
           <CardHeader
             title={`${numberToAlphabet(index).toLowerCase()}.`}

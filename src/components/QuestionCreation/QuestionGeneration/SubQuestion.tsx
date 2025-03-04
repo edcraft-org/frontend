@@ -7,11 +7,12 @@ import { numberToAlphabet } from '../../../utils/format';
 import VariableTable from './VariableTable';
 import CodeBlock from './CodeBlock';
 import QuestionDetails from '../QuestionDetails';
-import { SubQuestionType } from '../../../reducer/questionGenerationReducer';
+import { ContextBlockType, initialState, InputDetailsType, SubQuestionType } from '../../../reducer/questionGenerationReducer';
 
 interface SubQuestionProps {
   index: number;
   subQuestion: SubQuestionType;
+  outerContext: ContextBlockType;
   setDescription: (description: string, index: number) => void;
   setQueryable: (index: number, queryable: string) => void;
   setInputQueryable: (index: number, queryable: string) => void;
@@ -28,23 +29,27 @@ interface SubQuestionProps {
     handleSubclassChange: (variableName: string, subclassName: string) => void;
     handleArgumentChange: (variableName: string, argName: string, value: any) => void;
     handleInputArgumentChange: (variableName: string, argName: string, value: any) => void;
-    copyInputArgument: (variableName: string, inputName: string, argName: string) => void;
+    copyInputArgument: (variableName: string, inputName: string, argName: string, inputDetailIndex: number) => void;
     handleArgumentInit: (argumentsInit: { [key: string]: { [arg: string]: any } }, index?: number) => void;
     handleInputInit: (inputInit: { [key: string]: { [arg: string]: any } }, index?: number) => void;
-    copyInputInit: (variableName: string, inputName: string, index?: number) => void;
+    copyInputInit: (variableName: string, inputName: string, inputDetailIndex: number, index?: number) => void;
     setUserAlgoCode: (userAlgoCode: string, index?: number) => void;
     setUserEnvCode: (userEnvCode: string, index?: number) => void;
     setUserQueryableCode: (userQueryableCode: string, index?: number) => void;
     setInputQueryable: (inputPath: { [key: string]: any }, index?: number) => void;
+    removeInputDetailsItem: (inputDetailIndex: number) => void;
+    copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => void;
   };
   tabValue: number;
   handleTabChange: (event: React.SyntheticEvent, newValue: number) => void;
   loading: boolean;
+  outerGeneratedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>;
 }
 
 const SubQuestion: React.FC<SubQuestionProps> = ({
   index,
   subQuestion,
+  outerContext,
   setDescription,
   setQueryable,
   setInputQueryable,
@@ -53,12 +58,14 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
   contextActions,
   tabValue,
   handleTabChange,
-  loading
+  loading,
+  outerGeneratedInputs
 }) => {
   const [addContext, setAddContext] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [marks, setMarks] = useState<number>(1);
   const [type, setType] = useState<string>('Multiple Choice');
+  const [generatedInputs, setGeneratedInputs] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>>([]);
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -104,9 +111,13 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
               tabValue={tabValue}
               handleTabChange={handleTabChange}
               context = {subQuestion.context}
+              outerContext={outerContext}
               {...contextActions}
               index = {index}
               loading={false}
+              generatedInputs={generatedInputs}
+              setGeneratedInputs={setGeneratedInputs}
+              outerGeneratedInputs={outerGeneratedInputs}
             />
           </Collapse>
         </>
@@ -141,13 +152,17 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
             handleSubclassChange={contextActions.handleSubclassChange}
             handleArgumentChange={contextActions.handleArgumentChange}
             isAlgoTable={false}
+            isInnerInputTable={false}
             context={subQuestion.context}
+            outerContext={initialState.context}
             copyInputArgument={contextActions.copyInputArgument}
             copyInputInit={contextActions.copyInputInit}
             useGeneratedInput={{}}
             setUseGeneratedInput={()=>{}}
-            checkArgumentType={()=> false}
             setInputInit={()=>{}}
+            generatedInputs={[]}
+            outerGeneratedInputs={[]}
+            copyInputDetailsItem={()=>{}}
           />
         </>
       )}
@@ -177,13 +192,17 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
             handleSubclassChange={contextActions.handleSubclassChange}
             handleArgumentChange={contextActions.handleArgumentChange}
             isAlgoTable={false}
+            isInnerInputTable={false}
             context={subQuestion.context}
+            outerContext={initialState.context}
             copyInputArgument={contextActions.copyInputArgument}
             copyInputInit={contextActions.copyInputInit}
             useGeneratedInput={{}}
             setUseGeneratedInput={()=>{}}
-            checkArgumentType={()=> false}
             setInputInit={()=>{}}
+            generatedInputs={[]}
+            outerGeneratedInputs={[]}
+            copyInputDetailsItem={()=>{}}
           />
         </>
       )}

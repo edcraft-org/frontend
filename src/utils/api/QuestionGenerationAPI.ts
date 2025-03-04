@@ -82,6 +82,7 @@ export interface InputRequest {
 export interface GenerateInputRequest {
   input_path: { [key: string]: any };
   variable_options: { [key: string]: { [arg: string]: any } };
+  input_init?: { [key: string]: { [arg: string]: any } };
 }
 
 export type ClassKeyData = { [key: string]: string | ClassKeyData };

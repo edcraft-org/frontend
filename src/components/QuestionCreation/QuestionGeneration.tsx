@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import { generateQuestion, GenerateQuestionRequest } from '../../utils/api/QuestionGenerationAPI';
 import QuestionCreation from './QuestionCreation';
@@ -11,6 +11,7 @@ import QuestionDescriptionInput from './QuestionGeneration/QuestionDescriptionIn
 import CodeBlock from './QuestionGeneration/CodeBlock';
 import SubQuestion from './QuestionGeneration/SubQuestion';
 import useQuestionGeneration from '../../hooks/useQuestionGeneration';
+import { initialState, InputDetailsType } from '../../reducer/questionGenerationReducer';
 
 interface QuestionGenerationProps {
   project: { id: string, title: string };
@@ -46,6 +47,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     setUserEnvCode,
     setUserQueryableCode,
     setInputQueryable,
+    removeInputDetailsItem,
+    copyInputDetailsItem,
   } = useQuestionGeneration();
 
   const { user } = useContext(AuthContext);
@@ -57,13 +60,13 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       context: {
         selectedTopic: context.selectedTopic,
         selectedSubtopic: context.selectedSubtopic,
-        inputPath: context.inputPath,
+        inputPath: {},
         selectedSubclasses: context.selectedSubclasses,
         selectedQuantifiables: context.selectedQuantifiables,
         arguments: convertArguments(context.variableArguments, context.algoVariables, context.selectedSubclasses),
-        inputArguments: convertInputArguments(context.inputVariableArguments, context.inputVariables),
+        inputArguments: {},
         argumentsInit: context.argumentsInit || {},
-        inputInit: context.inputInit || {},
+        inputInit: {},
         userAlgoCode: context.userAlgoCode || '',
         userEnvCode: context.userEnvCode || '',
       },
@@ -75,13 +78,13 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         context: {
           selectedTopic: subQuestion.context.selectedTopic,
           selectedSubtopic: subQuestion.context.selectedSubtopic,
-          inputPath: subQuestion.context.inputPath,
+          inputPath: subQuestion.context.inputDetails[0].inputPath,
           selectedSubclasses: subQuestion.context.selectedSubclasses,
           selectedQuantifiables: subQuestion.context.selectedQuantifiables,
           arguments: convertArguments(subQuestion.context.variableArguments, subQuestion.context.algoVariables, subQuestion.context.selectedSubclasses),
-          inputArguments: convertInputArguments(subQuestion.context.inputVariableArguments, subQuestion.context.inputVariables),
-          argumentsInit: subQuestion.context.inputInit || {},
-          inputInit: subQuestion.context.inputInit || {},
+          inputArguments: convertInputArguments(subQuestion.context.inputDetails[0].inputVariableArguments, subQuestion.context.inputDetails[0].inputVariables),
+          argumentsInit: subQuestion.context.argumentsInit || {},
+          inputInit: subQuestion.context.inputDetails[0].inputInit || {},
           userAlgoCode: subQuestion.context.userAlgoCode || '',
           userEnvCode: subQuestion.context.userEnvCode|| '',
         },
@@ -155,6 +158,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     setUserAlgoCode: setUserAlgoCode,
     setUserEnvCode: setUserEnvCode,
     setInputQueryable: setInputQueryable,
+    removeInputDetailsItem: removeInputDetailsItem,
+    copyInputDetailsItem: copyInputDetailsItem,
   };
 
   const getSubQuestionActions = (index: number) => ({
@@ -165,10 +170,14 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     handleSubclassChange: (variableName: string, subclassName: string) => handleSubclassChange(variableName, subclassName, index),
     handleArgumentChange: (variableName: string, argName: string, value: any) => handleArgumentChange(variableName, argName, value, index),
     handleInputArgumentChange: (variableName: string, argName: string, value: any) => handleInputArgumentChange(variableName, argName, value, index),
-    copyInputArgument: (variableName: string, inputName: string, argName: string) => copyInputArgument(variableName, inputName, argName, index),
-    copyInputInit: (variableName: string, inputName: string) => copyInputInit(variableName, inputName, index),
+    copyInputArgument: (variableName: string, inputName: string, argName: string, inputDetailIndex: number) => copyInputArgument(variableName, inputName, argName, inputDetailIndex, index),
+    copyInputInit: (variableName: string, inputName: string,  inputDetailIndex: number) => copyInputInit(variableName, inputName, inputDetailIndex, index),
     setInputQueryable: (inputPath: { [key: string]: any }) =>  setInputQueryable(inputPath, index),
+    removeInputDetailsItem: (inputDetailIndex: number) => removeInputDetailsItem(inputDetailIndex, index),
+    copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => copyInputDetailsItem(inputDetailsItem, index),
   });
+
+  const [generatedInputs, setGeneratedInputs] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>>([]);
 
   return (
     <Box
@@ -191,6 +200,10 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         tabValue={state.tabValue}
         handleTabChange={handleTabChange}
         context={state.context}
+        outerContext = {initialState.context}
+        generatedInputs={generatedInputs}
+        setGeneratedInputs={setGeneratedInputs}
+        outerGeneratedInputs={[]}
         {...contextActions}
         loading={state.loading}
       />
@@ -199,6 +212,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           key={index}
           index={index}
           subQuestion={subQuestion}
+          outerContext = {state.context}
           setDescription={handleDescriptionChange}
           setQueryable={(index, value) => handleSubQuestionQueryableChange(index, value)}
           setInputQueryable={(index, value) => handleSubQuestionInputQueryableChange(index, value)}
@@ -215,6 +229,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           tabValue={state.tabValue}
           handleTabChange={handleTabChange}
           loading={state.loading}
+          outerGeneratedInputs={generatedInputs}
         />
       ))}
       <Button variant="contained" color="primary" onClick={addSubQuestion} sx={{ marginTop: 2 }}>
