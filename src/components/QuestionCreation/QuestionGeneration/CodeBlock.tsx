@@ -10,6 +10,7 @@ import ProcessorClassCodeSnippetEditor from '../ClassCodeSnippetEditors/Processo
 import QuestionEnvSelector from './QuestionEnvSelector';
 import GeneratedVariablesTable from '../../Table/GeneratedVariablesTable';
 import { v4 as uuidv4 } from 'uuid';
+import InputClassCodeSnippetEditor from '../ClassCodeSnippetEditors/InputClassCodeSnippetEditor';
 
 interface CodeBlockProps {
   tabValue: number;
@@ -56,6 +57,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   handleInputInit,
   copyInputInit,
   setUserAlgoCode,
+  setUserEnvCode,
   removeInputDetailsItem,
   copyInputDetailsItem,
   generatedInputs,
@@ -67,6 +69,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   const [generating, setGenerating] = useState<boolean>(false);
   const [useOuterContext, setUseOuterContext] = useState<boolean>(false);
   const [processorCodeSnippet, setProcessorCodeSnippetState] = useState<string>('');
+  const [inputCodeSnippet, setInputCodeSnippetState] = useState<string>('');
   const [useGeneratedInput, setUseGeneratedInput] = useState<{ [key: string]: number }>({});
   const [inputInit, setInputInit] = useState<{ [key: string]: { [arg: string]: any } }>({});
   const handleGenerateInput = async () => {
@@ -78,6 +81,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         input_path: { ...context.inputDetails[context.inputDetails.length-1].inputPath },
         variable_options: convertInputArguments(context.inputDetails[context.inputDetails.length-1].inputVariableArguments, context.inputDetails[context.inputDetails.length-1].inputVariables),
         input_init: (outerContext.inputDetails.length > 0 && Object.keys(outerContext.inputDetails[0].inputPath).length > 0 && Object.values(useGeneratedInput)[0] !== -1) ? { ...context.inputDetails[context.inputDetails.length-1].inputInit } : undefined,
+        user_env_code: context.userEnvCode,
       };
       const data = await generateInput(request);
       if (index !== undefined) {
@@ -110,6 +114,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         arguments_init: argumentsInit,
         question_description: '',
         userAlgoCode: context.userAlgoCode,
+        userEnvCode: context.userEnvCode,
       };
       const data = await generateVariable(request);
       setGeneratedVariables({ id: uuidv4(), type: 'algo', context: data.context, context_init: data.context_init });
@@ -121,14 +126,21 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     }
   };
 
-  const handleSaveCodeSnippet = () => {
+  const handleSaveAlgoCodeSnippet = () => {
     setUserAlgoCode(processorCodeSnippet, index);
   };
 
-  const handleSnippetChange = (code: string) => {
+  const handleAlgoSnippetChange = (code: string) => {
     setProcessorCodeSnippetState(code);
   };
 
+  const handleSaveInputCodeSnippet = () => {
+    setUserEnvCode(inputCodeSnippet, index);
+  };
+
+  const handleInputSnippetChange = (code: string) => {
+    setInputCodeSnippetState(code);
+  };
 
   const handleDeleteGeneratedVariable = (id: string, variableName: string, index: number) => {
     setGeneratedInputs((prevInputs) =>
@@ -170,6 +182,22 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           </Box>
         </AccordionDetails>
       </Accordion>
+      {tabValue === 1 && context.inputDetails.length > 0 && Object.keys(context.inputDetails[context.inputDetails.length - 1].inputPath).length > 0 && (
+        <Accordion sx={{ marginBottom: 2 }}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            sx={{ flexDirection: 'row-reverse' }}
+          >
+            <Typography>Define Code Snippet</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <InputClassCodeSnippetEditor setInputCodeSnippet={handleInputSnippetChange} setInputCodeRequiredLines={() => { }} />
+            <Button variant="contained" color="primary" onClick={handleSaveInputCodeSnippet} disabled={loading} sx={{ marginBottom: 2 }}>
+              {loading ? <CircularProgress size={24} /> : 'Update Code'}
+            </Button>
+          </AccordionDetails>
+        </Accordion>
+      )}
       {!useOuterContext && context.inputDetails.length > 0 && context.inputDetails[context.inputDetails.length-1].inputVariables.length > 0 && (
         <>
           <Tooltip title="Variables are placeholders in your question. Use {Input}, {Step}, etc. in your question description to represent these variables." placement="bottom-start">
@@ -241,8 +269,8 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             <Typography>Define Code Snippet</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <ProcessorClassCodeSnippetEditor setProcessorCodeSnippet={handleSnippetChange} setProcessorCodeRequiredLines={() => { }} />
-            <Button variant="contained" color="primary" onClick={handleSaveCodeSnippet} disabled={loading} sx={{ marginBottom: 2 }}>
+            <ProcessorClassCodeSnippetEditor setProcessorCodeSnippet={handleAlgoSnippetChange} setProcessorCodeRequiredLines={() => { }} />
+            <Button variant="contained" color="primary" onClick={handleSaveAlgoCodeSnippet} disabled={loading} sx={{ marginBottom: 2 }}>
               {loading ? <CircularProgress size={24} /> : 'Update Code'}
             </Button>
           </AccordionDetails>

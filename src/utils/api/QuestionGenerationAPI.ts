@@ -69,6 +69,7 @@ export interface GenerateVariableRequest {
   arguments_init?: { [key: string]: { [arg: string]: any } };
   question_description: string;
   userAlgoCode?: string;
+  userEnvCode?: string;
 }
 
 export interface UserQueryableRequest {
@@ -83,6 +84,7 @@ export interface GenerateInputRequest {
   input_path: { [key: string]: any };
   variable_options: { [key: string]: { [arg: string]: any } };
   input_init?: { [key: string]: { [arg: string]: any } };
+  user_env_code?: string;
 }
 
 export type ClassKeyData = { [key: string]: string | ClassKeyData };
@@ -145,14 +147,14 @@ export const getQueryables = async (topic: string, subtopic: string): Promise<Qu
   return data;
 };
 
-export const getUserQueryables = async (userAlgoCode: string): Promise<Queryable[]> => {
+export const getUserQueryables = async (userAlgoCode: string, userEnvCode?: string): Promise<Queryable[]> => {
   const url = `${basePath}/question_generation/user/queryables`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ userAlgoCode }),
+    body: JSON.stringify({ userAlgoCode, userEnvCode }),
   });
 
   if (!response.ok) {
@@ -210,14 +212,33 @@ export const getAlgoVariables = async (topic: string, subtopic: string): Promise
   return data;
 };
 
-export const getUserAlgoVariables = async (userAlgoCode: string): Promise<Variable> => {
+export const getUserAlgoVariables = async (userAlgoCode: string, userEnvCode?: string): Promise<Variable> => {
   const url = `${basePath}/question_generation/user/algoVariables`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ userAlgoCode }),
+    body: JSON.stringify({ userAlgoCode, userEnvCode }),
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: Variable = await response.json();
+  return data;
+};
+
+export const getUserInputVariables = async (userEnvCode: string): Promise<Variable> => {
+  const url = `${basePath}/question_generation/user/inputVariables`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ userEnvCode }),
   });
 
   if (!response.ok) {

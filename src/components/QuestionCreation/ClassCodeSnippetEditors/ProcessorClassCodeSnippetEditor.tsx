@@ -22,7 +22,7 @@ const ProcessorClassCodeSnippetEditor: React.FC<ProcessorCodeSnippetEditorProps>
     <CodeSnippetEditor
       codeSnippet = {processorClassTemplate}
       setCodeSnippet={setProcessorCodeSnippet}
-      title="AlgoClass"
+      title="Algo class"
     />
   );
 };

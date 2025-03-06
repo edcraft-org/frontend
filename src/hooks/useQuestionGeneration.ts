@@ -1,6 +1,6 @@
 import { useReducer, useEffect } from 'react';
 import { reducer, initialState, InputDetailsType } from '../reducer/questionGenerationReducer';
-import { getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables, getUserQueryables, getUserAlgoVariables, getInputQueryables, getInputQueryableVariables, listInputVariable, Variable } from '../utils/api/QuestionGenerationAPI';
+import { getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables, getUserQueryables, getUserAlgoVariables, getInputQueryables, getInputQueryableVariables, listInputVariable, Variable, getUserInputVariables } from '../utils/api/QuestionGenerationAPI';
 
 const useQuestionGeneration = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -255,9 +255,13 @@ const useQuestionGeneration = () => {
 
   const copyInputArgument = (variableName: string, inputName: string, argName: string, inputDetailIndex: number, index?: number) => {
     if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { ...state.subQuestions[index].context.variableArguments, [variableName]: { ...state.subQuestions[index].context.variableArguments[variableName], [argName]: state.subQuestions[index].context.inputDetails[inputDetailIndex].inputVariableArguments[inputName][argName] } }});
+      if (Object.keys(state.subQuestions[index].context.inputDetails[inputDetailIndex].inputVariableArguments).length > 0) {
+        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { ...state.subQuestions[index].context.variableArguments, [variableName]: { ...state.subQuestions[index].context.variableArguments[variableName], [argName]: state.subQuestions[index].context.inputDetails[inputDetailIndex].inputVariableArguments[inputName][argName] } }});
+      }
     } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: { ...state.context.variableArguments, [variableName]: { ...state.context.variableArguments[variableName], [argName]: state.context.inputDetails[inputDetailIndex].inputVariableArguments[inputName][argName] } }});
+      if (Object.keys(state.context.inputDetails[inputDetailIndex].inputVariableArguments).length > 0) {
+        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: { ...state.context.variableArguments, [variableName]: { ...state.context.variableArguments[variableName], [argName]: state.context.inputDetails[inputDetailIndex].inputVariableArguments[inputName][argName] } }});
+      }
     }
   }
 
@@ -328,18 +332,20 @@ const useQuestionGeneration = () => {
   const setUserAlgoCode = (userAlgoCode: string, index?: number) => {
     if (index !== undefined) {
       dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'userAlgoCode', value: userAlgoCode });
-      getUserAlgoVariables(userAlgoCode)
+      const userEnvCode = state.subQuestions[index].context.userEnvCode;
+      getUserAlgoVariables(userAlgoCode, userEnvCode)
         .then(algoVariables => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'algoVariables', value: algoVariables }))
         .catch(error => console.error('Error fetching algorithm variables:', error));
-      getUserQueryables(userAlgoCode)
+      getUserQueryables(userAlgoCode, userEnvCode)
         .then(queryables => dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: queryables }))
         .catch(error => console.error('Error fetching user queryables:', error));
     } else {
       dispatch({ type: 'SET_CONTEXT_FIELD', field: 'userAlgoCode', value: userAlgoCode });
-      getUserAlgoVariables(userAlgoCode)
+      const userEnvCode = state.context.userEnvCode;
+      getUserAlgoVariables(userAlgoCode, userEnvCode)
         .then(algoVariables => dispatch({ type: 'SET_ALGO_VARIABLES', algoVariables }))
         .catch(error => console.error('Error fetching algorithm variables:', error));
-      getUserQueryables(userAlgoCode)
+      getUserQueryables(userAlgoCode, userEnvCode)
         .then(queryables => {
           dispatch({ type: 'SET_FIELD', field: 'queryables', value: queryables });
           state.subQuestions.forEach((_, index) => {
@@ -353,8 +359,23 @@ const useQuestionGeneration = () => {
   const setUserEnvCode = (userEnvCode: string, index?: number) => {
     if (index !== undefined) {
       dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'userEnvCode', value: userEnvCode });
+      getUserInputVariables(userEnvCode)
+        .then(inputVariables => {
+          const updatedInputDetails = [...state.subQuestions[index].context.inputDetails];
+          updatedInputDetails[updatedInputDetails.length - 1].inputVariables = inputVariables;
+          dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails})
+        })
+        .catch(error => console.error('Error fetching user input variables:', error));
     } else {
       dispatch({ type: 'SET_CONTEXT_FIELD', field: 'userEnvCode', value: userEnvCode });
+
+      getUserInputVariables(userEnvCode)
+        .then(inputVariables => {
+          const updatedInputDetails = [...state.context.inputDetails];
+          updatedInputDetails[updatedInputDetails.length - 1].inputVariables = inputVariables;
+          dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updatedInputDetails})
+        })
+        .catch(error => console.error('Error fetching user input variables:', error));
     }
   };
 
