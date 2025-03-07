@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, IconButton } from '@mui/material';
+import { Box, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Tooltip } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { formatValue } from '../../utils/format';
 
@@ -26,7 +26,11 @@ const GeneratedVariablesTable: React.FC<GeneratedVariablesTableProps> = ({ gener
             {Object.entries(generatedVariables.context).map(([name, value]) => (
               <TableRow key={name}>
                 <TableCell sx={{ width: generatedVariables.type === 'input' ? '40%' : '50%' }}>{name}</TableCell>
-                <TableCell sx={{ width: generatedVariables.type === 'input' ? '40%' : '50%' }}>{formatValue(value)}</TableCell>
+                <TableCell sx={{ width: generatedVariables.type === 'input' ? '40%' : '50%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' }}>
+                  <Tooltip title={formatValue(value)} placement="top-start">
+                    <span>{formatValue(value)}</span>
+                  </Tooltip>
+                </TableCell>
                 {generatedVariables.type === 'input' && (
                   <TableCell sx={{ width: '20%' }}>
                     <IconButton onClick={() => onDelete(generatedVariables.id, name)} aria-label="delete">

@@ -17,14 +17,13 @@ interface QuestionCreationProps {
   project: { id: string, title: string };
   assessmentId?: string;
   questionBankId?: string;
-  isManualCreation?: boolean;
 }
 
-const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQuestion, project, assessmentId, questionBankId, isManualCreation }) => {
+const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQuestion, project, assessmentId, questionBankId }) => {
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [editableQuestions, setEditableQuestions] = useState<SubQuestion[]>([]);
-  const [editingIndex, setEditingIndex] = useState<number | null>(isManualCreation ? 0 : null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [includeGraph, setIncludeGraph] = useState<{ [key: number]: boolean }>({});
   const [includeTable, setIncludeTable] = useState<{ [key: number]: boolean }>({});
   const navigate = useNavigate();
