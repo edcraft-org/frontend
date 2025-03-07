@@ -19,23 +19,23 @@ interface CodeBlockProps {
   outerContext: ContextBlockType;
   setTopic: (value: string) => void;
   setSubtopic: (value: string) => void;
-  setInputPath: (inputPath: { [key: string]: any }) => void;
+  setInputPath: (inputPath: { [key: string]: unknown }) => void;
   loading: boolean;
   handleQuantifiableChange: (variableName: string, value: string) => void;
   handleSubclassChange: (variableName: string, subclassName: string) => void;
-  handleArgumentChange: (variableName: string, argName: string, value: any) => void;
-  handleInputArgumentChange: (variableName: string, argName: string, value: any) => void;
+  handleArgumentChange: (variableName: string, argName: string, value: unknown) => void;
+  handleInputArgumentChange: (variableName: string, argName: string, value: unknown) => void;
   copyInputArgument: (variableName: string, inputName: string, argName: string, inputDetailIndex: number) => void;
-  handleArgumentInit: (argumentsInit: { [key: string]: { [arg: string]: any } }, index?: number) => void;
-  handleInputInit: (inputInit: { [key: string]: { [arg: string]: any } }, index?: number) => void;
+  handleArgumentInit: (argumentsInit: { [key: string]: { [arg: string]: unknown } }, index?: number) => void;
+  handleInputInit: (inputInit: { [key: string]: { [arg: string]: unknown } }, index?: number) => void;
   copyInputInit: (variableName: string, inputName: string, inputDetailIndex: number, index?: number) => void;
   setUserAlgoCode: (userAlgoCode: string, index?: number) => void;
   setUserEnvCode: (userEnvCode: string, index?: number) => void;
   removeInputDetailsItem: (inputDetailIndex: number) => void;
   copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => void;
-  generatedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>;
-  setGeneratedInputs: (value: React.SetStateAction<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>>) => void;
-  outerGeneratedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>;
+  generatedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>;
+  setGeneratedInputs: (value: React.SetStateAction<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>>) => void;
+  outerGeneratedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>;
   index?: number;
 }
 
@@ -65,13 +65,13 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   outerGeneratedInputs,
   index,
 }) => {
-  const [generatedVariables, setGeneratedVariables] = useState<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>({ id: '', type: 'algo', context: {}, context_init: {} });
+  const [generatedVariables, setGeneratedVariables] = useState<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>({ id: '', type: 'algo', context: {}, context_init: {} });
   const [generating, setGenerating] = useState<boolean>(false);
   const [useOuterContext, setUseOuterContext] = useState<boolean>(false);
   const [processorCodeSnippet, setProcessorCodeSnippetState] = useState<string>('');
   const [inputCodeSnippet, setInputCodeSnippetState] = useState<string>('');
   const [useGeneratedInput, setUseGeneratedInput] = useState<{ [key: string]: number }>({});
-  const [inputInit, setInputInit] = useState<{ [key: string]: { [arg: string]: any } }>({});
+  const [inputInit, setInputInit] = useState<{ [key: string]: { [arg: string]: unknown } }>({});
   const handleGenerateInput = async () => {
     try {
       if (context.inputDetails.length === 0 || context.inputDetails[context.inputDetails.length-1].inputVariables.length === 0) {
@@ -104,7 +104,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       const argumentsInit = Object.keys(inputInit).reduce((acc, key) => {
         acc[key] = inputInit[key];
         return acc;
-      }, {} as { [key: string]: { [arg: string]: any } });
+      }, {} as { [key: string]: { [arg: string]: unknown } });
       const request: GenerateVariableRequest = {
         topic: context.selectedTopic,
         subtopic: context.selectedSubtopic,
@@ -146,6 +146,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     setGeneratedInputs((prevInputs) =>
       prevInputs.reduce((acc, input) => {
         if (input.id === id) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [variableName]: _, ...rest } = input.context;
           if (Object.keys(rest).length > 0) {
             acc.push({ ...input, context: rest });
@@ -154,7 +155,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           acc.push(input);
         }
         return acc;
-      }, [] as Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>)
+      }, [] as Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>)
     );
     setUseGeneratedInput({});
     removeInputDetailsItem(index);
@@ -324,7 +325,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             {generating ? <CircularProgress size={24} /> : 'Generate Variables'}
           </Button>
           {Object.keys(generatedVariables.context).length > 0 && (
-            <GeneratedVariablesTable generatedVariables={generatedVariables} onDelete={(_id: string, _variableName: string) => {}} />
+            <GeneratedVariablesTable generatedVariables={generatedVariables} onDelete={() => {}} />
           )}
         </>
       )}

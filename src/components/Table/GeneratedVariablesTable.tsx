@@ -4,7 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { formatValue } from '../../utils/format';
 
 interface GeneratedVariablesTableProps {
-  generatedVariables: { id: string, type: 'input' | 'algo', context: { [key: string]: any } };
+  generatedVariables: { id: string, type: 'input' | 'algo', context: { [key: string]: unknown } };
   onDelete: (id: string, variableName: string) => void;
 }
 

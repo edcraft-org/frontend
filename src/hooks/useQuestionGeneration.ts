@@ -124,7 +124,7 @@ const useQuestionGeneration = () => {
     }
   };
 
-  const handleInputPathChange = async (inputPath: { [key: string]: any }, index?: number) => {
+  const handleInputPathChange = async (inputPath: { [key: string]: unknown }, index?: number) => {
     const fetchInputVariables = async () => {
       try {
         return await listInputVariable({ input_path: inputPath });
@@ -181,7 +181,7 @@ const useQuestionGeneration = () => {
         const initialArguments = selectedSubclass.arguments.reduce((acc, arg) => {
           acc[arg.name] = '';
           return acc;
-        }, {} as { [key: string]: any });
+        }, {} as { [key: string]: unknown });
         dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { ...state.subQuestions[index].context.variableArguments, [variableName]: initialArguments } });
       }
     } else {
@@ -192,13 +192,13 @@ const useQuestionGeneration = () => {
         const initialArguments = selectedSubclass.arguments.reduce((acc, arg) => {
           acc[arg.name] = '';
           return acc;
-        }, {} as { [key: string]: any });
+        }, {} as { [key: string]: unknown });
         dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: { ...state.context.variableArguments, [variableName]: initialArguments } });
       }
     }
   };
 
-  const handleArgumentChange = (variableName: string, argName: string, value: any, index?: number) => {
+  const handleArgumentChange = (variableName: string, argName: string, value: unknown, index?: number) => {
     if (index !== undefined) {
       dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { ...state.subQuestions[index].context.variableArguments, [variableName]: { ...state.subQuestions[index].context.variableArguments[variableName], [argName]: value } } });
     } else {
@@ -206,7 +206,7 @@ const useQuestionGeneration = () => {
     }
   };
 
-  const handleInputArgumentChange = (variableName: string, argName: string, value: any, index?: number) => {
+  const handleInputArgumentChange = (variableName: string, argName: string, value: unknown, index?: number) => {
     const updateInputDetails = (inputDetails: InputDetailsType[]) => {
       if (inputDetails.length === 0) {
         return inputDetails;
@@ -265,7 +265,7 @@ const useQuestionGeneration = () => {
     }
   }
 
-  const handleArgumentInit = (argumentsInit: { [key: string]: { [arg: string]: any } }, index?: number) => {
+  const handleArgumentInit = (argumentsInit: { [key: string]: { [arg: string]: unknown } }, index?: number) => {
     if (index !== undefined) {
       dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'argumentsInit', value: argumentsInit });
     } else {
@@ -273,7 +273,7 @@ const useQuestionGeneration = () => {
     }
   };
 
-  const handleInputInit = (inputInit: { [key: string]: { [arg: string]: any } }, index?: number) => {
+  const handleInputInit = (inputInit: { [key: string]: { [arg: string]: unknown } }, index?: number) => {
     const updateInputDetails = (inputDetails: InputDetailsType[]) => {
       if (inputDetails.length === 0) {
         return [{ inputPath: {}, inputVariables: [], inputVariableArguments: {}, inputInit }];
@@ -391,7 +391,7 @@ const useQuestionGeneration = () => {
     dispatch({ type: 'RESET_STATE' });
   }
 
-  const setInputQueryable = (inputPath: { [key: string]: any }, index?: number) => {
+  const setInputQueryable = (inputPath: { [key: string]: unknown }, index?: number) => {
     if (index !== undefined) {
       getInputQueryables({ input_path: inputPath })
         .then(queryables => dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryables', value: queryables }))

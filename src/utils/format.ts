@@ -17,17 +17,17 @@ export const formatVariableType = (type: string): string => {
   return type;
 };
 
-export const convertArgumentValue = (type: string, value: any) => {
+export const convertArgumentValue = (type: string, value: unknown): unknown => {
   switch (type) {
     case 'int':
-      return parseInt(value, 10);
+      return parseInt(value as string, 10);
     case 'float':
-      return parseFloat(value);
+      return parseFloat(value as string);
     case 'bool':
       return value === 'true';
     default:
       try {
-        return JSON.parse(value);
+        return JSON.parse(value as string);
       } catch (e) {
         console.error('Error parsing value:', e);
         return value;
@@ -39,18 +39,18 @@ export const numberToAlphabet = (num: number): string => {
   return String.fromCharCode(65 + num); // 65 is the ASCII code for 'A'
 };
 
-export const formatValue = (value: any) => {
+export const formatValue = (value: unknown): string => {
   if (Array.isArray(value)) {
     return `[${value.join(', ')}]`;
   }
-  return value;
+  return String(value);
 };
 
 export const convertArguments = (
-  variableArguments: { [key: string]: { [arg: string]: any } },
+  variableArguments: { [key: string]: { [arg: string]: unknown } },
   algoVariables: Variable,
   selectedSubclasses: { [key: string]: string }
-): { [key: string]: { [arg: string]: any } } => {
+): { [key: string]: { [arg: string]: unknown } } => {
   return Object.keys(variableArguments).reduce((acc, variableName) => {
     const variable = algoVariables.find(v => v.name === variableName);
     if (variable) {
@@ -60,16 +60,16 @@ export const convertArguments = (
           argAcc[argName] = convertArgumentValue(arg.type, variableArguments[variableName][argName]);
         }
         return argAcc;
-      }, {} as { [key: string]: any });
+      }, {} as { [key: string]: unknown });
     }
     return acc;
-  }, {} as { [key: string]: { [arg: string]: any } });
+  }, {} as { [key: string]: { [arg: string]: unknown } });
 };
 
 export const convertInputArguments = (
-  inputVariableArguments: { [key: string]: { [arg: string]: any } },
+  inputVariableArguments: { [key: string]: { [arg: string]: unknown } },
   inputVariables: Variable
-): { [key: string]: { [arg: string]: any } } => {
+): { [key: string]: { [arg: string]: unknown } } => {
   return Object.keys(inputVariableArguments).reduce((acc, variableName) => {
     acc[variableName] = Object.keys(inputVariableArguments[variableName]).reduce((argAcc, argName) => {
       const argType = inputVariables.find(v => v.name === variableName)?.arguments?.find(a => a.name === argName)?.type;
@@ -77,13 +77,15 @@ export const convertInputArguments = (
         argAcc[argName] = convertArgumentValue(argType, inputVariableArguments[variableName][argName]);
       }
       return argAcc;
-    }, {} as { [key: string]: any });
+    }, {} as { [key: string]: unknown });
     return acc;
-  }, {} as { [key: string]: { [arg: string]: any } });
+  }, {} as { [key: string]: { [arg: string]: unknown } });
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const formatIdToNestedObject = (id: string):  { [key: string]: any } => {
   const parts = id.split('__');
   const lastPart = parts.pop();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return parts.reduceRight((acc, part) => ({ [part]: acc }), lastPart as any);
 };

@@ -28,13 +28,13 @@ export type Quantifiable = string;
 export type ContextRequest = {
   selectedTopic: string;
   selectedSubtopic: string;
-  inputPath: { [key: string]: any };
+  inputPath: { [key: string]: unknown };
   selectedSubclasses: { [key: string]: string };
   selectedQuantifiables: { [key: string]: string };
-  arguments: { [key: string]: any };
-  inputArguments: { [key: string]: any };
-  argumentsInit?: { [key: string]: { [arg: string]: any } };
-  inputInit?: { [key: string]: { [arg: string]: any } };
+  arguments: { [key: string]: unknown };
+  inputArguments: { [key: string]: unknown };
+  argumentsInit?: { [key: string]: { [arg: string]: unknown } };
+  inputInit?: { [key: string]: { [arg: string]: unknown } };
   userAlgoCode?: string;
   userEnvCode?: string;
 
@@ -65,8 +65,8 @@ export interface GenerateVariableRequest {
   subtopic: string;
   element_type: { [key: string]: string };
   subclasses: { [key: string]: string };
-  arguments: { [key: string]: any };
-  arguments_init?: { [key: string]: { [arg: string]: any } };
+  arguments: { [key: string]: unknown };
+  arguments_init?: { [key: string]: { [arg: string]: unknown } };
   question_description: string;
   userAlgoCode?: string;
   userEnvCode?: string;
@@ -77,14 +77,19 @@ export interface UserQueryableRequest {
 }
 
 export interface InputRequest {
-  input_path: { [key: string]: any };
+  input_path: { [key: string]: unknown };
 }
 
 export interface GenerateInputRequest {
-  input_path: { [key: string]: any };
-  variable_options: { [key: string]: { [arg: string]: any } };
-  input_init?: { [key: string]: { [arg: string]: any } };
+  input_path: { [key: string]: unknown };
+  variable_options: { [key: string]: { [arg: string]: unknown } };
+  input_init?: { [key: string]: { [arg: string]: unknown } };
   user_env_code?: string;
+}
+
+export interface VariableResponse {
+  context: { [key: string]: unknown };
+  context_init: { [key: string]: { [arg: string]: unknown } };
 }
 
 export type ClassKeyData = { [key: string]: string | ClassKeyData };
@@ -263,7 +268,7 @@ export const getQueryableVariables = async (topic: string, subtopic: string, que
   return data;
 };
 
-export const getInputQueryableVariables = async (inputPath: { [key: string]: any }, queryable: string): Promise<Variable> => {
+export const getInputQueryableVariables = async (inputPath: { [key: string]: unknown }, queryable: string): Promise<Variable> => {
   const url = `${basePath}/question_generation/input/queryables/${queryable}/variables`;
   const response = await fetch(url, {
     method: 'POST',
@@ -314,7 +319,7 @@ export const generateQuestion = async (request: GenerateQuestionRequest): Promis
   return data;
 };
 
-export const generateVariable = async (request: GenerateVariableRequest): Promise<any> => {
+export const generateVariable = async (request: GenerateVariableRequest): Promise<VariableResponse> => {
   const url = `${basePath}/question_generation/generate_variable`;
 
   const response = await fetch(url, {
@@ -334,7 +339,7 @@ export const generateVariable = async (request: GenerateVariableRequest): Promis
   return data;
 };
 
-export const generateInput = async (request: GenerateInputRequest): Promise<any> => {
+export const generateInput = async (request: GenerateInputRequest): Promise<VariableResponse> => {
   const url = `${basePath}/question_generation/generate_input`;
 
   const response = await fetch(url, {

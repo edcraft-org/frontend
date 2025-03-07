@@ -165,19 +165,19 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   const getSubQuestionActions = (index: number) => ({
     setTopic: (topic: string) => handleTopicChange(topic, index),
     setSubtopic: (subtopic: string) => handleSubtopicChange(subtopic, index),
-    setInputPath: (inputPath: { [key: string]: any }) => handleInputPathChange(inputPath, index),
+    setInputPath: (inputPath: { [key: string]: unknown }) => handleInputPathChange(inputPath, index),
     handleQuantifiableChange: (variableName: string, value: string) => handleQuantifiableChange(variableName, value, index),
     handleSubclassChange: (variableName: string, subclassName: string) => handleSubclassChange(variableName, subclassName, index),
-    handleArgumentChange: (variableName: string, argName: string, value: any) => handleArgumentChange(variableName, argName, value, index),
-    handleInputArgumentChange: (variableName: string, argName: string, value: any) => handleInputArgumentChange(variableName, argName, value, index),
+    handleArgumentChange: (variableName: string, argName: string, value: unknown) => handleArgumentChange(variableName, argName, value, index),
+    handleInputArgumentChange: (variableName: string, argName: string, value: unknown) => handleInputArgumentChange(variableName, argName, value, index),
     copyInputArgument: (variableName: string, inputName: string, argName: string, inputDetailIndex: number) => copyInputArgument(variableName, inputName, argName, inputDetailIndex, index),
     copyInputInit: (variableName: string, inputName: string,  inputDetailIndex: number) => copyInputInit(variableName, inputName, inputDetailIndex, index),
-    setInputQueryable: (inputPath: { [key: string]: any }) =>  setInputQueryable(inputPath, index),
+    setInputQueryable: (inputPath: { [key: string]: unknown }) =>  setInputQueryable(inputPath, index),
     removeInputDetailsItem: (inputDetailIndex: number) => removeInputDetailsItem(inputDetailIndex, index),
     copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => copyInputDetailsItem(inputDetailsItem, index),
   });
 
-  const [generatedInputs, setGeneratedInputs] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>>([]);
+  const [generatedInputs, setGeneratedInputs] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>>([]);
 
   return (
     <Box

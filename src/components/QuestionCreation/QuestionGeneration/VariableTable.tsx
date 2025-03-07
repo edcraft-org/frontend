@@ -9,10 +9,10 @@ interface VariableTableProps {
   quantifiables: Quantifiable[];
   selectedQuantifiables: { [key: string]: string };
   selectedSubclasses: { [key: string]: string };
-  variableArguments: { [key: string]: { [arg: string]: any } };
+  variableArguments: { [key: string]: { [arg: string]: unknown } };
   handleQuantifiableChange: (variableName: string, value: string) => void;
   handleSubclassChange: (variableName: string, subclassName: string) => void;
-  handleArgumentChange: (variableName: string, argName: string, value: any) => void;
+  handleArgumentChange: (variableName: string, argName: string, value: unknown) => void;
   isAlgoTable: boolean;
   isInnerInputTable: boolean;
   context: ContextBlockType;
@@ -21,9 +21,9 @@ interface VariableTableProps {
   copyInputInit: (variableName: string, inputName: string, inputDetailIndex: number) => void;
   useGeneratedInput: { [key: string]: number };
   setUseGeneratedInput: (value: React.SetStateAction<{[key: string]: number}>) => void;
-  setInputInit: (value: React.SetStateAction<{[key: string]: { [arg: string]: any}}>) => void;
-  generatedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>;
-  outerGeneratedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>;
+  setInputInit: (value: React.SetStateAction<{[key: string]: { [arg: string]: unknown}}>) => void;
+  generatedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>;
+  outerGeneratedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>;
   copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => void;
 }
 

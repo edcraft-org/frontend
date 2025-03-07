@@ -8,7 +8,7 @@ import { formatIdToNestedObject } from '../../../utils/format';
 
 interface QuestionEnvSelectorProps {
   tabValue: number;
-  setInputPath: (inputPath: { [key: string]: any }) => void;
+  setInputPath: (inputPath: { [key: string]: unknown }) => void;
 }
 
 const QuestionEnvSelector: React.FC<QuestionEnvSelectorProps> = ({

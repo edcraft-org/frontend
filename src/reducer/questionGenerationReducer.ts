@@ -17,10 +17,10 @@ export type SubQuestionType = {
 };
 
 export type InputDetailsType = {
-  inputPath: { [key: string]: any };
+  inputPath: { [key: string]: unknown };
   inputVariables: Variable;
-  inputVariableArguments: { [key: string]: { [arg: string]: any } };
-  inputInit?: { [key: string]: { [arg: string]: any } };
+  inputVariableArguments: { [key: string]: { [arg: string]: unknown } };
+  inputInit?: { [key: string]: { [arg: string]: unknown } };
 }
 
 export type ContextBlockType = {
@@ -32,8 +32,8 @@ export type ContextBlockType = {
   quantifiables: Quantifiable[];
   selectedQuantifiables: { [key: string]: string };
   selectedSubclasses: { [key: string]: string };
-  variableArguments: { [key: string]: { [arg: string]: any } };
-  argumentsInit?: { [key: string]: { [arg: string]: any } };
+  variableArguments: { [key: string]: { [arg: string]: unknown } };
+  argumentsInit?: { [key: string]: { [arg: string]: unknown } };
   inputDetails: InputDetailsType[];
   userAlgoCode?: string;
   userEnvCode?: string;
@@ -121,14 +121,14 @@ export const initialState: QuestionBlock = {
 };
 
 export type Action =
-  | { type: 'SET_FIELD'; field: keyof QuestionBlock; value: any }
-  | { type: 'SET_CONTEXT_FIELD'; field: keyof ContextBlockType; value: any }
+  | { type: 'SET_FIELD'; field: keyof QuestionBlock; value: unknown }
+  | { type: 'SET_CONTEXT_FIELD'; field: keyof ContextBlockType; value: unknown }
   | { type: 'SET_ALGO_VARIABLES'; algoVariables: Variable }
   | { type: 'SET_QUANTIFIABLES'; quantifiables: Quantifiable[] }
   | { type: 'SET_GENERATED_QUESTIONS'; generatedQuestions: GenerateQuestionResponse }
-  | { type: 'SET_SUB_QUESTION_FIELD'; index: number; field: keyof SubQuestionType; value: any }
-  | { type: 'SET_SUB_QUESTION_CONTEXT_FIELD'; index: number; field: keyof ContextBlockType; value: any }
-  | { type: 'SET_SUB_QUESTION_CONTEXT_INPUT_DETAILS'; index: number; field: keyof InputDetailsType; value: any }
+  | { type: 'SET_SUB_QUESTION_FIELD'; index: number; field: keyof SubQuestionType; value: unknown }
+  | { type: 'SET_SUB_QUESTION_CONTEXT_FIELD'; index: number; field: keyof ContextBlockType; value: unknown }
+  | { type: 'SET_SUB_QUESTION_CONTEXT_INPUT_DETAILS'; index: number; field: keyof InputDetailsType; value: unknown }
   | { type: 'ADD_SUB_QUESTION' }
   | { type: 'REMOVE_SUB_QUESTION'; index: number }
   | { type: 'RESET_STATE' };

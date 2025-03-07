@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, Tabs, Tab, Typography } from '@mui/material';
+import React from 'react';
+import { Box, Typography } from '@mui/material';
 import NavBar from '../../../components/NavBar/Navbar';
 import { useLocation, useParams } from 'react-router-dom';
 // import QuestionDetails from '../../../components/QuestionCreation/QuestionDetails';

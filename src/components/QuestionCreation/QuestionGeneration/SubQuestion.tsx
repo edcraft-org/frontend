@@ -24,26 +24,26 @@ interface SubQuestionProps {
   contextActions: {
     setTopic: (value: string) => void;
     setSubtopic: (value: string) => void;
-    setInputPath: (inputPath: { [key: string]: any }) => void;
+    setInputPath: (inputPath: { [key: string]: unknown }) => void;
     handleQuantifiableChange: (variableName: string, value: string) => void;
     handleSubclassChange: (variableName: string, subclassName: string) => void;
-    handleArgumentChange: (variableName: string, argName: string, value: any) => void;
-    handleInputArgumentChange: (variableName: string, argName: string, value: any) => void;
+    handleArgumentChange: (variableName: string, argName: string, value: unknown) => void;
+    handleInputArgumentChange: (variableName: string, argName: string, value: unknown) => void;
     copyInputArgument: (variableName: string, inputName: string, argName: string, inputDetailIndex: number) => void;
-    handleArgumentInit: (argumentsInit: { [key: string]: { [arg: string]: any } }, index?: number) => void;
-    handleInputInit: (inputInit: { [key: string]: { [arg: string]: any } }, index?: number) => void;
+    handleArgumentInit: (argumentsInit: { [key: string]: { [arg: string]: unknown } }, index?: number) => void;
+    handleInputInit: (inputInit: { [key: string]: { [arg: string]: unknown } }, index?: number) => void;
     copyInputInit: (variableName: string, inputName: string, inputDetailIndex: number, index?: number) => void;
     setUserAlgoCode: (userAlgoCode: string, index?: number) => void;
     setUserEnvCode: (userEnvCode: string, index?: number) => void;
     setUserQueryableCode: (userQueryableCode: string, index?: number) => void;
-    setInputQueryable: (inputPath: { [key: string]: any }, index?: number) => void;
+    setInputQueryable: (inputPath: { [key: string]: unknown }, index?: number) => void;
     removeInputDetailsItem: (inputDetailIndex: number) => void;
     copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => void;
   };
   tabValue: number;
   handleTabChange: (event: React.SyntheticEvent, newValue: number) => void;
   loading: boolean;
-  outerGeneratedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>;
+  outerGeneratedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>;
 }
 
 const SubQuestion: React.FC<SubQuestionProps> = ({
@@ -65,7 +65,7 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
   const [expanded, setExpanded] = useState(false);
   const [marks, setMarks] = useState<number>(1);
   const [type, setType] = useState<string>('Multiple Choice');
-  const [generatedInputs, setGeneratedInputs] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: any }, context_init: { [key: string]: any } }>>([]);
+  const [generatedInputs, setGeneratedInputs] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>>([]);
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -132,7 +132,7 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
         queryables={subQuestion.inputQueryables}
         queryable={subQuestion.selectedInputQueryable}
         setQueryable={(q) => setInputQueryable(index, q)}
-        setUserQueryableCode={(userQueryableCode) => {}}
+        setUserQueryableCode={() => {}}
         loading={loading}
       />
       {subQuestion.inputQueryVariables.length > 0 && (
