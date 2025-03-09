@@ -211,7 +211,7 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
       };
     }
     case 'RESET_STATE':
-      return initialState;
+      return { ...initialState, tabValue: state.tabValue };
     default:
       return state;
   }

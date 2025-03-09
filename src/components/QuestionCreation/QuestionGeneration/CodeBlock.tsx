@@ -162,12 +162,19 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     setInputInit({});
   };
 
+  const updateTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    handleTabChange(event, newValue);
+    setUseGeneratedInput({});
+    setInputInit({});
+    setGeneratedVariables({ id: '', type: 'algo', context: {}, context_init: {} })
+  };
+
   return (
     <Box sx={{ marginBottom: 2, border: '1px solid #ccc', borderRadius: '4px', padding: 2 }}>
       <Typography variant="h6" gutterBottom sx={{ marginBottom: 2, color: 'primary' }}>
         Code block
       </Typography>
-      <Tabs value={tabValue} onChange={handleTabChange} aria-label="algorithm type tabs" sx={{ marginBottom: 4 }}>
+      <Tabs value={tabValue} onChange={updateTabChange} aria-label="algorithm type tabs" sx={{ marginBottom: 4 }}>
         <Tab label="Defined Algorithms" />
         <Tab label="User Algorithms" />
       </Tabs>
@@ -179,7 +186,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <QuestionEnvSelector tabValue={tabValue} setInputPath={setInputPath} />
+            <QuestionEnvSelector key={tabValue} tabValue={tabValue} setInputPath={setInputPath} />
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -253,6 +260,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         <AccordionDetails>
           <Box sx={{ display: 'flex', gap: 2 }}>
             <QuestionCategorySelector
+              key={tabValue}
               tabValue={tabValue}
               setTopic={setTopic}
               setSubtopic={setSubtopic}

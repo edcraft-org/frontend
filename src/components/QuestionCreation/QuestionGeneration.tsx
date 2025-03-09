@@ -49,6 +49,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     setInputQueryable,
     removeInputDetailsItem,
     copyInputDetailsItem,
+    resetState,
   } = useQuestionGeneration();
 
   const { user } = useContext(AuthContext);
@@ -132,6 +133,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     dispatch({ type: 'SET_FIELD', field: 'tabValue', value: newValue });
+    setGeneratedInputs([]);
+    resetState();
   };
 
   const addSubQuestion = () => {

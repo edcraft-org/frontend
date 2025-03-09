@@ -59,7 +59,7 @@ const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType,
         value={numOptions}
         onChange={(e) => setNumOptions(Number(e.target.value))}
         required
-        sx={{ marginBottom: 2 }}
+        sx={{ marginTop: 2 }}
         disabled={type === 'true or false'}
       />
     </Box>

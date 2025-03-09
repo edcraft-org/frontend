@@ -60,7 +60,7 @@ const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
             value={queryable}
             onChange={(event, newValue) => setQueryable(newValue || '')}
             onInputChange={(event, newInputValue) => setQueryable(newInputValue || '')}
-            renderInput={(params) => <TextField {...params} label="Queryable Class" variant="outlined" />}
+            renderInput={(params) => <TextField {...params} label={`${title} Queryable`} variant="outlined" />}
             renderOption={(props, option) => (
               <li {...props}>
                 {formatText(option)}
