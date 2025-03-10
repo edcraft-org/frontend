@@ -48,7 +48,7 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestion
   );
 
   return (
-    <Grid container spacing={2} sx={{ margin: '0 auto', maxWidth: '1200px' }}>
+    <Grid container spacing={2} sx={{ margin: '0 auto', maxWidth: '1200px', paddingLeft: '0 !important' }}>
       <Grid item xs={12}>
         <Box
           sx={{
@@ -65,7 +65,7 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestion
         </Box>
       </Grid>
       {questions.map((question, index) => (
-        <Grid item xs={12} key={index}>
+        <Grid item xs={12} key={index} sx={{ paddingLeft: '0 !important'}}>
           <Box
             sx={{
               border: '1px solid #ccc',

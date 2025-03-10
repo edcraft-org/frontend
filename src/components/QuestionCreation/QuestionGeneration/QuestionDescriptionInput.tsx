@@ -18,7 +18,7 @@ const QuestionDescriptionInput: React.FC<QuestionDescriptionInputProps> = ({
       value={description}
       onChange={(e) => setDescription(e.target.value)}
       required
-      sx={{ marginBottom: 2 }}
+      sx={{ marginBottom: 2, bgcolor: 'white'}}
     />
   );
 };

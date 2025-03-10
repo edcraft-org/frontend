@@ -23,7 +23,7 @@ const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType,
       <Typography variant="h6" gutterBottom sx={{ marginBottom: 2 }}>
         Question Details
       </Typography>
-      <FormControl fullWidth sx={{ marginBottom: 2 }}>
+      <FormControl fullWidth sx={{ marginBottom: 2, bgcolor: 'white' }}>
         <InputLabel id="question-type-label">Question Type</InputLabel>
         <Select
           labelId="question-type-label"
@@ -49,7 +49,7 @@ const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType,
         onChange={(e) => setMarks(e.target.value)}
         required
         inputProps={{ min: 1 }}
-        sx={{ marginTop: 2 }}
+        sx={{ marginTop: 2, bgcolor: 'white'}}
       />
       <TextField
         fullWidth
@@ -59,7 +59,7 @@ const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType,
         value={numOptions}
         onChange={(e) => setNumOptions(Number(e.target.value))}
         required
-        sx={{ marginTop: 2 }}
+        sx={{ marginTop: 2, bgcolor: 'white' }}
         disabled={type === 'true or false'}
       />
     </Box>

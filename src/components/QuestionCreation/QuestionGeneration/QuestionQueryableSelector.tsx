@@ -35,8 +35,8 @@ const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
   return (
     <>
       {tabValue === 0 ? (
-        <FormControl fullWidth sx={{ marginBottom: 2 }}>
-          <InputLabel id="queryable-label">{title} Queryable</InputLabel>
+        <FormControl fullWidth sx={{ marginBottom: 2, bgcolor: 'white' }}>
+          <InputLabel id="queryable-label">{title} Query</InputLabel>
           <Select
             labelId="queryable-label"
             label="Queryable"
@@ -66,7 +66,7 @@ const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
                 {formatText(option)}
               </li>
             )}
-            sx={{ marginBottom: 2 }}
+            sx={{ marginBottom: 2, bgcolor: 'white' }}
           />
           {/* <Accordion sx={{ marginBottom: 2 }}>
             <AccordionSummary
