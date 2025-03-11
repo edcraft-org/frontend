@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, FormControl, Select, MenuItem, TextField } from '@mui/material';
+import { TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, FormControl, Select, MenuItem, TextField, Tooltip } from '@mui/material';
 import { Variable, Quantifiable, VariableItem } from '../../../utils/api/QuestionGenerationAPI';
 import { ContextBlockType, InputDetailsType } from '../../../reducer/questionGenerationReducer';
 import CodeSnippetEditor from '../CodeSnippetEditor';
@@ -250,15 +250,25 @@ const VariableTable: React.FC<VariableTableProps> = ({
                         value={useGeneratedInput[variable.name] !== undefined ? useGeneratedInput[variable.name].toString() : '-1'}
                         onChange={(e) => handleUseGeneratedInputChange(isInnerInputTable, variable, e.target.value === '-1' ? -1 : parseInt(e.target.value))}
                         displayEmpty
+                        sx={{ maxWidth: 500 }}
+                        MenuProps={{
+                          PaperProps: {
+                            style: {
+                              maxWidth: 500,
+                            },
+                          },
+                        }}
                       >
                         <MenuItem value="-1">
                           <em>None</em>
                         </MenuItem>
                         {inputDetails.map((_inputDetail, idx) => (
                           checkArgumentType(variable.type, idx) && referenceGeneratedInputs && referenceGeneratedInputs[idx] && (
-                            <MenuItem key={idx} value={idx.toString()}>
-                              {`Input: ${Object.values(referenceGeneratedInputs[idx].context)[0]}`}
-                            </MenuItem>
+                          <MenuItem key={idx} value={idx.toString()}>
+                            <Tooltip title={`Input: ${Object.values(referenceGeneratedInputs[idx].context)[0]}`}>
+                              <span>{`Input: ${Object.values(referenceGeneratedInputs[idx].context)[0]}`}</span>
+                            </Tooltip>
+                          </MenuItem>
                           )
                         ))}
                       </Select>

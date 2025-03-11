@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormControl, InputLabel, Select, MenuItem, Chip, Autocomplete, TextField } from '@mui/material';
-import { formatText } from '../../../utils/format';
+import { formatTextSplitUpperCase } from '../../../utils/format';
 
 interface QuestionQueryableSelectorProps {
   title: string
@@ -42,11 +42,11 @@ const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
             label="Queryable"
             value={queryable}
             onChange={(e) => setQueryable(e.target.value)}
-            renderValue={(selected) => <Chip label={formatText(selected)} />}
+            renderValue={(selected) => <Chip label={formatTextSplitUpperCase(selected)} />}
           >
             {queryables.map((queryable) => (
               <MenuItem key={queryable} value={queryable}>
-                {formatText(queryable)}
+                {formatTextSplitUpperCase(queryable)}
               </MenuItem>
             ))}
           </Select>
@@ -63,7 +63,7 @@ const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
             renderInput={(params) => <TextField {...params} label={`${title} Queryable`} variant="outlined" />}
             renderOption={(props, option) => (
               <li {...props}>
-                {formatText(option)}
+                {formatTextSplitUpperCase(option)}
               </li>
             )}
             sx={{ marginBottom: 2, bgcolor: 'white' }}

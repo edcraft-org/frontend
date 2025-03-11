@@ -8,6 +8,13 @@ export const formatText = (text: string): string => {
     .join(' ');
 };
 
+export const formatTextSplitUpperCase = (text: string): string => {
+  return text
+    .split(/(?=[A-Z])/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 export const formatVariableType = (type: string): string => {
   if (type.startsWith("<class '")) {
     return type.slice(8, -2);
