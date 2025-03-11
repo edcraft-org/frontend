@@ -49,22 +49,21 @@ const convertSvgToPng = async (svgData: string): Promise<{ hex: string; width: n
 
 export const generateRTF = async (assessmentDetails) => {
   let rtfContent = "{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Arial;}}\n";
+  let subQuestionCounter = 1;
 
-  for (const [index, question] of assessmentDetails.questions.entries()) {
-    rtfContent += `\\fs28\\b Q${index + 1}: ${question.description}\\b0\\par\n`;
+  for (const [_index, question] of assessmentDetails.questions.entries()) {
+    // if (question.svg?.graph) {
+    //   const pngGraphData = await convertSvgToPng(question.svg.graph);
+    //   if (pngGraphData) {
+    //     const picwgoal = pngGraphData.width * 15;
+    //     const pichgoal = pngGraphData.height * 15;
+    //     rtfContent += `{\\pict\\pngblip\\picwgoal${picwgoal}\\pichgoal${pichgoal}\n${pngGraphData.hex}}\n\\par\n`;
+    //   }
+    // }
 
-    if (question.svg?.graph) {
-      const pngGraphData = await convertSvgToPng(question.svg.graph);
-      if (pngGraphData) {
-        const picwgoal = pngGraphData.width * 15;
-        const pichgoal = pngGraphData.height * 15;
-        rtfContent += `{\\pict\\pngblip\\picwgoal${picwgoal}\\pichgoal${pichgoal}\n${pngGraphData.hex}}\n\\par\n`;
-      }
-    }
-
-    for (const [subIndex, subq] of question.subquestions.entries()) {
-      rtfContent += `\\fs24 (${subIndex + 1}) ${subq.description}\\par\n`;
-
+    for (const [_subIndex, subq] of question.subquestions.entries()) {
+      rtfContent += `\\fs20 ${subQuestionCounter}. ${question.description ? question.description + '. ' : ''}${subq.description}\\par\n`;
+      subQuestionCounter++;
       if (subq.svg?.graph) {
         const pngGraphData = await convertSvgToPng(subq.svg.graph);
         if (pngGraphData) {
@@ -84,10 +83,9 @@ export const generateRTF = async (assessmentDetails) => {
       }
 
       subq.options.forEach((option, i) => {
-        rtfContent += `\\fs20 ${String.fromCharCode(65 + i)}. ${option}\\par\n`;
+        const isCorrect = subq.answer === option ? "*" : "";
+        rtfContent += `\\fs20 ${isCorrect}${String.fromCharCode(97 + i)}. ${option}\\par\n`; // 97 is the ASCII code for 'a'
       });
-
-      rtfContent += `\\fs20 Answer: ${subq.answer}\\par\n`;
 
       if (subq.answer_svg?.graph) {
         const pngData = await convertSvgToPng(subq.answer_svg.graph);
@@ -107,7 +105,6 @@ export const generateRTF = async (assessmentDetails) => {
         }
       }
 
-      rtfContent += `\\fs20 Marks: ${subq.marks}\\par\n`;
       rtfContent += "\\par\n";
     }
 

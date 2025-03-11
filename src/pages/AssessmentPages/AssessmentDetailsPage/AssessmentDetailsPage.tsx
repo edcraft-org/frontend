@@ -27,6 +27,7 @@ import { AuthContext } from "../../../context/Authcontext"
 import { getAssessmentById, removeQuestionFromAssessment } from "../../../utils/api/AssessmentAPI"
 import type { Question } from "../../../utils/api/QuestionAPI"
 import { generateRTF } from "../../../utils/export/rtf"
+import { generateWordDoc } from "../../../utils/export/word"
 
 interface AssessmentDetails {
   title: string
@@ -111,9 +112,14 @@ const AssessmentDetailsPage: React.FC = () => {
     })
   }
 
-  const exportAssessment = () => {
+  const exportAssessmentRTF = () => {
     if (!assessmentDetails) return
     generateRTF(assessmentDetails)
+  }
+
+  const exportAssessmentWord = () => {
+    if (!assessmentDetails) return
+    generateWordDoc(assessmentDetails)
   }
 
   const handleRemoveQuestion = async (questionId: string) => {
@@ -205,13 +211,25 @@ const AssessmentDetailsPage: React.FC = () => {
                   variant="outlined"
                   color="primary"
                   startIcon={<FileDownloadIcon />}
-                  onClick={exportAssessment}
+                  onClick={exportAssessmentRTF}
                   sx={{
                     height: "48px",
                     width: isMobile ? "100%" : "auto",
                   }}
                 >
                   Export as RTF
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<FileDownloadIcon />}
+                  onClick={exportAssessmentWord}
+                  sx={{
+                    height: "48px",
+                    width: isMobile ? "100%" : "auto",
+                  }}
+                >
+                  Export as Word Doc
                 </Button>
                 <Button
                   variant="contained"
