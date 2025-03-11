@@ -85,6 +85,7 @@ export interface GenerateInputRequest {
   variable_options: { [key: string]: { [arg: string]: unknown } };
   input_init?: { [key: string]: { [arg: string]: unknown } };
   user_env_code?: string;
+  element_type: { [key: string]: string };
 }
 
 export interface VariableResponse {

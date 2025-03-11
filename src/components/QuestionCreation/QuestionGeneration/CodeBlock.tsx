@@ -22,6 +22,8 @@ interface CodeBlockProps {
   setInputPath: (inputPath: { [key: string]: unknown }) => void;
   loading: boolean;
   handleQuantifiableChange: (variableName: string, value: string) => void;
+  handleInputQuantifiableChange: (variableName: string, value: string) => void;
+  copyInputQuantifiable: (variableName: string, inputName: string, inputDetailIndex: number) => void;
   handleSubclassChange: (variableName: string, subclassName: string) => void;
   handleArgumentChange: (variableName: string, argName: string, value: unknown) => void;
   handleInputArgumentChange: (variableName: string, argName: string, value: unknown) => void;
@@ -49,6 +51,8 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   setInputPath,
   loading,
   handleQuantifiableChange,
+  handleInputQuantifiableChange,
+  copyInputQuantifiable,
   handleSubclassChange,
   handleArgumentChange,
   handleInputArgumentChange,
@@ -70,6 +74,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   const [useOuterContext, setUseOuterContext] = useState<boolean>(false);
   const [processorCodeSnippet, setProcessorCodeSnippetState] = useState<string>('');
   const [inputCodeSnippet, setInputCodeSnippetState] = useState<string>('');
+  const [useGeneratedOuterInput, setUseGeneratedOuterInput] = useState<{ [key: string]: number }>({});
   const [useGeneratedInput, setUseGeneratedInput] = useState<{ [key: string]: number }>({});
   const [inputInit, setInputInit] = useState<{ [key: string]: { [arg: string]: unknown } }>({});
   const handleGenerateInput = async () => {
@@ -80,8 +85,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       const request: GenerateInputRequest = {
         input_path: { ...context.inputDetails[context.inputDetails.length-1].inputPath },
         variable_options: convertInputArguments(context.inputDetails[context.inputDetails.length-1].inputVariableArguments, context.inputDetails[context.inputDetails.length-1].inputVariables),
-        input_init: (outerContext.inputDetails.length > 0 && Object.keys(outerContext.inputDetails[0].inputPath).length > 0 && Object.values(useGeneratedInput)[0] !== -1) ? { ...context.inputDetails[context.inputDetails.length-1].inputInit } : undefined,
+        input_init: (outerContext.inputDetails.length > 0 && Object.keys(outerContext.inputDetails[0].inputPath).length > 0 && Object.values(useGeneratedOuterInput)[0] !== -1) ? { ...context.inputDetails[context.inputDetails.length-1].inputInit } : undefined,
         user_env_code: context.userEnvCode,
+        element_type: context.inputDetails[context.inputDetails.length-1].selectedQuantifiables || {},
       };
       const data = await generateInput(request);
       if (index !== undefined) {
@@ -89,6 +95,10 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       } else {
         setGeneratedInputs((prevInputs) => [...prevInputs, { id: uuidv4(), type: 'input', context: data.context, context_init: data.context_init }]);
       }
+      setUseGeneratedInput({});
+      copyInputArgument('', '', '', -1);
+      copyInputQuantifiable('', '', -1);
+      setInputInit({});
       handleInputInit(data.context_init, index);
     } catch (error) {
       console.error('Error generating variables:', error);
@@ -158,13 +168,17 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       }, [] as Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>)
     );
     setUseGeneratedInput({});
+    setUseGeneratedOuterInput({});
     removeInputDetailsItem(index);
     setInputInit({});
+    copyInputArgument('', '', '', -1);
+    copyInputQuantifiable('', '', -1);
   };
 
   const updateTabChange = (event: React.SyntheticEvent, newValue: number) => {
     handleTabChange(event, newValue);
     setUseGeneratedInput({});
+    setUseGeneratedOuterInput({});
     setInputInit({});
     setGeneratedVariables({ id: '', type: 'algo', context: {}, context_init: {} })
   };
@@ -180,7 +194,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       </Tabs>
       <Accordion sx={{ marginBottom: 2, boxShadow: 2, borderRadius: '2px' }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse' }}>
-          <Typography variant="subtitle1" gutterBottom>
+          <Typography variant="subtitle1">
             Input Selector
           </Typography>
         </AccordionSummary>
@@ -216,10 +230,10 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           <VariableTable
             variables={context.inputDetails[context.inputDetails.length-1].inputVariables}
             quantifiables={context.quantifiables}
-            selectedQuantifiables={context.selectedQuantifiables}
+            selectedQuantifiables={context.inputDetails[context.inputDetails.length-1].selectedQuantifiables || {}}
             selectedSubclasses={context.selectedSubclasses}
             variableArguments={context.inputDetails[context.inputDetails.length-1].inputVariableArguments}
-            handleQuantifiableChange={handleQuantifiableChange}
+            handleQuantifiableChange={handleInputQuantifiableChange}
             handleSubclassChange={handleSubclassChange}
             handleArgumentChange={handleInputArgumentChange}
             isAlgoTable={false}
@@ -228,12 +242,13 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             outerContext={outerContext}
             copyInputArgument={copyInputArgument}
             copyInputInit={copyInputInit}
-            useGeneratedInput={useGeneratedInput}
-            setUseGeneratedInput={setUseGeneratedInput}
+            useGeneratedInput={useGeneratedOuterInput}
+            setUseGeneratedInput={setUseGeneratedOuterInput}
             setInputInit={setInputInit}
             generatedInputs={generatedInputs}
             outerGeneratedInputs={outerGeneratedInputs}
             copyInputDetailsItem={copyInputDetailsItem}
+            copyInputQuantifiable={copyInputQuantifiable}
           />
         </>
       )}
@@ -252,8 +267,8 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         </>
       )}
       <Accordion sx={{ marginBottom: 2, boxShadow: 2, borderRadius: '2px' }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse' }}>
-          <Typography variant="subtitle1" gutterBottom>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ flexDirection: 'row-reverse'}}>
+          <Typography variant="subtitle1" >
             Algo Selector
           </Typography>
         </AccordionSummary>
@@ -328,6 +343,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             generatedInputs={generatedInputs}
             outerGeneratedInputs={outerGeneratedInputs}
             copyInputDetailsItem={copyInputDetailsItem}
+            copyInputQuantifiable={copyInputQuantifiable}
           />
           <Button variant="contained" color="primary" onClick={handleGenerateVariables} disabled={generating} sx={{ marginTop: 2 }}>
             {generating ? <CircularProgress size={24} /> : 'Generate Variables'}

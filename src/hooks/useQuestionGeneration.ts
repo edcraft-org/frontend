@@ -158,9 +158,15 @@ const useQuestionGeneration = () => {
       updatedInputDetails[0].inputVariables = inputVariables;
       dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails});
       setInputQueryable(inputPath, index);
+      getQuantifiables()
+      .then(quantifiables => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'quantifiables', value: quantifiables }))
+      .catch(error => console.error('Error fetching quantifiables:', error));
     } else {
       const updatedInputDetails = await updateInputDetails([...context.inputDetails]);
       dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updatedInputDetails});
+      getQuantifiables()
+      .then(quantifiables => dispatch({ type: 'SET_QUANTIFIABLES', quantifiables }))
+      .catch(error => console.error('Error fetching quantifiables:', error));
     }
   };
 
@@ -169,6 +175,49 @@ const useQuestionGeneration = () => {
       dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedQuantifiables', value: { ...state.subQuestions[index].context.selectedQuantifiables, [variableName]: value } });
     } else {
       dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedQuantifiables', value: { ...state.context.selectedQuantifiables, [variableName]: value } });
+    }
+  };
+
+  const handleInputQuantifiableChange = (variableName: string, value: string, index?: number) => {
+    const updateInputDetails = (inputDetails: InputDetailsType[]) => {
+      if (inputDetails.length === 0) {
+        return inputDetails;
+      }
+
+      const updatedInputDetails = [...inputDetails];
+      const lastInputDetail = updatedInputDetails[updatedInputDetails.length - 1];
+      const selectedQuantifiables = lastInputDetail.selectedQuantifiables || {};
+
+      if (lastInputDetail.inputInit && Object.keys(lastInputDetail.inputInit).length === 0) {
+        updatedInputDetails[updatedInputDetails.length - 1] = {
+          ...lastInputDetail,
+          selectedQuantifiables: {
+            ...selectedQuantifiables,
+            [variableName]: value,
+          },
+        };
+      } else {
+        updatedInputDetails.push({
+          inputPath: { ...lastInputDetail.inputPath },
+          inputVariables: [...lastInputDetail.inputVariables],
+          inputVariableArguments: { ...lastInputDetail.inputVariableArguments },
+          inputInit: {},
+          selectedQuantifiables: {
+            ...selectedQuantifiables,
+            [variableName]: value,
+          },
+        });
+      }
+
+      return updatedInputDetails;
+    };
+
+    if (index !== undefined) {
+      const subQuestion = state.subQuestions[index];
+      const updatedInputDetails = [{...subQuestion.context.inputDetails[0], selectedQuantifiables: { ...subQuestion.context.inputDetails[0].selectedQuantifiables, [variableName]: value } }];
+      dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails});
+    } else {
+      dispatch({type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updateInputDetails([...state.context.inputDetails])});
     }
   };
 
@@ -239,6 +288,7 @@ const useQuestionGeneration = () => {
             },
           },
           inputInit: {},
+          selectedQuantifiables: { ...lastInputDetail.selectedQuantifiables },
         });
       }
 
@@ -255,12 +305,40 @@ const useQuestionGeneration = () => {
 
   const copyInputArgument = (variableName: string, inputName: string, argName: string, inputDetailIndex: number, index?: number) => {
     if (index !== undefined) {
-      if (Object.keys(state.subQuestions[index].context.inputDetails[inputDetailIndex].inputVariableArguments).length > 0) {
+      if (inputDetailIndex == -1) {
+        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { }});
+        return;
+      }
+      if (state.subQuestions[index].context.inputDetails[inputDetailIndex] && Object.keys(state.subQuestions[index].context.inputDetails[inputDetailIndex].inputVariableArguments).length > 0) {
         dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { ...state.subQuestions[index].context.variableArguments, [variableName]: { ...state.subQuestions[index].context.variableArguments[variableName], [argName]: state.subQuestions[index].context.inputDetails[inputDetailIndex].inputVariableArguments[inputName][argName] } }});
       }
     } else {
+      if (inputDetailIndex == -1) {
+        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: { } });
+        return;
+      }
       if (Object.keys(state.context.inputDetails[inputDetailIndex].inputVariableArguments).length > 0) {
         dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: { ...state.context.variableArguments, [variableName]: { ...state.context.variableArguments[variableName], [argName]: state.context.inputDetails[inputDetailIndex].inputVariableArguments[inputName][argName] } }});
+      }
+    }
+  }
+
+  const copyInputQuantifiable = (variableName: string, inputName: string, inputDetailIndex: number, index?: number) => {
+    if (index !== undefined) {
+      if (inputDetailIndex == -1) {
+        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedQuantifiables', value: { }});
+        return;
+      }
+      if (state.subQuestions[index].context.inputDetails[inputDetailIndex].selectedQuantifiables) {
+        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedQuantifiables', value: { ...state.subQuestions[index].context.selectedQuantifiables, [variableName]: state.subQuestions[index].context.inputDetails[inputDetailIndex].selectedQuantifiables[inputName] } });
+      }
+    } else {
+      if (inputDetailIndex == -1) {
+        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedQuantifiables', value: { } });
+        return;
+      }
+      if (state.context.inputDetails[inputDetailIndex].selectedQuantifiables) {
+        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedQuantifiables', value: { ...state.context.selectedQuantifiables, [variableName]: state.context.inputDetails[inputDetailIndex].selectedQuantifiables[inputName] } });
       }
     }
   }
@@ -289,6 +367,7 @@ const useQuestionGeneration = () => {
           inputVariables: [...lastInputDetail.inputVariables],
           inputVariableArguments: { ...lastInputDetail.inputVariableArguments },
           inputInit,
+          selectedQuantifiables: { ...lastInputDetail.selectedQuantifiables },
         });
       }
       return inputDetails;
@@ -465,6 +544,8 @@ const useQuestionGeneration = () => {
     handleSubtopicChange,
     handleInputPathChange,
     handleQuantifiableChange,
+    handleInputQuantifiableChange,
+    copyInputQuantifiable,
     handleSubclassChange,
     handleArgumentChange,
     handleInputArgumentChange,

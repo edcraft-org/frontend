@@ -21,6 +21,7 @@ export type InputDetailsType = {
   inputVariables: Variable;
   inputVariableArguments: { [key: string]: { [arg: string]: unknown } };
   inputInit?: { [key: string]: { [arg: string]: unknown } };
+  selectedQuantifiables?: { [key: string]: string };
 }
 
 export type ContextBlockType = {
@@ -70,6 +71,7 @@ export const initialState: QuestionBlock = {
         inputVariables: [],
         inputVariableArguments: {},
         inputInit: {},
+        selectedQuantifiables: {},
       },
     ],
     userAlgoCode: '',
@@ -98,6 +100,7 @@ export const initialState: QuestionBlock = {
             inputVariables: [],
             inputVariableArguments: {},
             inputInit: {},
+            selectedQuantifiables: {},
           },
         ],
         userAlgoCode: '',

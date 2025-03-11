@@ -26,6 +26,7 @@ interface SubQuestionProps {
     setSubtopic: (value: string) => void;
     setInputPath: (inputPath: { [key: string]: unknown }) => void;
     handleQuantifiableChange: (variableName: string, value: string) => void;
+    handleInputQuantifiableChange: (variableName: string, value: string) => void;
     handleSubclassChange: (variableName: string, subclassName: string) => void;
     handleArgumentChange: (variableName: string, argName: string, value: unknown) => void;
     handleInputArgumentChange: (variableName: string, argName: string, value: unknown) => void;
@@ -39,6 +40,7 @@ interface SubQuestionProps {
     setInputQueryable: (inputPath: { [key: string]: unknown }, index?: number) => void;
     removeInputDetailsItem: (inputDetailIndex: number) => void;
     copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => void;
+    copyInputQuantifiable: (variableName: string, inputName: string, inputDetailIndex: number) => void;
   };
   tabValue: number;
   handleTabChange: (event: React.SyntheticEvent, newValue: number) => void;
@@ -163,6 +165,7 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
             generatedInputs={[]}
             outerGeneratedInputs={[]}
             copyInputDetailsItem={()=>{}}
+            copyInputQuantifiable={()=>{}}
           />
         </>
       )}
@@ -203,6 +206,7 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
             generatedInputs={[]}
             outerGeneratedInputs={[]}
             copyInputDetailsItem={()=>{}}
+            copyInputQuantifiable={()=>{}}
           />
         </>
       )}

@@ -25,6 +25,7 @@ interface VariableTableProps {
   generatedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>;
   outerGeneratedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>;
   copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => void;
+  copyInputQuantifiable: (variableName: string, inputName: string, inputDetailIndex: number) => void;
 }
 
 const VariableTable: React.FC<VariableTableProps> = ({
@@ -47,9 +48,10 @@ const VariableTable: React.FC<VariableTableProps> = ({
   generatedInputs,
   outerGeneratedInputs,
   copyInputDetailsItem,
+  copyInputQuantifiable,
 }) => {
   const isQuantifiable = (type: string): boolean => {
-    return type === 'Quantifiable' || type.includes('Quantifiable');
+    return type === 'Quantifiable' || type.includes('Quantifiable') || type.includes('list');
   };
   const [codeSnippets, setCodeSnippets] = useState<{ [key: string]: string }>({});
   const inputDetails = isInnerInputTable ? outerContext.inputDetails : context.inputDetails;
@@ -68,11 +70,14 @@ const VariableTable: React.FC<VariableTableProps> = ({
       variable.arguments?.forEach((arg) => {
         copyInputArgument(variable.name, inputName, arg.name, inputDetailIndex);
       });
+      copyInputQuantifiable(variable.name, inputName, inputDetailIndex);
       handleSubclassChange(variable.name, inputName);
       setInputInit({[variable.name]: inputDetails[inputDetailIndex].inputInit[inputName]});
       setUseGeneratedInput((prev) => ({ ...prev, [variable.name]: inputDetailIndex }));
     }
     if (inputDetailIndex === -1) {
+      copyInputArgument(variable.name, '', '', inputDetailIndex);
+      copyInputQuantifiable(variable.name, '', inputDetailIndex);
       setUseGeneratedInput((prev) => ({ ...prev, [variable.name]: inputDetailIndex }));
       setInputInit((prev) => {
         const newInputInit = { ...prev };
@@ -89,7 +94,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
     }
     if (inputDetailIndex === -1) {
       setUseGeneratedInput((prev) => ({ ...prev, [variable.name]: inputDetailIndex }));
-      copyInputDetailsItem({...context.inputDetails[0], inputInit: {}});
+      copyInputDetailsItem({...context.inputDetails[0], inputVariableArguments: {}, inputInit: {}, selectedQuantifiables: {}});
     }
   };
 
@@ -140,7 +145,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
         </TableHead>
         <TableBody>
           {variables.map((variable, index) => {
-            const disableFields = (isAlgoTable || isInnerInputTable) && hasMatchingInput(variable.type) && useGeneratedInput[variable.name] != -1;
+            const disableFields = (isAlgoTable || isInnerInputTable) && hasMatchingInput(variable.type) && (useGeneratedInput[variable.name] != -1 && useGeneratedInput[variable.name] != undefined);
             return (
               <TableRow key={index}>
                 <TableCell sx={{ width: '20%' }}>{variable.name}</TableCell>
