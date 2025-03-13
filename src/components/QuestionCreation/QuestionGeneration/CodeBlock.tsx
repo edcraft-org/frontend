@@ -181,6 +181,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     setUseGeneratedOuterInput({});
     setInputInit({});
     setGeneratedVariables({ id: '', type: 'algo', context: {}, context_init: {} })
+    setGeneratedInputs([]);
   };
 
   return (
