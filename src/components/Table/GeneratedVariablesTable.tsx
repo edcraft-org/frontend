@@ -16,7 +16,7 @@ import { formatValue } from "../../utils/format"
 
 interface GeneratedVariablesTableProps {
   generatedVariables: { id: string; type: "input" | "algo"; context: { [key: string]: unknown } }
-  onDelete: (id: string, variableName: string) => void
+  onDelete?: (id: string, variableName: string) => void
 }
 
 const GeneratedVariablesTable: React.FC<GeneratedVariablesTableProps> = ({ generatedVariables, onDelete }) => {
@@ -36,18 +36,29 @@ const GeneratedVariablesTable: React.FC<GeneratedVariablesTableProps> = ({ gener
             <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
               <TableCell
                 sx={{
-                  width: generatedVariables.type === "input" ? "40%" : "50%",
+                  width: onDelete ? "15%" : "25%",
                   fontWeight: "bold",
                   fontSize: "0.875rem",
                   padding: "12px 16px",
                   borderBottom: "2px solid #e0e0e0",
                 }}
               >
-                Variable Name
+                Type
               </TableCell>
               <TableCell
                 sx={{
-                  width: generatedVariables.type === "input" ? "40%" : "50%",
+                  width: onDelete ? "25%" : "35%",
+                  fontWeight: "bold",
+                  fontSize: "0.875rem",
+                  padding: "12px 16px",
+                  borderBottom: "2px solid #e0e0e0",
+                }}
+              >
+                Variable Type
+              </TableCell>
+              <TableCell
+                sx={{
+                  width: onDelete ? "25%" : "40%",
                   fontWeight: "bold",
                   fontSize: "0.875rem",
                   padding: "12px 16px",
@@ -56,10 +67,10 @@ const GeneratedVariablesTable: React.FC<GeneratedVariablesTableProps> = ({ gener
               >
                 Value
               </TableCell>
-              {generatedVariables.type === "input" && (
+              {onDelete && (
                 <TableCell
                   sx={{
-                    width: "20%",
+                    width: "30%",
                     fontWeight: "bold",
                     fontSize: "0.875rem",
                     padding: "12px 16px",
@@ -83,7 +94,17 @@ const GeneratedVariablesTable: React.FC<GeneratedVariablesTableProps> = ({ gener
               >
                 <TableCell
                   sx={{
-                    width: generatedVariables.type === "input" ? "40%" : "50%",
+                    width: onDelete ? "15%" : "25%",
+                    padding: "12px 16px",
+                    fontSize: "0.875rem",
+                    color: "#666",
+                  }}
+                >
+                  {generatedVariables.type === "input" ? "Input" : "Algorithm"}
+                </TableCell>
+                <TableCell
+                  sx={{
+                    width: onDelete ? "25%" : "35%",
                     padding: "12px 16px",
                     fontSize: "0.875rem",
                     fontWeight: 500,
@@ -93,7 +114,7 @@ const GeneratedVariablesTable: React.FC<GeneratedVariablesTableProps> = ({ gener
                 </TableCell>
                 <TableCell
                   sx={{
-                    width: generatedVariables.type === "input" ? "40%" : "50%",
+                    width: onDelete ? "25%" : "40%",
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -116,10 +137,10 @@ const GeneratedVariablesTable: React.FC<GeneratedVariablesTableProps> = ({ gener
                     <span>{formatValue(value)}</span>
                   </Tooltip>
                 </TableCell>
-                {generatedVariables.type === "input" && (
+                {onDelete && (
                   <TableCell
                     sx={{
-                      width: "20%",
+                      width: "30%",
                       padding: "8px 16px",
                     }}
                   >

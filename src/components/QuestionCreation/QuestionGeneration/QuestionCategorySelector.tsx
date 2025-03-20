@@ -3,17 +3,15 @@ import { TreeViewBaseItem } from '@mui/x-tree-view/models';
 import { ClassKeyData, listAlgos } from '../../../utils/api/QuestionGenerationAPI';
 import { useEffect, useState } from 'react';
 import TreeViewSelector from '../../FolderSelector/TreeViewSelector';
-import { ContextBlockType } from '../../../reducer/questionGenerationReducer';
+import { AlgoDetailsType, ContextBlockType } from '../../../reducer/questionGenerationReducer';
 
 interface QuestionCategorySelectorProps {
-  tabValue: number;
   setTopic: (value: string) => void;
   setSubtopic: (value: string) => void;
   context: ContextBlockType;
 }
 
 const QuestionCategorySelector: React.FC<QuestionCategorySelectorProps> = ({
-  tabValue,
   setTopic,
   setSubtopic,
   context
@@ -45,15 +43,14 @@ const QuestionCategorySelector: React.FC<QuestionCategorySelectorProps> = ({
   };
 
   useEffect(() => {
-    if (context.selectedTopic && selectedSubtopic) {
+    if (context.details.length > 0 && context.details[context.details.length-1].type == 'algo' && (context.details[context.details.length - 1].details as AlgoDetailsType).selectedTopic && selectedSubtopic) {
       setSubtopic(selectedSubtopic);
     }
-  }, [context.selectedTopic, selectedSubtopic]);
+  }, [selectedSubtopic]);
 
   return (
     <TreeViewSelector
       data={treeItems}
-      tabValue={tabValue}
       onNodeSelect={handleNodeSelect}
     />
   );

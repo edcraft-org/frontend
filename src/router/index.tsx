@@ -1,3 +1,4 @@
+import '@mui/material/styles/styled';
 import { createBrowserRouter } from 'react-router-dom';
 import ProjectPage from '../pages/ProjectPages/ProjectPage/ProjectPage';
 import AssessmentDetailsPage from '../pages/AssessmentPages/AssessmentDetailsPage/AssessmentDetailsPage';

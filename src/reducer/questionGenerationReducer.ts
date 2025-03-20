@@ -16,28 +16,38 @@ export type SubQuestionType = {
   requiredLines: string[];
 };
 
+export type AlgoDetailsType = {
+  selectedTopic: string;
+  selectedSubtopic: string;
+  selectedQuantifiables: { [key: string]: string };
+  selectedSubclasses: { [key: string]: string };
+  algoVariables: Variable;
+  variableArguments: { [key: string]: { [arg: string]: unknown } };
+  argumentsInit?: { [key: string]: { [arg: string]: unknown } };
+  userEnvCode?: string[];
+  userAlgoCode?: string;
+};
+
 export type InputDetailsType = {
   inputPath: { [key: string]: unknown };
   inputVariables: Variable;
   inputVariableArguments: { [key: string]: { [arg: string]: unknown } };
   inputInit?: { [key: string]: { [arg: string]: unknown } };
   selectedQuantifiables?: { [key: string]: string };
+  userEnvCode?: string;
 }
+
+export type Detail = {
+  type: 'algo' | 'input';
+  details: AlgoDetailsType | InputDetailsType;
+};
 
 export type ContextBlockType = {
   topics: Topic[];
   subtopics: Subtopic[];
-  selectedTopic: string;
-  selectedSubtopic: string;
-  algoVariables: Variable;
   quantifiables: Quantifiable[];
-  selectedQuantifiables: { [key: string]: string };
-  selectedSubclasses: { [key: string]: string };
-  variableArguments: { [key: string]: { [arg: string]: unknown } };
-  argumentsInit?: { [key: string]: { [arg: string]: unknown } };
-  inputDetails: InputDetailsType[];
-  userAlgoCode?: string;
-  userEnvCode?: string;
+  details: Detail[]
+  selectedDetail?: Detail
 };
 
 export type QuestionBlock = {
@@ -57,25 +67,8 @@ export const initialState: QuestionBlock = {
   context: {
     topics: [],
     subtopics: [],
-    selectedTopic: '',
-    selectedSubtopic: '',
-    algoVariables: [],
     quantifiables: [],
-    selectedQuantifiables: {},
-    selectedSubclasses: {},
-    variableArguments: {},
-    argumentsInit: {},
-    inputDetails: [
-      {
-        inputPath: {},
-        inputVariables: [],
-        inputVariableArguments: {},
-        inputInit: {},
-        selectedQuantifiables: {},
-      },
-    ],
-    userAlgoCode: '',
-    userEnvCode: '',
+    details: [],
   },
   queryables: [],
   inputQueryables: [],
@@ -86,25 +79,8 @@ export const initialState: QuestionBlock = {
       context: {
         topics: [],
         subtopics: [],
-        selectedTopic: '',
-        selectedSubtopic: '',
-        algoVariables: [],
         quantifiables: [],
-        selectedQuantifiables: {},
-        selectedSubclasses: {},
-        variableArguments: {},
-        argumentsInit: {},
-        inputDetails: [
-          {
-            inputPath: {},
-            inputVariables: [],
-            inputVariableArguments: {},
-            inputInit: {},
-            selectedQuantifiables: {},
-          },
-        ],
-        userAlgoCode: '',
-        userEnvCode: '',
+        details: [],
       },
       marks: 1,
       numOptions: 4,
@@ -126,7 +102,6 @@ export const initialState: QuestionBlock = {
 export type Action =
   | { type: 'SET_FIELD'; field: keyof QuestionBlock; value: unknown }
   | { type: 'SET_CONTEXT_FIELD'; field: keyof ContextBlockType; value: unknown }
-  | { type: 'SET_ALGO_VARIABLES'; algoVariables: Variable }
   | { type: 'SET_QUANTIFIABLES'; quantifiables: Quantifiable[] }
   | { type: 'SET_GENERATED_QUESTIONS'; generatedQuestions: GenerateQuestionResponse }
   | { type: 'SET_SUB_QUESTION_FIELD'; index: number; field: keyof SubQuestionType; value: unknown }
@@ -142,8 +117,6 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
       return { ...state, [action.field]: action.value };
     case 'SET_CONTEXT_FIELD':
       return { ...state, context: { ...state.context, [action.field]: action.value } };
-    case 'SET_ALGO_VARIABLES':
-      return { ...state, context: { ...state.context, algoVariables: action.algoVariables } };
     case 'SET_QUANTIFIABLES':
       return { ...state, context: { ...state.context, quantifiables: action.quantifiables } };
     case 'SET_GENERATED_QUESTIONS':
@@ -167,8 +140,8 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
         ...updatedSubQuestionsWithContext[action.index],
         context: {
           ...updatedSubQuestionsWithContext[action.index].context,
-          inputDetails: updatedSubQuestionsWithContext[action.index].context.inputDetails.map((inputDetail, i) =>
-            i === action.index ? { ...inputDetail, [action.field]: action.value } : inputDetail
+          details: updatedSubQuestionsWithContext[action.index].context.details.map((detail, i) =>
+            i === action.index ? { ...detail, [action.field]: action.value } : detail
           ),
         },
       };
@@ -184,15 +157,8 @@ export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => 
             context: {
               topics: state.context.topics,
               subtopics: [],
-              selectedTopic: '',
-              selectedSubtopic: '',
-              algoVariables: [],
               quantifiables: [],
-              selectedQuantifiables: {},
-              selectedSubclasses: {},
-              variableArguments: {},
-              argumentsInit: {},
-              inputDetails: [],
+              details: [],
             },
             marks: 1,
             numOptions: 4,

@@ -31,25 +31,23 @@ interface VariableTableProps {
   isInnerInputTable: boolean
   context: ContextBlockType
   outerContext: ContextBlockType
-  copyInputArgument: (variableName: string, inputName: string, argName: string, inputDetailIndex: number) => void
-  copyInputInit: (variableName: string, inputName: string, inputDetailIndex: number) => void
+  copyInputDetails: (variableName: string, inputName: string, inputDetailIndex: number, args?: string[]) => void
   useGeneratedInput: { [key: string]: number }
   setUseGeneratedInput: (value: React.SetStateAction<{ [key: string]: number }>) => void
   setInputInit: (value: React.SetStateAction<{ [key: string]: { [arg: string]: unknown } }>) => void
-  generatedInputs: Array<{
+  generatedContext: Array<{
     id: string
     type: "input" | "algo"
     context: { [key: string]: unknown }
     context_init: { [key: string]: unknown }
   }>
-  outerGeneratedInputs: Array<{
+  outerGeneratedContext: Array<{
     id: string
     type: "input" | "algo"
     context: { [key: string]: unknown }
     context_init: { [key: string]: unknown }
   }>
   copyInputDetailsItem: (inputDetailsType: InputDetailsType) => void
-  copyInputQuantifiable: (variableName: string, inputName: string, inputDetailIndex: number) => void
 }
 
 const VariableTable: React.FC<VariableTableProps> = ({
@@ -65,21 +63,20 @@ const VariableTable: React.FC<VariableTableProps> = ({
   isInnerInputTable,
   context,
   outerContext,
-  copyInputArgument,
+  copyInputDetails,
   setInputInit,
   useGeneratedInput,
   setUseGeneratedInput,
-  generatedInputs,
-  outerGeneratedInputs,
+  generatedContext,
+  outerGeneratedContext,
   copyInputDetailsItem,
-  copyInputQuantifiable,
 }) => {
   const isQuantifiable = (type: string): boolean => {
     return type === "Quantifiable" || type.includes("Quantifiable") || type.includes("list")
   }
   const [codeSnippets, setCodeSnippets] = useState<{ [key: string]: string }>({})
-  const inputDetails = isInnerInputTable ? outerContext.inputDetails : context.inputDetails
-  const referenceGeneratedInputs = isInnerInputTable ? outerGeneratedInputs : generatedInputs
+  const contextDetails = isInnerInputTable ? outerContext.details : context.details
+  const referenceGeneratedInputs = isInnerInputTable ? outerGeneratedContext : generatedContext
   const handleUseGeneratedInputChange = (
     useOuterInput: boolean,
     variable: VariableItem,
@@ -96,21 +93,19 @@ const VariableTable: React.FC<VariableTableProps> = ({
     if (
       inputDetailIndex !== null &&
       inputDetailIndex !== -1 &&
-      inputDetails[inputDetailIndex].inputInit &&
-      Object.keys(inputDetails[inputDetailIndex].inputInit).length > 0
+      contextDetails[inputDetailIndex].type == "input" &&
+      (contextDetails[inputDetailIndex].details as InputDetailsType).inputInit &&
+      Object.keys((contextDetails[inputDetailIndex].details as InputDetailsType).inputInit || {}).length > 0
     ) {
-      const inputName = Object.keys(inputDetails[inputDetailIndex].inputInit)[0]
-      variable.arguments?.forEach((arg) => {
-        copyInputArgument(variable.name, inputName, arg.name, inputDetailIndex)
-      })
-      copyInputQuantifiable(variable.name, inputName, inputDetailIndex)
-      handleSubclassChange(variable.name, inputName)
-      setInputInit({ [variable.name]: inputDetails[inputDetailIndex].inputInit[inputName] })
+      const inputDetails = contextDetails[inputDetailIndex].details as InputDetailsType
+      const inputName = Object.keys(inputDetails.inputInit ?? {})[0] ?? "";
+      const inputInit = (inputDetails.inputInit ?? {})[inputName]
+      copyInputDetails(variable.name, inputName, inputDetailIndex, variable.arguments?.map((arg) => arg.name))
+      setInputInit({ [variable.name]: inputInit })
       setUseGeneratedInput((prev) => ({ ...prev, [variable.name]: inputDetailIndex }))
     }
     if (inputDetailIndex === -1) {
-      copyInputArgument(variable.name, "", "", inputDetailIndex)
-      copyInputQuantifiable(variable.name, "", inputDetailIndex)
+      copyInputDetails(variable.name, "", inputDetailIndex, [])
       setUseGeneratedInput((prev) => ({ ...prev, [variable.name]: inputDetailIndex }))
       setInputInit((prev) => {
         const newInputInit = { ...prev }
@@ -124,16 +119,17 @@ const VariableTable: React.FC<VariableTableProps> = ({
     if (
       inputDetailIndex !== null &&
       inputDetailIndex !== -1 &&
-      inputDetails[inputDetailIndex].inputInit &&
-      Object.keys(inputDetails[inputDetailIndex].inputInit).length > 0
+      contextDetails[inputDetailIndex].type == "input" &&
+      (contextDetails[inputDetailIndex].details as InputDetailsType).inputInit &&
+      Object.keys((contextDetails[inputDetailIndex].details as InputDetailsType).inputInit || {}).length > 0
     ) {
-      copyInputDetailsItem(inputDetails[inputDetailIndex])
+      copyInputDetailsItem(contextDetails[inputDetailIndex].details as InputDetailsType)
       setUseGeneratedInput((prev) => ({ ...prev, [variable.name]: inputDetailIndex }))
     }
     if (inputDetailIndex === -1) {
       setUseGeneratedInput((prev) => ({ ...prev, [variable.name]: inputDetailIndex }))
       copyInputDetailsItem({
-        ...context.inputDetails[0],
+        ...context.details[0].details as InputDetailsType,
         inputVariableArguments: {},
         inputInit: {},
         selectedQuantifiables: {},
@@ -151,20 +147,30 @@ const VariableTable: React.FC<VariableTableProps> = ({
 
   const hasQuantifiable = variables.some((variable) => isQuantifiable(variable.type))
   const hasSubclasses = variables.some((variable) => variable.subclasses && variable.subclasses.length > 0)
-  const hasMatchingInput = (type: string) =>
-    inputDetails.length > 0 && inputDetails.some((_inputDetail, index) => checkArgumentType(type, index))
+  const hasMatchingInput = (type: string) => contextDetails && contextDetails.length > 0 && contextDetails.some((_contextDetails, index) => checkArgumentType(type, index))
 
   const checkArgumentType = (type: string, inputDetailIndex: number): boolean => {
-    if (inputDetails.length > inputDetailIndex) {
-      if (inputDetails[inputDetailIndex].inputInit) {
-        const inputInitKeys = Object.keys(inputDetails[inputDetailIndex].inputInit)
+    if (contextDetails.length > inputDetailIndex) {
+      if (contextDetails[inputDetailIndex].type == "algo") {
+        return false
+      }
+      const inputDetail = contextDetails[inputDetailIndex].details as InputDetailsType
+      if (inputDetail.inputInit) {
+        const inputInitKeys = Object.keys(inputDetail.inputInit)
         if (inputInitKeys.length > 0) {
-          if (type.includes(inputInitKeys[0])) {
-            return true
+          console.log(type, inputInitKeys[0])
+          // if (type.includes(inputInitKeys[0])) {
+          // Extract base type name before any generic parameters
+          const baseType = type.split('[')[0];
+          const inputBaseType = inputInitKeys[0].split('[')[0];
+
+          // Check if base types match exactly
+          if (baseType === inputBaseType) {
+            return true;
           }
         }
       }
-      const inputVariable = inputDetails[inputDetailIndex].inputVariables
+      const inputVariable = inputDetail.inputVariables
       if (inputVariable.length > 0) {
         if (type.includes(inputVariable[0].type)) {
           return true
@@ -264,7 +270,6 @@ const VariableTable: React.FC<VariableTableProps> = ({
         </TableHead>
         <TableBody>
           {variables.map((variable, index) => {
-            // console.log(variable)
             const disableFields =
               (isAlgoTable || isInnerInputTable) &&
               hasMatchingInput(variable.type) &&
@@ -516,13 +521,13 @@ const VariableTable: React.FC<VariableTableProps> = ({
                         <MenuItem value="-1">
                           <em>None</em>
                         </MenuItem>
-                        {inputDetails.map(
-                          (_inputDetail, idx) =>
+                        {contextDetails.map(
+                          (contextDetail, idx) =>
+                            contextDetail.type == "input" &&
                             checkArgumentType(variable.type, idx) &&
                             referenceGeneratedInputs &&
                             referenceGeneratedInputs[idx] && (
-
-                                <MenuItem value={idx.toString()}>
+                                <MenuItem key={idx} value={idx.toString()}>
                                   <Tooltip
                                     key={idx}
                                     title={`Input: ${Object.values(referenceGeneratedInputs[idx].context)[0]}`}

@@ -36,9 +36,8 @@ const convertSvgToPngBlob = async (svgData: string): Promise<Blob | null> => {
 };
 
 export const generateWordDoc = async (assessmentDetails) => {
-  // let sections = [];
   let subQuestionCounter = 1;
-	let paragraphs: Paragraph[] = [];
+	const paragraphs: Paragraph[] = [];
 
 
   for (const question of assessmentDetails.questions) {

@@ -7,12 +7,10 @@ import { formatIdToNestedObject } from '../../../utils/format';
 
 
 interface QuestionEnvSelectorProps {
-  tabValue: number;
   setInputPath: (inputPath: { [key: string]: unknown }) => void;
 }
 
 const QuestionEnvSelector: React.FC<QuestionEnvSelectorProps> = ({
-  tabValue,
   setInputPath,
 }) => {
   const [treeItems, setTreeItems] = useState<ClassKeyData>({});
@@ -38,7 +36,6 @@ const QuestionEnvSelector: React.FC<QuestionEnvSelectorProps> = ({
   return (
     <TreeViewSelector
       data={treeItems}
-      tabValue={tabValue}
       onNodeSelect={handleNodeSelect}
     />
   );

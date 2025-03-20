@@ -1,126 +1,120 @@
-import { useReducer, useEffect } from 'react';
-import { reducer, initialState, InputDetailsType } from '../reducer/questionGenerationReducer';
-import { getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables, getUserQueryables, getUserAlgoVariables, getInputQueryables, getInputQueryableVariables, listInputVariable, Variable, getUserInputVariables } from '../utils/api/QuestionGenerationAPI';
+import { useReducer } from 'react';
+import { reducer, initialState, InputDetailsType, Detail, AlgoDetailsType } from '../reducer/questionGenerationReducer';
+import { getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables, getUserQueryables, getUserAlgoVariables, getInputQueryables, getInputQueryableVariables, listInputVariable, getUserInputVariables, getUserQueryableVariables, getUserInputQueryableVariables, getUserInputQueryables } from '../utils/api/QuestionGenerationAPI';
 
 const useQuestionGeneration = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  useEffect(() => {
-    if (state.context.selectedSubtopic) {
-      getAlgoVariables(state.context.selectedTopic, state.context.selectedSubtopic)
-        .then(algoVariables => dispatch({ type: 'SET_ALGO_VARIABLES', algoVariables }))
-        .catch(error => console.error('Error fetching algorithm variables:', error));
-      getQuantifiables()
-        .then(quantifiables => dispatch({ type: 'SET_QUANTIFIABLES', quantifiables }))
-        .catch(error => console.error('Error fetching quantifiables:', error));
-      getQueryables(state.context.selectedTopic, state.context.selectedSubtopic)
-        .then(queryables => {
-          dispatch({ type: 'SET_FIELD', field: 'queryables', value: queryables });
-          state.subQuestions.forEach((_, index) => {
-            dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: queryables });
-          });
-        })
-        .catch(error => {
-          dispatch({ type: 'SET_FIELD', field: 'queryables', value: [] })
-          state.subQuestions.forEach((_, index) => {
-            dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: [] });
-            dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
-          });
-          console.error('Error fetching queryables:', error)
-        });
-    } else {
-      dispatch({ type: 'SET_ALGO_VARIABLES', algoVariables: [] });
-      state.subQuestions.forEach((_, index) => {
-        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: [] });
-      });
-    }
-    state.subQuestions.forEach((_, index) => {
-      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
-    });
-    dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedQuantifiables', value: {} });
-    dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedSubclasses', value: {} });
-    dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: {} });
-    dispatch({ type: 'SET_CONTEXT_FIELD', field: 'argumentsInit', value: {} });
-  }, [state.context.selectedSubtopic]);
-
-  const handleSubQuestionQueryableChange = async (index: number, queryable: string) => {
-    const selectedTopic = state.subQuestions[index].context.selectedTopic ? state.subQuestions[index].context.selectedTopic : state.context.selectedTopic;
-    const selectedSubtopic = state.subQuestions[index].context.selectedSubtopic ? state.subQuestions[index].context.selectedSubtopic : state.context.selectedSubtopic;
-    if (selectedTopic && selectedSubtopic && queryable) {
-      try {
-        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: queryable });
-        const data = await getQueryableVariables(selectedTopic, selectedSubtopic, queryable);
-        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryVariables', value: data });
-        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedInputQueryable', value: '' });
-        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryVariables', value: [] });
-      } catch (error) {
-        console.error('Error fetching queryable variables for subquestion:', error);
-      }
-    } else {
-      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryVariables', value: [] });
-    }
-  };
-
-
-  const handleSubQuestionInputQueryableChange = async (index: number, queryable: string) => {
-    if (state.subQuestions[index].context.inputDetails.length > 0 && Object.keys(state.subQuestions[index].context.inputDetails[0].inputPath).length > 0 && queryable) {
-      try {
-        const selectedInputPath = state.subQuestions[index].context.inputDetails[0].inputPath;
-        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedInputQueryable', value: queryable });
-        const data = await getInputQueryableVariables(selectedInputPath, queryable);
-        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryVariables', value: data });
-        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
-        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryVariables', value: [] });
-      } catch (error) {
-        console.error('Error fetching queryable variables for subquestion:', error);
-      }
-    } else {
-      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryVariables', value: [] });
-    }
-  };
-
   const handleTopicChange = async (topic: string, index?: number) => {
-    if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedTopic', value: topic });
-      try {
-        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedSubtopic', value: '' });
-        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
-        dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: [] });
-        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedQuantifiables', value: {} });
-        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedSubclasses', value: {} });
-        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'algoVariables', value: [] });
-      } catch (error) {
-        console.error('Error fetching subtopics for subquestion:', error);
+    const updateAlgoDetails = (details: Detail[]) => {
+      const updatedDetails = details ? [...details] : [];
+      if (updatedDetails.length === 0 ||
+          updatedDetails[updatedDetails.length - 1].type === 'input' ||
+          (updatedDetails[updatedDetails.length - 1].type === 'algo' &&
+           'argumentsInit' in updatedDetails[updatedDetails.length - 1].details &&
+           Object.keys((updatedDetails[updatedDetails.length - 1].details as AlgoDetailsType).argumentsInit || {}).length > 0)) {
+
+        updatedDetails.push({
+          type: 'algo',
+          details: {
+            selectedTopic: topic,
+            selectedSubtopic: '',
+            selectedQuantifiables: {},
+            selectedSubclasses: {},
+            algoVariables: [],
+            variableArguments: {},
+            argumentsInit: {},
+            userAlgoCode: '',
+            userEnvCode: [],
+          }
+        });
+      } else {
+        updatedDetails[updatedDetails.length - 1] = {
+          type: 'algo',
+          details: {
+            selectedTopic: topic,
+            selectedSubtopic: '',
+            selectedQuantifiables: {},
+            selectedSubclasses: {},
+            algoVariables: [],
+            variableArguments: {},
+            argumentsInit: {},
+            userAlgoCode: '',
+            userEnvCode: [],
+          }
+        };
       }
-    } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedTopic', value: topic });
+      return updatedDetails;
+    };
+
+    try {
+      if (index !== undefined) {
+        const details = state.subQuestions[index].context.details || [];
+        const updatedDetails = updateAlgoDetails([...details]);
+        dispatch({
+          type: 'SET_SUB_QUESTION_CONTEXT_FIELD',
+          index,
+          field: 'details',
+          value: updatedDetails
+        });
+      } else {
+        const details = state.context.details || [];
+        const updatedDetails = updateAlgoDetails([...details]);
+        dispatch({
+          type: 'SET_CONTEXT_FIELD',
+          field: 'details',
+          value: updatedDetails
+        });
+      }
+    } catch (error) {
+      console.error('Error updating topic:', error);
     }
   };
 
   const handleSubtopicChange = async (subtopic: string, index?: number) => {
-    if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedSubtopic', value: subtopic });
-      try {
-        const selectedTopic = state.subQuestions[index].context.selectedTopic;
-        getAlgoVariables(selectedTopic, subtopic)
-        .then(algoVariables => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'algoVariables', value: algoVariables }))
-        .catch(error => console.error('Error fetching algorithm variables:', error));
-        getQuantifiables()
-          .then(quantifiables => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'quantifiables', value: quantifiables }))
-          .catch(error => console.error('Error fetching quantifiables:', error));
-        getQueryables(selectedTopic, subtopic)
-          .then(queryables => dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: queryables }))
-          .catch(error => {
-            dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: [] })
-            dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
-            console.error('Error fetching queryables:', error)
-          });
-        handleArgumentInit({}, index);
-      } catch (error) {
-        console.error('Error fetching queryables for subquestion:', error);
+    const updateAlgoDetails = async (details: Detail[]) => {
+      if (details.length === 0) {
+        return details;
       }
+      const updatedAlgoDetails = [...details]
+      const lastInputDetail = updatedAlgoDetails[updatedAlgoDetails.length - 1];
+      if (lastInputDetail.type == 'input') {
+        return updatedAlgoDetails;
+      }
+      const algoTypeDetails = lastInputDetail.details as AlgoDetailsType;
+      try {
+        const algoVariables = await getAlgoVariables(algoTypeDetails.selectedTopic, subtopic);
+        updatedAlgoDetails[updatedAlgoDetails.length - 1] = {
+          type: 'algo',
+          details: {
+            ...algoTypeDetails,
+            selectedSubtopic: subtopic,
+            algoVariables: algoVariables,
+          }
+        };
+
+        if (index) {
+          getQuantifiables()
+            .then(quantifiables => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'quantifiables', value: quantifiables }))
+            .catch(error => console.error('Error fetching quantifiables:', error));
+          handleArgumentInit({}, index);
+        } else {
+          getQuantifiables()
+            .then(quantifiables => dispatch({ type: 'SET_QUANTIFIABLES', quantifiables }))
+            .catch(error => console.error('Error fetching quantifiables:', error));
+        }
+        return updatedAlgoDetails;
+      } catch (error) {
+        console.error('Error fetching algorithm variables:', error);
+        return updatedAlgoDetails;
+      }
+    };
+    if (index !== undefined) {
+      const updatedDetails = await updateAlgoDetails([...state.subQuestions[index].context.details]);
+      dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updatedDetails});
     } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedSubtopic', value: subtopic });
+      const updatedDetails = await updateAlgoDetails([...state.context.details]);
+      dispatch({type: 'SET_CONTEXT_FIELD', field: 'details', value: updatedDetails});
     }
   };
 
@@ -134,78 +128,218 @@ const useQuestionGeneration = () => {
       }
     };
 
-    const updateInputDetails = async (inputDetails: InputDetailsType[]) => {
+    const updateInputDetails = async (details: Detail[]) => {
+      const updatedDetails = details ? [...details] : [];
       const inputVariables = await fetchInputVariables();
-      const lastInputDetail = inputDetails.length > 0 ? inputDetails[inputDetails.length - 1] : { inputPath: {}, inputVariables: [], inputVariableArguments: {}, inputInit: {} };
-
-      if (
-        Object.keys(lastInputDetail.inputVariableArguments).length === 0 &&
-        lastInputDetail.inputInit &&
-        Object.keys(lastInputDetail.inputInit).length === 0
-      ) {
-        inputDetails[inputDetails.length - 1] = { ...lastInputDetail, inputPath, inputVariables };
+      if (updatedDetails.length === 0 ||
+        updatedDetails[updatedDetails.length - 1].type === 'algo' ||
+        (updatedDetails[updatedDetails.length - 1].type === 'input' &&
+         'inputInit' in updatedDetails[updatedDetails.length - 1].details &&
+         Object.keys((updatedDetails[updatedDetails.length - 1].details as InputDetailsType).inputInit || {}).length > 0)) {
+        updatedDetails.push({
+          type: 'input',
+          details: {
+            inputPath,
+            inputVariables,
+            inputVariableArguments: {},
+            inputInit: {},
+            selectedQuantifiables: {},
+          }
+        });
       } else {
-        inputDetails.push({ inputPath, inputVariables, inputVariableArguments: {}, inputInit: {} });
+        updatedDetails[updatedDetails.length - 1] = {
+          type: 'input',
+          details: {
+            inputPath,
+            inputVariables,
+            inputVariableArguments: {},
+            inputInit: {},
+            selectedQuantifiables: {},
+          }
+        };
       }
 
-      return inputDetails;
+      return updatedDetails;
     };
     const context = index !== undefined ? state.subQuestions[index].context : state.context;
 
     if (index !== undefined) {
-      const updatedInputDetails = [{ inputPath, inputVariables: [] as Variable, inputVariableArguments: {}, inputInit: {} }];
-      const inputVariables = await fetchInputVariables();
-      updatedInputDetails[0].inputVariables = inputVariables;
-      dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails});
-      setInputQueryable(inputPath, index);
+      const updatedDetails = await updateInputDetails([...context.details]);
+      dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updatedDetails});
       getQuantifiables()
       .then(quantifiables => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'quantifiables', value: quantifiables }))
       .catch(error => console.error('Error fetching quantifiables:', error));
     } else {
-      const updatedInputDetails = await updateInputDetails([...context.inputDetails]);
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updatedInputDetails});
+      const updatedDetails = await updateInputDetails([...context.details]);
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'details', value: updatedDetails});
       getQuantifiables()
       .then(quantifiables => dispatch({ type: 'SET_QUANTIFIABLES', quantifiables }))
       .catch(error => console.error('Error fetching quantifiables:', error));
     }
   };
 
-  const handleQuantifiableChange = (variableName: string, value: string, index?: number) => {
-    if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedQuantifiables', value: { ...state.subQuestions[index].context.selectedQuantifiables, [variableName]: value } });
+  const handleSubQuestionQueryableChange = async (index: number, queryable: string) => {
+    if (state.subQuestions[index].context.selectedDetail == undefined) {
+      return
+    }
+    const selectedAlgoDetail = state.subQuestions[index].context.selectedDetail.details as AlgoDetailsType;
+    const selectedTopic = selectedAlgoDetail.selectedTopic
+    const selectedSubtopic = selectedAlgoDetail.selectedSubtopic
+    const userEnvCode = selectedAlgoDetail.userEnvCode
+    const userAlgoCode = selectedAlgoDetail.userAlgoCode
+    if (queryable) {
+      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: queryable });
+      if (userAlgoCode) {
+        try {
+          const data = await getUserQueryableVariables(queryable, userAlgoCode, userEnvCode);
+          dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryVariables', value: data });
+        } catch (error) {
+          console.error('Error fetching queryable variables for subquestion:', error);
+        }
+        return
+      }
+      if (selectedTopic && selectedSubtopic) {
+        try {
+          const data = await getQueryableVariables(selectedTopic, selectedSubtopic, queryable);
+          dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryVariables', value: data });
+        } catch (error) {
+          console.error('Error fetching queryable variables for subquestion:', error);
+        }
+      }
+      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedInputQueryable', value: '' });
+      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryVariables', value: [] });
     } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedQuantifiables', value: { ...state.context.selectedQuantifiables, [variableName]: value } });
+      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryVariables', value: [] });
+    }
+  };
+
+  const handleSubQuestionInputQueryableChange = async (index: number, queryable: string) => {
+    if (state.subQuestions[index].context.selectedDetail == undefined) {
+      return
+    }
+    const selectedInputDetail = state.subQuestions[index].context.selectedDetail.details as InputDetailsType;
+    if (queryable) {
+      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedInputQueryable', value: queryable });
+      const userEnvCode = selectedInputDetail.userEnvCode
+      if (userEnvCode) {
+        try {
+          const data = await getUserInputQueryableVariables(queryable, userEnvCode);
+          dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryVariables', value: data });
+        } catch (error) {
+          console.error('Error fetching queryable variables for subquestion:', error);
+        }
+        return
+      }
+      if (Object.keys(selectedInputDetail.inputPath).length > 0) {
+        try {
+          const selectedInputPath = selectedInputDetail.inputPath;
+
+          const data = await getInputQueryableVariables(selectedInputPath, queryable);
+          dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryVariables', value: data });
+
+        } catch (error) {
+          console.error('Error fetching queryable variables for subquestion:', error);
+        }
+      }
+      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
+      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryVariables', value: [] });
+    } else {
+      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryVariables', value: [] });
+    }
+  };
+
+  const handleQuantifiableChange = (variableName: string, value: string, index?: number) => {
+    const updateAlgoDetails = (details: Detail[]) => {
+      if (details.length === 0) {
+        return details;
+      }
+
+      const updatedDetails = [...details];
+      const lastDetail = updatedDetails[updatedDetails.length - 1];
+      if (lastDetail.type == 'input') {
+        return details;
+      }
+      const algoTypeDetails = lastDetail.details as AlgoDetailsType;
+      const selectedQuantifiables = algoTypeDetails.selectedQuantifiables || {};
+
+      if (algoTypeDetails.argumentsInit && Object.keys(algoTypeDetails.argumentsInit).length === 0) {
+        updatedDetails[updatedDetails.length - 1] = {
+          type: 'algo',
+          details: {
+            ...algoTypeDetails,
+            selectedQuantifiables: {
+              ...selectedQuantifiables,
+              [variableName]: value,
+            },
+          }
+        };
+      } else {
+        updatedDetails.push({
+          type: 'algo',
+          details: {
+            selectedTopic: algoTypeDetails.selectedTopic,
+            selectedSubtopic: algoTypeDetails.selectedSubtopic,
+            selectedQuantifiables: {
+              ...selectedQuantifiables,
+              [variableName]: value,
+            },
+            selectedSubclasses: {...algoTypeDetails.selectedSubclasses},
+            algoVariables: {...algoTypeDetails.algoVariables},
+            variableArguments: {...algoTypeDetails.variableArguments},
+            argumentsInit: {},
+            userAlgoCode: algoTypeDetails.userAlgoCode,
+            userEnvCode: algoTypeDetails.userEnvCode
+          }
+        });
+      }
+      return updatedDetails;
+    };
+
+    if (index !== undefined) {
+      dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updateAlgoDetails([...state.subQuestions[index].context.details])});
+    } else {
+      dispatch({type: 'SET_CONTEXT_FIELD', field: 'details', value: updateAlgoDetails([...state.context.details])});
     }
   };
 
   const handleInputQuantifiableChange = (variableName: string, value: string, index?: number) => {
-    const updateInputDetails = (inputDetails: InputDetailsType[]) => {
+    const updateInputDetails = (inputDetails: Detail[]) => {
       if (inputDetails.length === 0) {
         return inputDetails;
       }
 
       const updatedInputDetails = [...inputDetails];
       const lastInputDetail = updatedInputDetails[updatedInputDetails.length - 1];
-      const selectedQuantifiables = lastInputDetail.selectedQuantifiables || {};
+      if (lastInputDetail.type == 'algo') {
+        return inputDetails;
+      }
+      const inputTypeDetails = lastInputDetail.details as InputDetailsType;
+      const selectedQuantifiables = inputTypeDetails.selectedQuantifiables || {};
 
-      if (lastInputDetail.inputInit && Object.keys(lastInputDetail.inputInit).length === 0) {
+      if (inputTypeDetails.inputInit && Object.keys(inputTypeDetails.inputInit).length === 0) {
         updatedInputDetails[updatedInputDetails.length - 1] = {
-          ...lastInputDetail,
-          selectedQuantifiables: {
-            ...selectedQuantifiables,
-            [variableName]: value,
-          },
+          type: 'input',
+          details: {
+            ...inputTypeDetails,
+            selectedQuantifiables: {
+              ...selectedQuantifiables,
+              [variableName]: value,
+            },
+          }
         };
       } else {
         updatedInputDetails.push({
-          inputPath: { ...lastInputDetail.inputPath },
-          inputVariables: [...lastInputDetail.inputVariables],
-          inputVariableArguments: { ...lastInputDetail.inputVariableArguments },
-          inputInit: {},
-          selectedQuantifiables: {
-            ...selectedQuantifiables,
-            [variableName]: value,
-          },
+          type: 'input',
+          details: {
+            inputPath: { ...inputTypeDetails.inputPath },
+            inputVariables: [...inputTypeDetails.inputVariables],
+            inputVariableArguments: { ...inputTypeDetails.inputVariableArguments },
+            inputInit: {},
+            selectedQuantifiables: {
+              ...selectedQuantifiables,
+              [variableName]: value,
+            },
+          }
         });
       }
 
@@ -213,187 +347,453 @@ const useQuestionGeneration = () => {
     };
 
     if (index !== undefined) {
-      const subQuestion = state.subQuestions[index];
-      const updatedInputDetails = [{...subQuestion.context.inputDetails[0], selectedQuantifiables: { ...subQuestion.context.inputDetails[0].selectedQuantifiables, [variableName]: value } }];
-      dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails});
+      dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updateInputDetails([...state.subQuestions[index].context.details])});
     } else {
-      dispatch({type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updateInputDetails([...state.context.inputDetails])});
+      dispatch({type: 'SET_CONTEXT_FIELD', field: 'details', value: updateInputDetails([...state.context.details])});
     }
   };
 
   const handleSubclassChange = (variableName: string, subclassName: string, index?: number) => {
+    const updateAlgoDetails = (details: Detail[]) => {
+      if (details.length === 0) {
+        return details;
+      }
+
+      const updatedDetails = [...details];
+      const lastDetail = updatedDetails[updatedDetails.length - 1];
+      if (lastDetail.type === 'input') {
+        return details;
+      }
+
+      const algoTypeDetails = lastDetail.details as AlgoDetailsType;
+
+      if (algoTypeDetails.argumentsInit && Object.keys(algoTypeDetails.argumentsInit).length === 0) {
+        updatedDetails[updatedDetails.length - 1] = {
+          type: 'algo',
+          details: {
+            ...algoTypeDetails,
+            selectedSubclasses: {
+              ...algoTypeDetails.selectedSubclasses,
+              [variableName]: subclassName
+            },
+            variableArguments: {
+            }
+          }
+        };
+      } else {
+        updatedDetails.push({
+          type: 'algo',
+          details: {
+            selectedTopic: algoTypeDetails.selectedTopic,
+            selectedSubtopic: algoTypeDetails.selectedSubtopic,
+            selectedQuantifiables: { ...algoTypeDetails.selectedQuantifiables },
+            selectedSubclasses: {
+              ...algoTypeDetails.selectedSubclasses,
+              [variableName]: subclassName
+            },
+            algoVariables: { ...algoTypeDetails.algoVariables },
+            variableArguments: {
+            },
+            argumentsInit: {},
+            userAlgoCode: algoTypeDetails.userAlgoCode,
+            userEnvCode: algoTypeDetails.userEnvCode
+          }
+        });
+      }
+      return updatedDetails;
+    };
+
     if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedSubclasses', value: { ...state.subQuestions[index].context.selectedSubclasses, [variableName]: subclassName } });
-
-      const selectedSubclass = state.subQuestions[index].context.algoVariables.find((variable) => variable.name === variableName)?.subclasses?.find((subclass) => subclass.name === subclassName);
-      if (selectedSubclass) {
-        const initialArguments = selectedSubclass.arguments.reduce((acc, arg) => {
-          acc[arg.name] = '';
-          return acc;
-        }, {} as { [key: string]: unknown });
-        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { ...state.subQuestions[index].context.variableArguments, [variableName]: initialArguments } });
-      }
+      dispatch({
+        type: 'SET_SUB_QUESTION_CONTEXT_FIELD',
+        index,
+        field: 'details',
+        value: updateAlgoDetails([...state.subQuestions[index].context.details])
+      });
     } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedSubclasses', value: { ...state.context.selectedSubclasses, [variableName]: subclassName } });
-
-      const selectedSubclass = state.context.algoVariables.find((variable) => variable.name === variableName)?.subclasses?.find((subclass) => subclass.name === subclassName);
-      if (selectedSubclass) {
-        const initialArguments = selectedSubclass.arguments.reduce((acc, arg) => {
-          acc[arg.name] = '';
-          return acc;
-        }, {} as { [key: string]: unknown });
-        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: { ...state.context.variableArguments, [variableName]: initialArguments } });
-      }
+      dispatch({
+        type: 'SET_CONTEXT_FIELD',
+        field: 'details',
+        value: updateAlgoDetails([...state.context.details])
+      });
     }
   };
 
   const handleArgumentChange = (variableName: string, argName: string, value: unknown, index?: number) => {
+    const updateAlgoDetails = (details: Detail[]) => {
+      if (details.length == 0) {
+        return details;
+      }
+
+      const updatedDetails = [...details];
+      const lastDetail = updatedDetails[updatedDetails.length - 1];
+      if (lastDetail.type == 'input') {
+        return details;
+      }
+      const algoTypeDetails = lastDetail.details as AlgoDetailsType;
+      const variableArguments = algoTypeDetails.variableArguments || {};
+
+      if (algoTypeDetails.argumentsInit && Object.keys(algoTypeDetails.argumentsInit).length === 0) {
+        updatedDetails[updatedDetails.length - 1] = {
+          type: 'algo',
+          details: {
+            ...algoTypeDetails,
+            variableArguments: {
+              ...variableArguments,
+              [variableName]: {
+                ...variableArguments[variableName],
+                [argName]: value,
+              },
+            },
+          }
+        };
+      } else {
+        updatedDetails.push({
+          type: 'algo',
+          details: {
+            selectedTopic: algoTypeDetails.selectedTopic,
+            selectedSubtopic: algoTypeDetails.selectedSubtopic,
+            selectedQuantifiables: { ...algoTypeDetails.selectedQuantifiables },
+            selectedSubclasses: {...algoTypeDetails.selectedSubclasses},
+            algoVariables: {...algoTypeDetails.algoVariables},
+            variableArguments: {
+              ...variableArguments,
+              [variableName]: {
+                ...variableArguments[variableName],
+                [argName]: value,
+              },
+            },
+            argumentsInit: {},
+            userAlgoCode: algoTypeDetails.userAlgoCode,
+            userEnvCode: algoTypeDetails.userEnvCode,
+          }
+        });
+      }
+      return updatedDetails;
+    };
     if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { ...state.subQuestions[index].context.variableArguments, [variableName]: { ...state.subQuestions[index].context.variableArguments[variableName], [argName]: value } } });
+      dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updateAlgoDetails([...state.subQuestions[index].context.details])});
     } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: { ...state.context.variableArguments, [variableName]: { ...state.context.variableArguments[variableName], [argName]: value } } });
+      dispatch({type: 'SET_CONTEXT_FIELD', field: 'details', value: updateAlgoDetails([...state.context.details])});
     }
   };
 
   const handleInputArgumentChange = (variableName: string, argName: string, value: unknown, index?: number) => {
-    const updateInputDetails = (inputDetails: InputDetailsType[]) => {
+    const updateInputDetails = (inputDetails: Detail[]) => {
       if (inputDetails.length === 0) {
         return inputDetails;
       }
 
       const updatedInputDetails = [...inputDetails];
       const lastInputDetail = updatedInputDetails[updatedInputDetails.length - 1];
-      const inputVariableArguments = lastInputDetail.inputVariableArguments || {};
+      if (lastInputDetail.type == 'algo') {
+        return inputDetails;
+      }
+      const inputTypeDetails = lastInputDetail.details as InputDetailsType;
+      const inputVariableArguments = inputTypeDetails.inputVariableArguments || {};
 
-      if (lastInputDetail.inputInit && Object.keys(lastInputDetail.inputInit).length === 0) {
+      if (inputTypeDetails.inputInit && Object.keys(inputTypeDetails.inputInit).length === 0) {
         updatedInputDetails[updatedInputDetails.length - 1] = {
-          ...lastInputDetail,
-          inputVariableArguments: {
-            ...inputVariableArguments,
-            [variableName]: {
-              ...inputVariableArguments[variableName],
-              [argName]: value,
+          type: 'input',
+          details: {
+            ...inputTypeDetails,
+            inputVariableArguments: {
+              ...inputVariableArguments,
+              [variableName]: {
+                ...inputVariableArguments[variableName],
+                [argName]: value,
+              },
             },
-          },
+          }
         };
       } else {
         updatedInputDetails.push({
-          inputPath: { ...lastInputDetail.inputPath },
-          inputVariables: [...lastInputDetail.inputVariables],
-          inputVariableArguments: {
-            ...inputVariableArguments,
-            [variableName]: {
-              ...inputVariableArguments[variableName],
-              [argName]: value,
+          type: 'input',
+          details: {
+            inputPath: { ...inputTypeDetails.inputPath },
+            inputVariables: [...inputTypeDetails.inputVariables],
+            inputVariableArguments: {
+              ...inputVariableArguments,
+              [variableName]: {
+                ...inputVariableArguments[variableName],
+                [argName]: value,
+              },
             },
-          },
-          inputInit: {},
-          selectedQuantifiables: { ...lastInputDetail.selectedQuantifiables },
+            inputInit: {},
+            selectedQuantifiables: { ...inputTypeDetails.selectedQuantifiables },
+          }
         });
       }
-
       return updatedInputDetails;
       };
     if (index !== undefined) {
-      const subQuestion = state.subQuestions[index];
-      const updatedInputDetails = [{...subQuestion.context.inputDetails[0], inputVariableArguments: { ...subQuestion.context.inputDetails[0].inputVariableArguments, [variableName]: { ...subQuestion.context.inputDetails[0].inputVariableArguments[variableName], [argName]: value } }}];
-      dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails});
+      dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updateInputDetails([...state.subQuestions[index].context.details])});
     } else {
-      dispatch({type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updateInputDetails([...state.context.inputDetails])});
+      dispatch({type: 'SET_CONTEXT_FIELD', field: 'details', value: updateInputDetails([...state.context.details])});
     }
   };
 
-  const copyInputArgument = (variableName: string, inputName: string, argName: string, inputDetailIndex: number, index?: number) => {
-    if (index !== undefined) {
-      if (inputDetailIndex == -1) {
-        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { }});
-        return;
+  const copyInputDetails = (variableName: string, inputName: string, inputDetailIndex: number, args?: string[], index?: number) => {
+    const updateAlgoDetails = (details: Detail[]) => {
+      if (details.length === 0) {
+        return details;
       }
-      if (state.subQuestions[index].context.inputDetails[inputDetailIndex] && Object.keys(state.subQuestions[index].context.inputDetails[inputDetailIndex].inputVariableArguments).length > 0) {
-        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'variableArguments', value: { ...state.subQuestions[index].context.variableArguments, [variableName]: { ...state.subQuestions[index].context.variableArguments[variableName], [argName]: state.subQuestions[index].context.inputDetails[inputDetailIndex].inputVariableArguments[inputName][argName] } }});
+      const updatedDetails = [...details];
+      const lastDetail = updatedDetails[updatedDetails.length - 1];
+      if (lastDetail.type === 'input') {
+        return details;
       }
-    } else {
-      if (inputDetailIndex == -1) {
-        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: { } });
-        return;
-      }
-      if (Object.keys(state.context.inputDetails[inputDetailIndex].inputVariableArguments).length > 0) {
-        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'variableArguments', value: { ...state.context.variableArguments, [variableName]: { ...state.context.variableArguments[variableName], [argName]: state.context.inputDetails[inputDetailIndex].inputVariableArguments[inputName][argName] } }});
-      }
-    }
-  }
+      const algoTypeDetails = lastDetail.details as AlgoDetailsType;
 
-  const copyInputQuantifiable = (variableName: string, inputName: string, inputDetailIndex: number, index?: number) => {
+      if (algoTypeDetails.argumentsInit && Object.keys(algoTypeDetails.argumentsInit).length === 0) {
+        if (inputDetailIndex === -1) {
+          updatedDetails[updatedDetails.length - 1] = {
+            type: 'algo',
+            details: {
+              ...algoTypeDetails,
+              variableArguments: {},
+              selectedQuantifiables: {},
+              selectedSubclasses: {}
+            }
+          };
+        } else {
+          const newDetails: AlgoDetailsType = { ...algoTypeDetails };
+          // Handle arguments
+          if (args && args.length > 0 && details[inputDetailIndex].type === "input") {
+            const inputTypeDetails = details[inputDetailIndex].details as InputDetailsType;
+
+            if (inputTypeDetails.inputVariableArguments &&
+                Object.keys(inputTypeDetails.inputVariableArguments).length > 0) {
+              newDetails.variableArguments = {
+                ...algoTypeDetails.variableArguments,
+                [variableName]: args.reduce((acc, argName) => ({
+                  ...acc,
+                  [argName]: inputTypeDetails.inputVariableArguments[inputName][argName]
+                }), {})
+              };
+            }
+          }
+
+          // Handle quantifiables
+          if (details[inputDetailIndex].details.selectedQuantifiables) {
+            newDetails.selectedQuantifiables = {
+              ...algoTypeDetails.selectedQuantifiables,
+              [variableName]: details[inputDetailIndex].details.selectedQuantifiables[inputName]
+            };
+          }
+
+          // Handle subclass
+          const selectedSubclass = algoTypeDetails.algoVariables.find(
+            (variable) => variable.name === variableName
+          )?.subclasses?.find(
+            (subclass) => subclass.name === inputName
+          );
+          if (selectedSubclass) {
+            newDetails.selectedSubclasses = {
+              ...algoTypeDetails.selectedSubclasses,
+              [variableName]: inputName
+            };
+
+            if (selectedSubclass?.arguments && ((details[inputDetailIndex].details as InputDetailsType).inputVariableArguments[inputName])) {
+              const initialArguments: { [arg: string]: unknown } = {};
+
+              selectedSubclass.arguments.forEach(arg => {
+                initialArguments[arg.name] = (details[inputDetailIndex].details as InputDetailsType).inputVariableArguments[inputName][arg.name];
+              });
+              newDetails.variableArguments = {
+                ...algoTypeDetails.variableArguments,
+                [variableName]: initialArguments
+              };
+            }
+          }
+
+          // Handle userEnvCode
+          const inputEnvCode = (details[inputDetailIndex].details as InputDetailsType).userEnvCode;
+          if (newDetails.userEnvCode && inputEnvCode && !newDetails.userEnvCode.includes(inputEnvCode)) {
+            newDetails.userEnvCode = [...newDetails.userEnvCode, inputEnvCode];
+          }
+
+          updatedDetails[updatedDetails.length - 1] = {
+            type: 'algo',
+            details: newDetails
+          };
+        }
+      } else {
+        const newDetails: AlgoDetailsType = {
+          selectedTopic: algoTypeDetails.selectedTopic,
+          selectedSubtopic: algoTypeDetails.selectedSubtopic,
+          selectedQuantifiables: { ...algoTypeDetails.selectedQuantifiables },
+          selectedSubclasses: { ...algoTypeDetails.selectedSubclasses },
+          algoVariables: { ...algoTypeDetails.algoVariables },
+          variableArguments: { ...algoTypeDetails.variableArguments },
+          argumentsInit: {},
+          userAlgoCode: algoTypeDetails.userAlgoCode,
+          userEnvCode: algoTypeDetails.userEnvCode
+        };
+
+        // Handle arguments
+        if (args && args.length > 0 && details[inputDetailIndex].type === "input") {
+          const inputTypeDetails = details[inputDetailIndex].details as InputDetailsType;
+          if (inputTypeDetails.inputVariableArguments &&
+              Object.keys(inputTypeDetails.inputVariableArguments).length > 0) {
+            newDetails.variableArguments = {
+              ...algoTypeDetails.variableArguments,
+              [variableName]: args.reduce((acc, argName) => ({
+                ...acc,
+                [argName]: inputTypeDetails.inputVariableArguments[inputName][argName]
+              }), {})
+            };
+          }
+        }
+
+        // Handle quantifiables
+        if (details[inputDetailIndex].details.selectedQuantifiables) {
+          newDetails.selectedQuantifiables = {
+            ...algoTypeDetails.selectedQuantifiables,
+            [variableName]: details[inputDetailIndex].details.selectedQuantifiables[inputName]
+          };
+        }
+
+        // Handle subclass
+        const selectedSubclass = algoTypeDetails.algoVariables.find(
+          (variable) => variable.name === variableName
+        )?.subclasses?.find(
+          (subclass) => subclass.name === inputName
+        );
+        if (selectedSubclass) {
+
+          newDetails.selectedSubclasses = {
+            ...algoTypeDetails.selectedSubclasses,
+            [variableName]: inputName
+          };
+
+          const initialArguments: { [arg: string]: unknown } = {};
+          if (selectedSubclass?.arguments && ((details[inputDetailIndex].details as InputDetailsType).inputVariableArguments[inputName])) {
+            selectedSubclass.arguments.forEach(arg => {
+              initialArguments[arg.name] = (details[inputDetailIndex].details as InputDetailsType).inputVariableArguments[inputName][arg.name];
+            });
+            newDetails.variableArguments = {
+              ...algoTypeDetails.variableArguments,
+              [variableName]: initialArguments
+            };
+          }
+        }
+
+        // Handle userEnvCode
+        const inputEnvCode = (details[inputDetailIndex].details as InputDetailsType).userEnvCode;
+        newDetails.userEnvCode = inputEnvCode ? [inputEnvCode] : [];
+
+        updatedDetails.push({
+          type: 'algo',
+          details: newDetails
+        });
+      }
+      return updatedDetails;
+    };
+
     if (index !== undefined) {
-      if (inputDetailIndex == -1) {
-        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedQuantifiables', value: { }});
-        return;
-      }
-      if (state.subQuestions[index].context.inputDetails[inputDetailIndex].selectedQuantifiables) {
-        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'selectedQuantifiables', value: { ...state.subQuestions[index].context.selectedQuantifiables, [variableName]: state.subQuestions[index].context.inputDetails[inputDetailIndex].selectedQuantifiables[inputName] } });
-      }
+      dispatch({
+        type: 'SET_SUB_QUESTION_CONTEXT_FIELD',
+        index,
+        field: 'details',
+        value: updateAlgoDetails([...state.subQuestions[index].context.details])
+      });
     } else {
-      if (inputDetailIndex == -1) {
-        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedQuantifiables', value: { } });
-        return;
-      }
-      if (state.context.inputDetails[inputDetailIndex].selectedQuantifiables) {
-        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'selectedQuantifiables', value: { ...state.context.selectedQuantifiables, [variableName]: state.context.inputDetails[inputDetailIndex].selectedQuantifiables[inputName] } });
-      }
+      dispatch({
+        type: 'SET_CONTEXT_FIELD',
+        field: 'details',
+        value: updateAlgoDetails([...state.context.details])
+      });
     }
-  }
+  };
 
   const handleArgumentInit = (argumentsInit: { [key: string]: { [arg: string]: unknown } }, index?: number) => {
+    const updateAlgoDetails = (details: Detail[]) => {
+      if (details.length === 0) {
+        return details;
+      }
+
+      const updatedDetails = [...details];
+      const lastAlgoDetail = updatedDetails[updatedDetails.length - 1];
+      if (lastAlgoDetail.type == 'input') {
+        return details;
+      }
+      const algoTypeDetails = lastAlgoDetail.details as AlgoDetailsType;
+
+      if (algoTypeDetails.argumentsInit && Object.keys(algoTypeDetails.argumentsInit).length === 0) {
+        updatedDetails[updatedDetails.length - 1] = {
+          type: 'algo',
+          details: { ...algoTypeDetails, argumentsInit }
+        };
+      } else {
+        updatedDetails.push({
+          type: 'algo',
+          details: {
+            selectedTopic: algoTypeDetails.selectedTopic,
+            selectedSubtopic: algoTypeDetails.selectedSubtopic,
+            selectedQuantifiables: { ...algoTypeDetails.selectedQuantifiables },
+            selectedSubclasses: {...algoTypeDetails.selectedSubclasses},
+            algoVariables: {...algoTypeDetails.algoVariables},
+            variableArguments: {...algoTypeDetails.variableArguments},
+            argumentsInit: argumentsInit,
+            userAlgoCode: algoTypeDetails.userAlgoCode,
+            userEnvCode: algoTypeDetails.userEnvCode
+          }
+        });
+      }
+      return updatedDetails;
+    };
+
     if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'argumentsInit', value: argumentsInit });
+      const updatedAlgoDetails = updateAlgoDetails([...state.subQuestions[index].context.details]);
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updatedAlgoDetails });
     } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'argumentsInit', value: argumentsInit });
+      const updatedAlgoDetails = updateAlgoDetails([...state.context.details]);
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'details', value: updatedAlgoDetails });
     }
   };
 
   const handleInputInit = (inputInit: { [key: string]: { [arg: string]: unknown } }, index?: number) => {
-    const updateInputDetails = (inputDetails: InputDetailsType[]) => {
+    const updateInputDetails = (inputDetails: Detail[]) => {
       if (inputDetails.length === 0) {
-        return [{ inputPath: {}, inputVariables: [], inputVariableArguments: {}, inputInit }];
+        return inputDetails;
       }
 
-      const lastInputDetail = { ...inputDetails[inputDetails.length - 1] };
+      const updatedInputDetails = [...inputDetails];
+      const lastInputDetail = updatedInputDetails[updatedInputDetails.length - 1];
+      if (lastInputDetail.type == 'algo') {
+        return inputDetails;
+      }
+      const inputTypeDetails = lastInputDetail.details as InputDetailsType;
 
-      if (lastInputDetail.inputInit && Object.keys(lastInputDetail.inputInit).length === 0) {
-        inputDetails[inputDetails.length - 1] = { ...lastInputDetail, inputInit };
+      if (inputTypeDetails.inputInit && Object.keys(inputTypeDetails.inputInit).length === 0) {
+        updatedInputDetails[updatedInputDetails.length - 1] = {
+          type: 'input',
+          details: { ...inputTypeDetails, inputInit }
+        };
       } else {
-        inputDetails.push({
-          inputPath: { ...lastInputDetail.inputPath },
-          inputVariables: [...lastInputDetail.inputVariables],
-          inputVariableArguments: { ...lastInputDetail.inputVariableArguments },
-          inputInit,
-          selectedQuantifiables: { ...lastInputDetail.selectedQuantifiables },
+        updatedInputDetails.push({
+          type: 'input',
+          details: {
+            inputPath: { ...inputTypeDetails.inputPath },
+            inputVariables: [...inputTypeDetails.inputVariables],
+            inputVariableArguments: { ...inputTypeDetails.inputVariableArguments },
+            inputInit,
+            selectedQuantifiables: { ...inputTypeDetails.selectedQuantifiables },
+          }
         });
       }
-      return inputDetails;
+      return updatedInputDetails;
     };
 
     if (index !== undefined) {
-      const subQuestion = state.subQuestions[index];
-      const updatedInputDetails = [{...subQuestion.context.inputDetails[0], inputInit}];
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails });
+      const updatedInputDetails = updateInputDetails([...state.subQuestions[index].context.details]);
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updatedInputDetails });
     } else {
-      const updatedInputDetails = updateInputDetails([...state.context.inputDetails]);
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updatedInputDetails });
+      const updatedInputDetails = updateInputDetails([...state.context.details]);
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'details', value: updatedInputDetails });
     }
   };
-
-  const copyInputInit = (variableName: string, inputName: string, inputDetailIndex: number, index?: number) => {
-    if (index !== undefined) {
-      if (state.subQuestions[index].context.inputDetails[inputDetailIndex].inputInit) {
-        dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'argumentsInit', value: { ...state.subQuestions[index].context.argumentsInit, [variableName]: state.subQuestions[index].context.inputDetails[inputDetailIndex].inputInit[inputName] } });
-      }
-    } else {
-      if (state.context.inputDetails[inputDetailIndex].inputInit) {
-        dispatch({ type: 'SET_CONTEXT_FIELD', field: 'argumentsInit', value: { ...state.context.argumentsInit, [variableName]: state.context.inputDetails[inputDetailIndex].inputInit[inputName] } });
-      }
-    }
-  }
 
   const handleDescriptionChange = (description: string, index?: number) => {
     if (index !== undefined) {
@@ -407,54 +807,120 @@ const useQuestionGeneration = () => {
     dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'numOptions', value: numOptions });
   };
 
+  const setUserAlgoCode = async (userAlgoCode: string, index?: number) => {
+    const updateAlgoDetails = async (details: Detail[]) => {
+      if (details.length === 0) {
+        return details;
+      }
 
-  const setUserAlgoCode = (userAlgoCode: string, index?: number) => {
+      const updatedDetails = [...details];
+      const lastDetail = updatedDetails[updatedDetails.length - 1];
+      if (lastDetail.type !== 'algo') {
+        return details;
+      }
+
+      const algoTypeDetails = lastDetail.details as AlgoDetailsType;
+
+      const updatedEnvCode: string[] = [];
+      updatedDetails.forEach(detail => {
+        if (detail.type === 'input') {
+          const inputDetails = detail.details as InputDetailsType;
+          if (inputDetails.userEnvCode) {
+            updatedEnvCode.push(inputDetails.userEnvCode);
+          }
+        }
+      });
+      const algoVariables = await getUserAlgoVariables(userAlgoCode, updatedEnvCode);
+
+      updatedDetails[updatedDetails.length - 1] = {
+        type: 'algo',
+        details: {
+          ...algoTypeDetails,
+          algoVariables,
+          userAlgoCode,
+          userEnvCode: updatedEnvCode
+        }
+      };
+
+      return updatedDetails;
+    };
+
     if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'userAlgoCode', value: userAlgoCode });
-      const userEnvCode = state.subQuestions[index].context.userEnvCode;
-      getUserAlgoVariables(userAlgoCode, userEnvCode)
-        .then(algoVariables => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'algoVariables', value: algoVariables }))
-        .catch(error => console.error('Error fetching algorithm variables:', error));
-      getUserQueryables(userAlgoCode, userEnvCode)
-        .then(queryables => dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: queryables }))
-        .catch(error => console.error('Error fetching user queryables:', error));
+      const updatedDetails = await updateAlgoDetails([...state.subQuestions[index].context.details]);
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updatedDetails });
+
+      getQuantifiables()
+      .then(quantifiables => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'quantifiables', value: quantifiables }))
+      .catch(error => console.error('Error fetching quantifiables:', error));
+
     } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'userAlgoCode', value: userAlgoCode });
-      const userEnvCode = state.context.userEnvCode;
-      getUserAlgoVariables(userAlgoCode, userEnvCode)
-        .then(algoVariables => dispatch({ type: 'SET_ALGO_VARIABLES', algoVariables }))
-        .catch(error => console.error('Error fetching algorithm variables:', error));
-      getUserQueryables(userAlgoCode, userEnvCode)
-        .then(queryables => {
-          dispatch({ type: 'SET_FIELD', field: 'queryables', value: queryables });
-          state.subQuestions.forEach((_, index) => {
-            dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: queryables });
-          });
-        })
-        .catch(error => console.error('Error fetching user queryables:', error));
+      const updatedDetails = await updateAlgoDetails([...state.context.details]);
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'details', value: updatedDetails });
+      getQuantifiables()
+      .then(quantifiables => dispatch({ type: 'SET_QUANTIFIABLES', quantifiables }))
+      .catch(error => console.error('Error fetching quantifiables:', error));
     }
   };
 
   const setUserEnvCode = (userEnvCode: string, index?: number) => {
-    if (index !== undefined) {
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'userEnvCode', value: userEnvCode });
-      getUserInputVariables(userEnvCode)
-        .then(inputVariables => {
-          const updatedInputDetails = [...state.subQuestions[index].context.inputDetails];
-          updatedInputDetails[updatedInputDetails.length - 1].inputVariables = inputVariables;
-          dispatch({type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails})
-        })
-        .catch(error => console.error('Error fetching user input variables:', error));
-    } else {
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'userEnvCode', value: userEnvCode });
+    const updateInputDetails = (details: Detail[]) => {
+      if (details.length === 0) {
+        return details;
+      }
 
-      getUserInputVariables(userEnvCode)
-        .then(inputVariables => {
-          const updatedInputDetails = [...state.context.inputDetails];
-          updatedInputDetails[updatedInputDetails.length - 1].inputVariables = inputVariables;
-          dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updatedInputDetails})
-        })
-        .catch(error => console.error('Error fetching user input variables:', error));
+      const updatedDetails = [...details];
+      const lastDetail = updatedDetails[updatedDetails.length - 1];
+      if (lastDetail.type !== 'input') {
+        return details;
+      }
+
+      const inputTypeDetails = lastDetail.details as InputDetailsType;
+
+      updatedDetails[updatedDetails.length - 1] = {
+        type: 'input',
+        details: {
+          ...inputTypeDetails,
+          userEnvCode
+        }
+      };
+
+      return updatedDetails;
+    };
+
+    if (index !== undefined) {
+      const updatedDetails = updateInputDetails([...state.subQuestions[index].context.details]);
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updatedDetails });
+
+      if (updatedDetails[updatedDetails.length - 1]?.type === 'input') {
+        getUserInputVariables(userEnvCode)
+          .then(inputVariables => {
+            const updatedInputDetails = { ...updatedDetails[updatedDetails.length - 1] };
+            (updatedInputDetails.details as InputDetailsType).inputVariables = inputVariables;
+            updatedDetails[updatedDetails.length - 1] = updatedInputDetails;
+            dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updatedDetails });
+          })
+          .catch(error => console.error('Error fetching user input variables:', error));
+        getQuantifiables()
+          .then(quantifiables => dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'quantifiables', value: quantifiables }))
+          .catch(error => console.error('Error fetching quantifiables:', error));
+      }
+    } else {
+      const updatedDetails = updateInputDetails([...state.context.details]);
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'details', value: updatedDetails });
+
+      if (updatedDetails[updatedDetails.length - 1]?.type === 'input') {
+        getUserInputVariables(userEnvCode)
+          .then(inputVariables => {
+            const updatedInputDetails = { ...updatedDetails[updatedDetails.length - 1] };
+            (updatedInputDetails.details as InputDetailsType).inputVariables = inputVariables;
+            updatedDetails[updatedDetails.length - 1] = updatedInputDetails;
+            dispatch({ type: 'SET_CONTEXT_FIELD', field: 'details', value: updatedDetails });
+          })
+          .catch(error => console.error('Error fetching user input variables:', error));
+        getQuantifiables()
+          .then(quantifiables => dispatch({ type: 'SET_QUANTIFIABLES', quantifiables }))
+          .catch(error => console.error('Error fetching quantifiables:', error));
+      }
     }
   };
 
@@ -493,45 +959,172 @@ const useQuestionGeneration = () => {
     }
   }
 
-  const removeInputDetailsItem = (inputDetailsIndex: number, index?: number) => {
-    const updateInputDetails = (inputDetails: InputDetailsType[]) => {
-      const removedItem = { ...inputDetails[inputDetailsIndex] };
-      inputDetails.splice(inputDetailsIndex, 1);
-      if (inputDetails.length === 0) {
-        inputDetails.push({
-          inputPath: removedItem.inputPath,
-          inputVariables: removedItem.inputVariables,
-          inputVariableArguments: {},
-          inputInit: {},
+  const addDetailsItem = (isAlgo: boolean, index?: number) => {
+    const updateDetails = (details: Detail[]) => {
+      if (isAlgo) {
+        details.push({
+          type: 'algo',
+          details: {
+            selectedTopic: '',
+            selectedSubtopic: '',
+            selectedQuantifiables: {},
+            selectedSubclasses: {},
+            algoVariables: [],
+            variableArguments: {},
+            argumentsInit: {},
+            userAlgoCode: '',
+            userEnvCode: [],
+          }
+        });
+      } else {
+        details.push({
+          type: 'input',
+          details: {
+            inputPath: {},
+            inputVariables: [],
+            inputVariableArguments: {},
+            inputInit: {},
+            selectedQuantifiables: {},
+            userEnvCode: '',
+          }
         });
       }
-      return inputDetails;
+      return details;
     };
 
     if (index !== undefined) {
       const subQuestion = state.subQuestions[index];
-      const updatedInputDetails = updateInputDetails([...subQuestion.context.inputDetails]);
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails });
+      const updatedDetails = updateDetails([...subQuestion.context.details]);
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updatedDetails });
     } else {
-      const updatedInputDetails = updateInputDetails([...state.context.inputDetails]);
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updatedInputDetails });
+      const updatedDetails = updateDetails([...state.context.details]);
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'details', value: updatedDetails });
     }
-  };
+  }
+
+  const removeDetailsItem = (detailsIndex: number, deleteGenerated: boolean, index?: number, ) => {
+    const updateDetails = (details: Detail[]) => {
+      if (detailsIndex == -1) {
+        details.splice(details.length - 1, 1);
+      } else {
+        const init = details[detailsIndex].type == 'algo' ? (details[detailsIndex].details as AlgoDetailsType).argumentsInit : (details[detailsIndex].details as InputDetailsType).inputInit;
+        if (deleteGenerated || (init && Object.keys(init).length == 0)) {
+          details.splice(detailsIndex, 1);
+        }
+      }
+      return details;
+    };
+
+    if (index !== undefined) {
+      const subQuestion = state.subQuestions[index];
+      const updatedDetails = updateDetails([...subQuestion.context.details]);
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updatedDetails });
+    } else {
+      const updatedDetails = updateDetails([...state.context.details]);
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'details', value: updatedDetails });
+    }
+  }
 
   const copyInputDetailsItem = (inputDetailsItem: InputDetailsType, index?: number) => {
-    const updateInputDetails = (inputDetails: InputDetailsType[]) => {
+    const updateDetails = (details: Detail[]) => {
       const copiedItem = { ...inputDetailsItem };
-      inputDetails[inputDetails.length - 1] = copiedItem;
-      return inputDetails;
-    };
+      details[details.length - 1] = {
+        type: 'input',
+        details: copiedItem
+      };
+      return details;
+    }
 
     if (index !== undefined) {
       const subQuestion = state.subQuestions[index];
-      const updatedInputDetails = updateInputDetails([...subQuestion.context.inputDetails]);
-      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'inputDetails', value: updatedInputDetails });
+      const updatedDetails = updateDetails([...subQuestion.context.details]);
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updatedDetails });
     } else {
-      const updatedInputDetails = updateInputDetails([...state.context.inputDetails]);
-      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'inputDetails', value: updatedInputDetails });
+      const updatedDetails = updateDetails([...state.context.details]);
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'details', value: updatedDetails });
+    }
+  }
+
+  const setSelectedDetail = (detail: Detail, index?: number) => {
+    if (index !== undefined) {
+      dispatch({
+        type: 'SET_SUB_QUESTION_CONTEXT_FIELD',
+        index,
+        field: 'selectedDetail',
+        value: detail
+      });
+      if (detail.type === 'input') {
+        const inputDetails = detail.details as InputDetailsType;
+        if (inputDetails.userEnvCode) {
+          getUserInputQueryables(inputDetails.userEnvCode)
+          .then(queryables => dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryables', value: queryables }))
+          .catch(error => console.error('Error fetching input queryables:', error));
+          dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
+          return
+        }
+        if (Object.keys(inputDetails.inputPath).length > 0) {
+          getInputQueryables({ input_path: inputDetails.inputPath })
+          .then(queryables => dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'inputQueryables', value: queryables }))
+          .catch(error => console.error('Error fetching input queryables:', error));
+        }
+      } else {
+        const algoDetails = detail.details as AlgoDetailsType;
+        if (algoDetails.userAlgoCode) {
+
+          const userEnvCode = algoDetails.userEnvCode;
+
+          getUserQueryables(algoDetails.userAlgoCode, userEnvCode)
+            .then(queryables => dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: queryables }))
+            .catch(error => console.error('Error fetching user queryables:', error));
+          dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
+          return
+        }
+        if ((detail.details as AlgoDetailsType).selectedTopic && (detail.details as AlgoDetailsType).selectedSubtopic) {
+          getQueryables((detail.details as AlgoDetailsType).selectedTopic, (detail.details as AlgoDetailsType).selectedSubtopic)
+          .then(queryables => dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'queryables', value: queryables }))
+          .catch(error => console.error('Error fetching queryables:', error));
+        }
+      }
+      dispatch({ type: 'SET_SUB_QUESTION_FIELD', index, field: 'selectedQueryable', value: '' });
+    } else {
+      dispatch({
+        type: 'SET_CONTEXT_FIELD',
+        field: 'selectedDetail',
+        value: detail
+      });
+    }
+  }
+
+  const handleAddGeneratedOutput = (input_path: { [key: string]: unknown }, input_init: { [key: string]: { [arg: string]: unknown } }, user_env_code: string, index?: number) => {
+    if (index !== undefined) {
+      const subQuestion = state.subQuestions[index];
+      const updatedDetails = [...subQuestion.context.details];
+      updatedDetails.push({
+        type: 'input',
+        details: {
+          inputPath: input_path,
+          inputVariables: [],
+          inputVariableArguments: {},
+          inputInit: input_init,
+          selectedQuantifiables: {},
+          userEnvCode: user_env_code,
+        }
+      });
+      dispatch({ type: 'SET_SUB_QUESTION_CONTEXT_FIELD', index, field: 'details', value: updatedDetails });
+    } else {
+      const updatedDetails = [...state.context.details];
+      updatedDetails.push({
+        type: 'input',
+        details: {
+          inputPath: input_path,
+          inputVariables: [],
+          inputVariableArguments: {},
+          inputInit: input_init,
+          selectedQuantifiables: {},
+          userEnvCode: '',
+        }
+      });
+      dispatch({ type: 'SET_CONTEXT_FIELD', field: 'details', value: updatedDetails });
     }
   }
 
@@ -545,14 +1138,12 @@ const useQuestionGeneration = () => {
     handleInputPathChange,
     handleQuantifiableChange,
     handleInputQuantifiableChange,
-    copyInputQuantifiable,
     handleSubclassChange,
     handleArgumentChange,
     handleInputArgumentChange,
-    copyInputArgument,
+    copyInputDetails,
     handleArgumentInit,
     handleInputInit,
-    copyInputInit,
     handleDescriptionChange,
     handleNumOptionsChange,
     setUserAlgoCode,
@@ -560,8 +1151,11 @@ const useQuestionGeneration = () => {
     setUserQueryableCode,
     resetState,
     setInputQueryable,
-    removeInputDetailsItem,
+    addDetailsItem,
+    removeDetailsItem,
     copyInputDetailsItem,
+    setSelectedDetail,
+    handleAddGeneratedOutput,
   };
 };
 

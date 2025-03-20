@@ -36,7 +36,7 @@ export type ContextRequest = {
   argumentsInit?: { [key: string]: { [arg: string]: unknown } };
   inputInit?: { [key: string]: { [arg: string]: unknown } };
   userAlgoCode?: string;
-  userEnvCode?: string;
+  userEnvCode?: string[];
 
 }
 
@@ -69,7 +69,7 @@ export interface GenerateVariableRequest {
   arguments_init?: { [key: string]: { [arg: string]: unknown } };
   question_description: string;
   userAlgoCode?: string;
-  userEnvCode?: string;
+  userEnvCode?: string[];
 }
 
 export interface UserQueryableRequest {
@@ -91,8 +91,15 @@ export interface GenerateInputRequest {
 export interface VariableResponse {
   context: { [key: string]: unknown };
   context_init: { [key: string]: { [arg: string]: unknown } };
+  cls_name?: string;
 }
 
+export interface OutputResponse {
+  output_init: { [key: string]: { [arg: string]: unknown } };
+  output_path: { [key: string]: unknown };
+  context: { [key: string]: unknown };
+  user_env_code?: string;
+}
 export type ClassKeyData = { [key: string]: string | ClassKeyData };
 
 export const listAlgos = async (): Promise<ClassKeyData> => {
@@ -153,7 +160,7 @@ export const getQueryables = async (topic: string, subtopic: string): Promise<Qu
   return data;
 };
 
-export const getUserQueryables = async (userAlgoCode: string, userEnvCode?: string): Promise<Queryable[]> => {
+export const getUserQueryables = async (userAlgoCode: string, userEnvCode?: string[]): Promise<Queryable[]> => {
   const url = `${basePath}/question_generation/user/queryables`;
   const response = await fetch(url, {
     method: 'POST',
@@ -191,6 +198,25 @@ export const getInputQueryables = async (request: InputRequest): Promise<string[
   return data;
 };
 
+export const getUserInputQueryables = async (userEnvCode: string): Promise<Queryable[]> => {
+  const url = `${basePath}/question_generation/user/input/queryables`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ userEnvCode }),
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: Queryable[] = await response.json();
+  return data;
+};
+
 export const getAllQueryables = async (): Promise<Queryable[]> => {
   const url = `${basePath}/question_generation/queryable_classes`;
   const response = await fetch(url);
@@ -218,7 +244,7 @@ export const getAlgoVariables = async (topic: string, subtopic: string): Promise
   return data;
 };
 
-export const getUserAlgoVariables = async (userAlgoCode: string, userEnvCode?: string): Promise<Variable> => {
+export const getUserAlgoVariables = async (userAlgoCode: string, userEnvCode?: string[]): Promise<Variable> => {
   const url = `${basePath}/question_generation/user/algoVariables`;
   const response = await fetch(url, {
     method: 'POST',
@@ -269,6 +295,29 @@ export const getQueryableVariables = async (topic: string, subtopic: string, que
   return data;
 };
 
+export const getUserQueryableVariables = async (
+  queryable: string,
+  userAlgoCode: string,
+  userEnvCode?: string[]
+): Promise<Variable> => {
+  const url = `${basePath}/question_generation/user/queryables/${queryable}/variables`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ userAlgoCode, userEnvCode }),
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: Variable = await response.json();
+  return data;
+};
+
 export const getInputQueryableVariables = async (inputPath: { [key: string]: unknown }, queryable: string): Promise<Variable> => {
   const url = `${basePath}/question_generation/input/queryables/${queryable}/variables`;
   const response = await fetch(url, {
@@ -277,6 +326,28 @@ export const getInputQueryableVariables = async (inputPath: { [key: string]: unk
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ input_path: inputPath }),
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: Variable = await response.json();
+  return data;
+};
+
+export const getUserInputQueryableVariables = async (
+  queryable: string,
+  userEnvCode: string
+): Promise<Variable> => {
+  const url = `${basePath}/question_generation/user/input/queryables/${queryable}/variables`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ userEnvCode }),
   });
 
   if (!response.ok) {
@@ -357,5 +428,25 @@ export const generateInput = async (request: GenerateInputRequest): Promise<Vari
   }
 
   const data = await response.json();
+  return data;
+};
+
+export const generateOutput = async (request: GenerateVariableRequest): Promise<OutputResponse> => {
+  const url = `${basePath}/question_generation/generate_output`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const data: OutputResponse = await response.json();
   return data;
 };

@@ -5,13 +5,11 @@ import { styled, alpha } from '@mui/material/styles';
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 import { useEffect, useState } from 'react';
-import { Button, TextField } from '@mui/material';
 import { formatText } from '../../utils/format';
 import { ClassKeyData } from '../../utils/api/QuestionGenerationAPI';
 
 interface TreeViewSelectorProps {
   data: ClassKeyData;
-  tabValue: number;
   onNodeSelect: (parent: TreeViewBaseItem | undefined, child: TreeViewBaseItem) => void;
 }
 
@@ -49,7 +47,6 @@ const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
 
 const TreeViewSelector: React.FC<TreeViewSelectorProps> = ({
   data,
-  tabValue,
   onNodeSelect,
 }) => {
   const [treeItems, setTreeItems] = useState<TreeViewBaseItem[]>([]);
@@ -118,19 +115,19 @@ const TreeViewSelector: React.FC<TreeViewSelectorProps> = ({
     return undefined;
   };
 
-  const handleAddSubtopic = () => {
-    if (newSubtopic.trim() === '' || !selectedTopic) return;
-    setTreeItems(treeItems.map(item => {
-      if (item.id === selectedTopic) {
-        return {
-          ...item,
-          children: [...(item.children || []), { id: `${selectedTopic}_${newSubtopic}`, label: formatText(newSubtopic), children: [] }]
-        };
-      }
-      return item;
-    }));
-    setNewSubtopic('');
-  };
+  // const handleAddSubtopic = () => {
+  //   if (newSubtopic.trim() === '' || !selectedTopic) return;
+  //   setTreeItems(treeItems.map(item => {
+  //     if (item.id === selectedTopic) {
+  //       return {
+  //         ...item,
+  //         children: [...(item.children || []), { id: `${selectedTopic}_${newSubtopic}`, label: formatText(newSubtopic), children: [] }]
+  //       };
+  //     }
+  //     return item;
+  //   }));
+  //   setNewSubtopic('');
+  // };
 
   return (
     <Box sx={{ minWidth: 400 }}>
@@ -140,34 +137,6 @@ const TreeViewSelector: React.FC<TreeViewSelectorProps> = ({
         items={treeItems}
         onItemSelectionToggle={handleNodeSelect}
       />
-      {tabValue == 1 &&
-        <Box sx={{ marginY: 2 }}>
-          <TextField
-            label="New Subtopic"
-            value={newSubtopic}
-            onChange={(e) => setNewSubtopic(e.target.value)}
-            fullWidth
-            sx={{ marginBottom: 1, fontSize: '0.75rem', padding: '4px 8px' }}
-            InputProps={{ sx: { fontSize: '0.75rem', padding: '4px 8px' } }}
-            disabled={!selectedTopic}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            onClick={handleAddSubtopic}
-            fullWidth
-            disabled={!selectedTopic}
-            sx={{
-              padding: '4px 8px',
-              fontSize: '0.75rem',
-              minWidth: 'auto',
-            }}
-          >
-            Add New
-          </Button>
-        </Box>
-      }
     </Box>
   );
 };

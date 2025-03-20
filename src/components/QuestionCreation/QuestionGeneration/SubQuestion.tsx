@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, Tooltip, FormControlLabel, Checkbox, Collapse, IconButton } from '@mui/material';
-import { ExpandMore, ExpandLess, Delete } from '@mui/icons-material';
+import { Box, Typography, Tooltip, IconButton, Button, Collapse } from '@mui/material';
+import { Delete, ExpandLess, ExpandMore } from '@mui/icons-material';
 import QuestionDescriptionInput from './QuestionDescriptionInput';
 import QuestionQueryableSelector from './QuestionQueryableSelector';
 import { numberToAlphabet } from '../../../utils/format';
 import VariableTable from './VariableTable';
-import CodeBlock from './CodeBlock';
 import QuestionDetails from '../QuestionDetails';
-import { ContextBlockType, initialState, InputDetailsType, SubQuestionType } from '../../../reducer/questionGenerationReducer';
+import { ContextBlockType, Detail, initialState, InputDetailsType, SubQuestionType } from '../../../reducer/questionGenerationReducer';
+import ContextSelector from './ContextSelector';
+import CodeBlock from './CodeBlock';
 
 interface SubQuestionProps {
   index: number;
@@ -30,22 +31,21 @@ interface SubQuestionProps {
     handleSubclassChange: (variableName: string, subclassName: string) => void;
     handleArgumentChange: (variableName: string, argName: string, value: unknown) => void;
     handleInputArgumentChange: (variableName: string, argName: string, value: unknown) => void;
-    copyInputArgument: (variableName: string, inputName: string, argName: string, inputDetailIndex: number) => void;
     handleArgumentInit: (argumentsInit: { [key: string]: { [arg: string]: unknown } }, index?: number) => void;
     handleInputInit: (inputInit: { [key: string]: { [arg: string]: unknown } }, index?: number) => void;
-    copyInputInit: (variableName: string, inputName: string, inputDetailIndex: number, index?: number) => void;
+    copyInputDetails: (variableName: string, inputName: string, inputDetailIndex: number, args?: string[]) => void;
     setUserAlgoCode: (userAlgoCode: string, index?: number) => void;
     setUserEnvCode: (userEnvCode: string, index?: number) => void;
     setUserQueryableCode: (userQueryableCode: string, index?: number) => void;
     setInputQueryable: (inputPath: { [key: string]: unknown }, index?: number) => void;
-    removeInputDetailsItem: (inputDetailIndex: number) => void;
+    addDetailsItem: (isAlgo: boolean) => void;
+    removeDetailsItem: (inputDetailIndex: number, deleteGenerated: boolean) => void;
     copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => void;
-    copyInputQuantifiable: (variableName: string, inputName: string, inputDetailIndex: number) => void;
+    handleAddGeneratedOutput: (input_path: { [key: string]: unknown }, input_init: { [key: string]: { [arg: string]: unknown } }, user_env_code: string) => void;
   };
-  tabValue: number;
-  handleTabChange: (event: React.SyntheticEvent, newValue: number) => void;
   loading: boolean;
-  outerGeneratedInputs: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>;
+  outerGeneratedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>;
+  setSelectedDetail: (detail: Detail, index: number) => void;
 }
 
 const SubQuestion: React.FC<SubQuestionProps> = ({
@@ -58,27 +58,22 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
   handleNumOptionsChange,
   removeSubQuestion,
   contextActions,
-  tabValue,
-  handleTabChange,
   loading,
-  outerGeneratedInputs
+  outerGeneratedContext,
+  setSelectedDetail
 }) => {
-  const [addContext, setAddContext] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [marks, setMarks] = useState<number>(1);
   const [type, setType] = useState<string>('Multiple Choice');
-  const [generatedInputs, setGeneratedInputs] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>>([]);
+  const [generatedContext, setGeneratedContext] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, name?: string }>>([]);
+
+  const handleContextSelected = (context: any) => {
+    // console.log("Selected context:", context)
+    // You can perform additional actions here when a context is selected
+  }
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
-  };
-
-  const handleAddContextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const isChecked = event.target.checked;
-    setAddContext(isChecked);
-    if (isChecked) {
-      setExpanded(true);
-    }
   };
 
   return (
@@ -91,125 +86,124 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
           <Delete />
         </IconButton>
       </Box>
-      <FormControlLabel
-        control={<Checkbox checked={addContext} onChange={handleAddContextChange} />}
-        label="Add Context"
+      {/* <>
+        <Box sx={{ marginBottom: 2 }}>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={handleExpandClick}
+            startIcon={expanded ? <ExpandLess /> : <ExpandMore />}
+            sx={{ textTransform: 'none' }}
+          >
+            {expanded ? 'Hide Context' : 'Show Context'}
+          </Button>
+        </Box>
+        <Collapse in={expanded}>
+          <CodeBlock
+            context = {subQuestion.context}
+            outerContext={outerContext}
+            {...contextActions}
+            index = {index}
+            loading={false}
+            generatedContext={generatedContext}
+            setGeneratedContext={setGeneratedContext}
+            outerGeneratedContext={outerGeneratedContext}
+          />
+        </Collapse>
+      </> */}
+      <ContextSelector
+        outerGeneratedContext={outerGeneratedContext}
+        outerContext={outerContext}
+        setSelectedDetail={(detail: Detail) => setSelectedDetail(detail, index)}
+        onContextSelected={handleContextSelected}
       />
-      {addContext && (
-        <>
-          <Box sx={{ marginBottom: 2 }}>
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={handleExpandClick}
-              startIcon={expanded ? <ExpandLess /> : <ExpandMore />}
-              sx={{ textTransform: 'none' }}
-            >
-              {expanded ? 'Hide' : 'Show'}
-            </Button>
-          </Box>
-          <Collapse in={expanded}>
-            <CodeBlock
-              tabValue={tabValue}
-              handleTabChange={handleTabChange}
-              context = {subQuestion.context}
-              outerContext={outerContext}
-              {...contextActions}
-              index = {index}
-              loading={false}
-              generatedInputs={generatedInputs}
-              setGeneratedInputs={setGeneratedInputs}
-              outerGeneratedInputs={outerGeneratedInputs}
-            />
-          </Collapse>
-        </>
-      )}
       <QuestionDescriptionInput
         description={subQuestion.description}
         setDescription={(desc) => setDescription(desc, index)}
       />
-      <QuestionQueryableSelector
-        title = {'Input'}
-        tabValue={tabValue}
-        queryables={subQuestion.inputQueryables}
-        queryable={subQuestion.selectedInputQueryable}
-        setQueryable={(q) => setInputQueryable(index, q)}
-        setUserQueryableCode={() => {}}
-        loading={loading}
-      />
-      {subQuestion.inputQueryVariables.length > 0 && (
+      {(subQuestion.context.selectedDetail && subQuestion.context.selectedDetail.type == 'algo') ?
         <>
-          <Tooltip title="Query Variables are used to fetch data. Use {Input}, {Step}, etc. in your question description to represent these variables." placement="bottom-start">
-            <Typography variant="subtitle1">
-              Input Query Variables (Use variable name in question description)
-            </Typography>
-          </Tooltip>
-          <VariableTable
-            variables={subQuestion.inputQueryVariables}
-            quantifiables={subQuestion.context.quantifiables}
-            selectedQuantifiables={subQuestion.context.selectedQuantifiables}
-            selectedSubclasses={subQuestion.context.selectedSubclasses}
-            variableArguments={subQuestion.context.variableArguments}
-            handleQuantifiableChange={contextActions.handleQuantifiableChange}
-            handleSubclassChange={contextActions.handleSubclassChange}
-            handleArgumentChange={contextActions.handleArgumentChange}
-            isAlgoTable={false}
-            isInnerInputTable={false}
-            context={subQuestion.context}
-            outerContext={initialState.context}
-            copyInputArgument={contextActions.copyInputArgument}
-            copyInputInit={contextActions.copyInputInit}
-            useGeneratedInput={{}}
-            setUseGeneratedInput={()=>{}}
-            setInputInit={()=>{}}
-            generatedInputs={[]}
-            outerGeneratedInputs={[]}
-            copyInputDetailsItem={()=>{}}
-            copyInputQuantifiable={()=>{}}
+          <QuestionQueryableSelector
+            title={''}
+            queryables={subQuestion.queryables}
+            queryable={subQuestion.selectedQueryable}
+            setQueryable={(q) => setQueryable(index, q)}
+            setUserQueryableCode={(userQueryableCode) => contextActions.setUserQueryableCode(userQueryableCode, index)}
+            loading={loading}
           />
+          {subQuestion.queryVariables.length > 0 && (
+            <>
+              <Tooltip title="Query Variables are used to fetch data. Use {Input}, {Step}, etc. in your question description to represent these variables." placement="bottom-start">
+                <Typography variant="subtitle1">
+                  Query Variables (Use variable name in question description)
+                </Typography>
+              </Tooltip>
+              <VariableTable
+                variables={subQuestion.queryVariables}
+                quantifiables={subQuestion.context.quantifiables}
+                selectedQuantifiables={{}}
+                selectedSubclasses={{}}
+                variableArguments={{}}
+                handleQuantifiableChange={contextActions.handleQuantifiableChange}
+                handleSubclassChange={contextActions.handleSubclassChange}
+                handleArgumentChange={contextActions.handleArgumentChange}
+                isAlgoTable={false}
+                isInnerInputTable={false}
+                context={subQuestion.context}
+                outerContext={initialState.context}
+                useGeneratedInput={{}}
+                setUseGeneratedInput={()=>{}}
+                setInputInit={()=>{}}
+                generatedContext={[]}
+                outerGeneratedContext={[]}
+                copyInputDetailsItem={()=>{}}
+                copyInputDetails={()=>{}}
+              />
+            </>
+          )}
         </>
-      )}
-      <QuestionQueryableSelector
-        title={'Algo'}
-        tabValue={tabValue}
-        queryables={subQuestion.queryables}
-        queryable={subQuestion.selectedQueryable}
-        setQueryable={(q) => setQueryable(index, q)}
-        setUserQueryableCode={(userQueryableCode) => contextActions.setUserQueryableCode(userQueryableCode, index)}
-        loading={loading}
-      />
-      {subQuestion.queryVariables.length > 0 && (
+      :
         <>
-          <Tooltip title="Query Variables are used to fetch data. Use {Input}, {Step}, etc. in your question description to represent these variables." placement="bottom-start">
-            <Typography variant="subtitle1">
-              Algo Query Variables (Use variable name in question description)
-            </Typography>
-          </Tooltip>
-          <VariableTable
-            variables={subQuestion.queryVariables}
-            quantifiables={subQuestion.context.quantifiables}
-            selectedQuantifiables={subQuestion.context.selectedQuantifiables}
-            selectedSubclasses={subQuestion.context.selectedSubclasses}
-            variableArguments={subQuestion.context.variableArguments}
-            handleQuantifiableChange={contextActions.handleQuantifiableChange}
-            handleSubclassChange={contextActions.handleSubclassChange}
-            handleArgumentChange={contextActions.handleArgumentChange}
-            isAlgoTable={false}
-            isInnerInputTable={false}
-            context={subQuestion.context}
-            outerContext={initialState.context}
-            copyInputArgument={contextActions.copyInputArgument}
-            copyInputInit={contextActions.copyInputInit}
-            useGeneratedInput={{}}
-            setUseGeneratedInput={()=>{}}
-            setInputInit={()=>{}}
-            generatedInputs={[]}
-            outerGeneratedInputs={[]}
-            copyInputDetailsItem={()=>{}}
-            copyInputQuantifiable={()=>{}}
+          <QuestionQueryableSelector
+            title = {''}
+            queryables={subQuestion.inputQueryables}
+            queryable={subQuestion.selectedInputQueryable}
+            setQueryable={(q) => setInputQueryable(index, q)}
+            setUserQueryableCode={() => {}}
+            loading={loading}
           />
+          {subQuestion.inputQueryVariables.length > 0 && (
+            <>
+              <Tooltip title="Query Variables are used to fetch data. Use {Input}, {Step}, etc. in your question description to represent these variables." placement="bottom-start">
+                <Typography variant="subtitle1">
+                  Query Variables (Use variable name in question description)
+                </Typography>
+              </Tooltip>
+              <VariableTable
+                variables={subQuestion.inputQueryVariables}
+                quantifiables={subQuestion.context.quantifiables}
+                selectedQuantifiables={{}}
+                selectedSubclasses={{}}
+                variableArguments={{}}
+                handleQuantifiableChange={contextActions.handleQuantifiableChange}
+                handleSubclassChange={contextActions.handleSubclassChange}
+                handleArgumentChange={contextActions.handleArgumentChange}
+                isAlgoTable={false}
+                isInnerInputTable={false}
+                context={subQuestion.context}
+                outerContext={initialState.context}
+                useGeneratedInput={{}}
+                setUseGeneratedInput={()=>{}}
+                setInputInit={()=>{}}
+                generatedContext={[]}
+                outerGeneratedContext={[]}
+                copyInputDetailsItem={()=>{}}
+                copyInputDetails={()=>{}}
+              />
+            </>
+          )}
         </>
-      )}
+      }
       <QuestionDetails
         type={type}
         marks={marks}

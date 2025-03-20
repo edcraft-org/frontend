@@ -11,7 +11,7 @@ import QuestionDescriptionInput from './QuestionGeneration/QuestionDescriptionIn
 import CodeBlock from './QuestionGeneration/CodeBlock';
 import SubQuestion from './QuestionGeneration/SubQuestion';
 import useQuestionGeneration from '../../hooks/useQuestionGeneration';
-import { initialState, InputDetailsType } from '../../reducer/questionGenerationReducer';
+import { AlgoDetailsType, initialState, InputDetailsType } from '../../reducer/questionGenerationReducer';
 
 interface QuestionGenerationProps {
   project: { id: string, title: string };
@@ -35,23 +35,24 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     handleInputPathChange,
     handleQuantifiableChange,
     handleInputQuantifiableChange,
-    copyInputQuantifiable,
     handleSubclassChange,
     handleArgumentChange,
     handleInputArgumentChange,
-    copyInputArgument,
+    copyInputDetails,
     handleArgumentInit,
     handleInputInit,
-    copyInputInit,
     handleDescriptionChange,
     handleNumOptionsChange,
     setUserAlgoCode,
     setUserEnvCode,
     setUserQueryableCode,
     setInputQueryable,
-    removeInputDetailsItem,
+    addDetailsItem,
+    removeDetailsItem,
     copyInputDetailsItem,
-    resetState,
+    setSelectedDetail,
+    // resetState,
+    handleAddGeneratedOutput,
   } = useQuestionGeneration();
 
   const { user } = useContext(AuthContext);
@@ -61,35 +62,61 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     const requestPayload: GenerateQuestionRequest = {
       description,
       context: {
-        selectedTopic: context.selectedTopic,
-        selectedSubtopic: context.selectedSubtopic,
+        selectedTopic: '',
+        selectedSubtopic: '',
         inputPath: {},
-        selectedSubclasses: context.selectedSubclasses,
-        selectedQuantifiables: context.selectedQuantifiables,
-        arguments: convertArguments(context.variableArguments, context.algoVariables, context.selectedSubclasses),
+        selectedSubclasses: {},
+        selectedQuantifiables: {},
+        arguments: {},
         inputArguments: {},
-        argumentsInit: context.argumentsInit || {},
+        argumentsInit: {},
         inputInit: {},
-        userAlgoCode: context.userAlgoCode || '',
-        userEnvCode: context.userEnvCode || '',
+        userAlgoCode: '',
+        userEnvCode: [],
       },
       sub_questions: subQuestions.map(subQuestion => ({
         description: subQuestion.description,
         queryable: subQuestion.selectedQueryable,
         inputQueryable: subQuestion.selectedInputQueryable,
         userQueryableCode: subQuestion.userQueryableCode || '',
-        context: {
-          selectedTopic: subQuestion.context.selectedTopic,
-          selectedSubtopic: subQuestion.context.selectedSubtopic,
-          inputPath: subQuestion.context.inputDetails[0].inputPath,
-          selectedSubclasses: subQuestion.context.selectedSubclasses,
-          selectedQuantifiables: subQuestion.context.selectedQuantifiables,
-          arguments: convertArguments(subQuestion.context.variableArguments, subQuestion.context.algoVariables, subQuestion.context.selectedSubclasses),
-          inputArguments: convertInputArguments(subQuestion.context.inputDetails[0].inputVariableArguments, subQuestion.context.inputDetails[0].inputVariables),
-          argumentsInit: subQuestion.context.argumentsInit || {},
-          inputInit: subQuestion.context.inputDetails[0].inputInit || {},
-          userAlgoCode: subQuestion.context.userAlgoCode || '',
-          userEnvCode: subQuestion.context.userEnvCode|| '',
+        context: subQuestion.context.selectedDetail ? (
+          subQuestion.context.selectedDetail.type === 'algo' ? {
+            selectedTopic: (subQuestion.context.selectedDetail.details as AlgoDetailsType).selectedTopic,
+            selectedSubtopic: (subQuestion.context.selectedDetail.details as AlgoDetailsType).selectedSubtopic,
+            inputPath: {},
+            selectedSubclasses: (subQuestion.context.selectedDetail.details as AlgoDetailsType).selectedSubclasses,
+            selectedQuantifiables: (subQuestion.context.selectedDetail.details as AlgoDetailsType).selectedQuantifiables || {},
+            arguments: convertArguments((subQuestion.context.selectedDetail.details as AlgoDetailsType).variableArguments, (subQuestion.context.selectedDetail.details as AlgoDetailsType).algoVariables, (subQuestion.context.selectedDetail.details as AlgoDetailsType).selectedSubclasses),
+            inputArguments: {},
+            argumentsInit: (subQuestion.context.selectedDetail.details as AlgoDetailsType).argumentsInit || {},
+            inputInit: {},
+            userAlgoCode: (subQuestion.context.selectedDetail.details as AlgoDetailsType).userAlgoCode || '',
+            userEnvCode: (subQuestion.context.selectedDetail.details as AlgoDetailsType).userEnvCode || [],
+          } : {
+            selectedTopic: '',
+            selectedSubtopic: '',
+            inputPath: (subQuestion.context.selectedDetail.details as InputDetailsType).inputPath,
+            selectedSubclasses: {},
+            selectedQuantifiables: (subQuestion.context.selectedDetail.details as InputDetailsType).selectedQuantifiables || {},
+            arguments: {},
+            inputArguments: convertInputArguments((subQuestion.context.selectedDetail.details as InputDetailsType).inputVariableArguments, (subQuestion.context.selectedDetail.details as InputDetailsType).inputVariables),
+            argumentsInit: {},
+            inputInit: (subQuestion.context.selectedDetail.details as InputDetailsType).inputInit || {},
+            userAlgoCode: '',
+            userEnvCode: (subQuestion.context.selectedDetail.details as InputDetailsType).userEnvCode ? [(subQuestion.context.selectedDetail.details as InputDetailsType).userEnvCode ?? ''] : [],
+          }
+        ) : {
+          selectedTopic: '',
+          selectedSubtopic: '',
+          inputPath: {},
+          selectedSubclasses: {},
+          selectedQuantifiables: {},
+          arguments: {},
+          inputArguments: {},
+          argumentsInit: {},
+          inputInit: {},
+          userAlgoCode: '',
+          userEnvCode: [],
         },
         questionDetails: {
           marks: subQuestion.marks,
@@ -132,13 +159,6 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     }
   };
 
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    dispatch({ type: 'SET_FIELD', field: 'tabValue', value: newValue });
-    setGeneratedInputs([]);
-    resetState();
-  };
-
   const addSubQuestion = () => {
     dispatch({ type: 'ADD_SUB_QUESTION' });
   };
@@ -154,19 +174,19 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     setInputPath: handleInputPathChange,
     handleQuantifiableChange: handleQuantifiableChange,
     handleInputQuantifiableChange: handleInputQuantifiableChange,
-    copyInputQuantifiable: copyInputQuantifiable,
     handleSubclassChange: handleSubclassChange,
     handleArgumentChange: handleArgumentChange,
     handleInputArgumentChange: handleInputArgumentChange,
-    copyInputArgument: copyInputArgument,
+    copyInputDetails: copyInputDetails,
     handleArgumentInit: handleArgumentInit,
     handleInputInit: handleInputInit,
-    copyInputInit: copyInputInit,
     setUserAlgoCode: setUserAlgoCode,
     setUserEnvCode: setUserEnvCode,
     setInputQueryable: setInputQueryable,
-    removeInputDetailsItem: removeInputDetailsItem,
+    addDetailsItem: addDetailsItem,
+    removeDetailsItem: removeDetailsItem,
     copyInputDetailsItem: copyInputDetailsItem,
+    handleAddGeneratedOutput: handleAddGeneratedOutput,
   };
 
   const getSubQuestionActions = (index: number) => ({
@@ -175,18 +195,18 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     setInputPath: (inputPath: { [key: string]: unknown }) => handleInputPathChange(inputPath, index),
     handleQuantifiableChange: (variableName: string, value: string) => handleQuantifiableChange(variableName, value, index),
     handleInputQuantifiableChange: (variableName: string, value: string) => handleInputQuantifiableChange(variableName, value, index),
-    copyInputQuantifiable: (variableName: string, inputName: string, inputDetailIndex: number) => copyInputQuantifiable(variableName, inputName, inputDetailIndex, index),
     handleSubclassChange: (variableName: string, subclassName: string) => handleSubclassChange(variableName, subclassName, index),
     handleArgumentChange: (variableName: string, argName: string, value: unknown) => handleArgumentChange(variableName, argName, value, index),
     handleInputArgumentChange: (variableName: string, argName: string, value: unknown) => handleInputArgumentChange(variableName, argName, value, index),
-    copyInputArgument: (variableName: string, inputName: string, argName: string, inputDetailIndex: number) => copyInputArgument(variableName, inputName, argName, inputDetailIndex, index),
-    copyInputInit: (variableName: string, inputName: string,  inputDetailIndex: number) => copyInputInit(variableName, inputName, inputDetailIndex, index),
+    copyInputDetails: (variableName: string, inputName: string, inputDetailIndex: number, args?: string[]) => copyInputDetails(variableName, inputName, inputDetailIndex, args, index),
     setInputQueryable: (inputPath: { [key: string]: unknown }) =>  setInputQueryable(inputPath, index),
-    removeInputDetailsItem: (inputDetailIndex: number) => removeInputDetailsItem(inputDetailIndex, index),
+    addDetailsItem: (isAlgo: boolean) => addDetailsItem(isAlgo, index),
+    removeDetailsItem: (inputDetailIndex: number, deleteGenerated: boolean) => removeDetailsItem(inputDetailIndex, deleteGenerated, index),
     copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => copyInputDetailsItem(inputDetailsItem, index),
+    handleAddGeneratedOutput: (input_path: { [key: string]: unknown }, input_init: { [key: string]: { [arg: string]: unknown } }, user_env_code: string) => handleAddGeneratedOutput(input_path, input_init, user_env_code, index),
   });
 
-  const [generatedInputs, setGeneratedInputs] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>>([]);
+  const [generatedContext, setGeneratedContext] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, name?: string }>>([]);
 
   return (
     <Box
@@ -206,13 +226,11 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
           setDescription={handleDescriptionChange}
       />
       <CodeBlock
-        tabValue={state.tabValue}
-        handleTabChange={handleTabChange}
         context={state.context}
         outerContext = {initialState.context}
-        generatedInputs={generatedInputs}
-        setGeneratedInputs={setGeneratedInputs}
-        outerGeneratedInputs={[]}
+        outerGeneratedContext={[]}
+        generatedContext={generatedContext}
+        setGeneratedContext={setGeneratedContext}
         {...contextActions}
         loading={state.loading}
       />
@@ -235,10 +253,9 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
             ...getSubQuestionActions(index),
             setUserQueryableCode,
           }}
-          tabValue={state.tabValue}
-          handleTabChange={handleTabChange}
           loading={state.loading}
-          outerGeneratedInputs={generatedInputs}
+          outerGeneratedContext={generatedContext}
+          setSelectedDetail={setSelectedDetail}
         />
       ))}
       <Button variant="contained" color="primary" onClick={addSubQuestion} sx={{ marginTop: 2 }}>

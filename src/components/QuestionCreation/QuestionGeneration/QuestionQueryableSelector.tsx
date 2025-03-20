@@ -1,10 +1,9 @@
 import React from 'react';
-import { FormControl, InputLabel, Select, MenuItem, Chip, Autocomplete, TextField } from '@mui/material';
+import { FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
 import { formatTextSplitUpperCase } from '../../../utils/format';
 
 interface QuestionQueryableSelectorProps {
   title: string
-  tabValue: number;
   queryables: string[];
   queryable: string;
   setQueryable: (value: string) => void;
@@ -15,7 +14,6 @@ interface QuestionQueryableSelectorProps {
 
 const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
   title,
-  tabValue,
   queryables,
   queryable,
   setQueryable,
@@ -34,56 +32,22 @@ const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
 
   return (
     <>
-      {tabValue === 0 ? (
-        <FormControl fullWidth sx={{ marginBottom: 2, bgcolor: 'white' }}>
-          <InputLabel id="queryable-label">{title} Query</InputLabel>
-          <Select
-            labelId="queryable-label"
-            label="Queryable"
-            value={queryable}
-            onChange={(e) => setQueryable(e.target.value)}
-            renderValue={(selected) => <Chip label={formatTextSplitUpperCase(selected)} />}
-          >
-            {queryables.map((queryable) => (
-              <MenuItem key={queryable} value={queryable}>
-                {formatTextSplitUpperCase(queryable)}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      ) : (
-        <>
-          <Autocomplete
-            freeSolo
-            fullWidth
-            options={queryables}
-            value={queryable}
-            onChange={(event, newValue) => setQueryable(newValue || '')}
-            onInputChange={(event, newInputValue) => setQueryable(newInputValue || '')}
-            renderInput={(params) => <TextField {...params} label={`${title} Queryable`} variant="outlined" />}
-            renderOption={(props, option) => (
-              <li {...props}>
-                {formatTextSplitUpperCase(option)}
-              </li>
-            )}
-            sx={{ marginBottom: 2, bgcolor: 'white' }}
-          />
-          {/* <Accordion sx={{ marginBottom: 2 }}>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              sx={{ flexDirection: 'row-reverse' }}
-            >
-              <Typography>Define Code Snippet</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <QueryableClassCodeSnippetEditor setQueryableCodeSnippet={handleSnippetChange} setQueryableCodeRequiredLines={()=>{}} />
-              <Button variant="contained" color="primary" onClick={handleSaveCodeSnippet} disabled={loading} sx={{ marginBottom: 2 }}>
-                {loading ? <CircularProgress size={24} /> : 'Update Algorithm'}
-              </Button>
-            </AccordionDetails>
-          </Accordion> */}
-        </>
-      )}
+      <FormControl fullWidth sx={{ marginBottom: 2, bgcolor: 'white' }}>
+        <InputLabel id="queryable-label">{title} Query</InputLabel>
+        <Select
+          labelId="queryable-label"
+          label="Queryable"
+          value={queryable}
+          onChange={(e) => setQueryable(e.target.value)}
+          renderValue={(selected) => <Chip label={formatTextSplitUpperCase(selected)} />}
+        >
+          {queryables.map((queryable) => (
+            <MenuItem key={queryable} value={queryable}>
+              {formatTextSplitUpperCase(queryable)}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
     </>
   );
 };
