@@ -25,6 +25,7 @@ interface OuterGeneratedContext {
   type: "input" | "algo"
   context: { [key: string]: unknown }
   context_init: { [key: string]: unknown },
+  has_output: boolean,
   name?: string
 }
 

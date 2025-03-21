@@ -40,12 +40,16 @@ interface VariableTableProps {
     type: "input" | "algo"
     context: { [key: string]: unknown }
     context_init: { [key: string]: unknown }
+    has_output: boolean,
+    name?: string
   }>
   outerGeneratedContext: Array<{
     id: string
     type: "input" | "algo"
     context: { [key: string]: unknown }
     context_init: { [key: string]: unknown }
+    has_output: boolean,
+    name?: string
   }>
   copyInputDetailsItem: (inputDetailsType: InputDetailsType) => void
 }

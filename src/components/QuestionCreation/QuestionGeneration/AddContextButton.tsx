@@ -54,10 +54,10 @@ interface AddContextButtonProps {
   addDetailsItem: (isAlgo: boolean) => void;
   removeDetailsItem: (inputDetailIndex: number, deleteGenerated: boolean) => void;
   copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => void;
-  outerGeneratedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, name?: string }>;
+  outerGeneratedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>;
   index?: number;
-  generatedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, name?: string }>;
-  setGeneratedContext: (value: React.SetStateAction<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, name?: string }>>) => void;
+  generatedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>;
+  setGeneratedContext: (value: React.SetStateAction<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>>) => void;
 }
 
 const AddContextButton: React.FC<AddContextButtonProps> = ({
@@ -120,12 +120,7 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
         element_type: inputDetails.selectedQuantifiables || {},
       };
       const data = await generateInput(request);
-      if (index !== undefined) {
-        setGeneratedContext((prevContexts) => [...prevContexts, { id: uuidv4(), type: 'input', context: data.context, context_init: data.context_init, name: data.cls_name }]);
-
-      } else {
-        setGeneratedContext((prevContexts) => [...prevContexts, { id: uuidv4(), type: 'input', context: data.context, context_init: data.context_init, name: data.cls_name }]);
-      }
+      setGeneratedContext((prevContexts) => [...prevContexts, { id: uuidv4(), type: 'input', context: data.context, context_init: data.context_init, name: data.cls_name, has_output: data.has_output }]);
       setUseGeneratedInput({});
       copyInputDetails('', '', -1, []);
       setInputInit({});
@@ -162,7 +157,7 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
         userEnvCode: algoDetails.userEnvCode,
       };
       const data = await generateVariable(request);
-      setGeneratedContext((prevContexts) => [...prevContexts, { id: uuidv4(), type: 'algo', context: data.context, context_init: data.context_init, name: data.cls_name }]);
+      setGeneratedContext((prevContexts) => [...prevContexts, { id: uuidv4(), type: 'algo', context: data.context, context_init: data.context_init, name: data.cls_name, has_output: data.has_output }]);
       setUseGeneratedInput({});
       setInputInit({});
       handleArgumentInit(data.context_init, index);

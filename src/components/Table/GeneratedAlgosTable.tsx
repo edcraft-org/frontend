@@ -22,6 +22,7 @@ interface GeneratedVariablesTableProps {
     type: "input" | "algo";
     context: { [key: string]: unknown },
     context_init: { [key: string]: unknown },
+    has_output: boolean,
     name?: string
   }
   contextDetail: Detail
@@ -201,6 +202,7 @@ const GeneratedAlgosTable: React.FC<GeneratedVariablesTableProps> = ({
                     // key={name}
                     onClick={() => onGenerateOutput()}
                     aria-label="generate output"
+                    disabled={!generatedVariables.has_output}
                     size="small"
                     sx={{
                       color: "#2196f3",

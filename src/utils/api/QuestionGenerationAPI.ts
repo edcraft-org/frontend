@@ -91,6 +91,7 @@ export interface GenerateInputRequest {
 export interface VariableResponse {
   context: { [key: string]: unknown };
   context_init: { [key: string]: { [arg: string]: unknown } };
+  has_output: boolean;
   cls_name?: string;
 }
 

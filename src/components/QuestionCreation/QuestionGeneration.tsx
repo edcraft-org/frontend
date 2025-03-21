@@ -206,7 +206,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     handleAddGeneratedOutput: (input_path: { [key: string]: unknown }, input_init: { [key: string]: { [arg: string]: unknown } }, user_env_code: string) => handleAddGeneratedOutput(input_path, input_init, user_env_code, index),
   });
 
-  const [generatedContext, setGeneratedContext] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, name?: string }>>([]);
+  const [generatedContext, setGeneratedContext] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>>([]);
 
   return (
     <Box

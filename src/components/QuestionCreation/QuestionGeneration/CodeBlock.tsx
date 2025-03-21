@@ -29,9 +29,9 @@ interface CodeBlockProps {
   removeDetailsItem: (inputDetailIndex: number, deleteGenerated: boolean) => void;
   copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => void;
   handleAddGeneratedOutput: (input_path: { [key: string]: unknown }, input_init: { [key: string]: { [arg: string]: unknown } }, user_env_code: string) => void;
-  outerGeneratedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown, name?: string } }>;
-  generatedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, name?: string }>;
-  setGeneratedContext: (value: React.SetStateAction<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, name?: string }>>) => void;
+  outerGeneratedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>;
+  generatedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>;
+  setGeneratedContext: (value: React.SetStateAction<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>>) => void;
   index?: number;
 }
 
@@ -75,7 +75,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           acc.push(input);
         }
         return acc;
-      }, [] as Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown } }>)
+      }, [] as Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean }>)
     );
     // setUseGeneratedInput({});
     // setUseGeneratedOuterInput({});
@@ -106,7 +106,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       }
 
       handleAddGeneratedOutput(data.output_path, data.output_init, data.user_env_code ?? '');
-      setGeneratedContext((prevContexts) => [...prevContexts, { id: uuidv4(), type: 'input', context: data.context, context_init: data.output_init }]);
+      setGeneratedContext((prevContexts) => [...prevContexts, { id: uuidv4(), type: 'input', context: data.context, context_init: data.output_init, has_output: false}]);
     } catch (error) {
       console.error('Error generating output:', error);
     }
