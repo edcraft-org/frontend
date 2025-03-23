@@ -28,7 +28,7 @@ const QuestionEnvSelector: React.FC<QuestionEnvSelectorProps> = ({
     fetchData();
   }, []);
 
-  const handleNodeSelect = async (parent: TreeViewBaseItem | undefined, child: TreeViewBaseItem) => {
+  const handleNodeSelect = async (_parent: TreeViewBaseItem | undefined, child: TreeViewBaseItem) => {
     const formattedChildId = formatIdToNestedObject(child.id);
     setInputPath(formattedChildId);
   };

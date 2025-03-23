@@ -1,4 +1,5 @@
 import { saveAs } from "file-saver";
+import { AssessmentDetails } from "../../pages/AssessmentPages/AssessmentDetailsPage/AssessmentDetailsPage";
 
 const SCALE_FACTOR = 0.6;
 
@@ -47,7 +48,7 @@ const convertSvgToPng = async (svgData: string): Promise<{ hex: string; width: n
   });
 };
 
-export const generateRTF = async (assessmentDetails) => {
+export const generateRTF = async (assessmentDetails: AssessmentDetails) => {
   let rtfContent = "{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Arial;}}\n";
   let subQuestionCounter = 1;
 
@@ -60,6 +61,8 @@ export const generateRTF = async (assessmentDetails) => {
     //     rtfContent += `{\\pict\\pngblip\\picwgoal${picwgoal}\\pichgoal${pichgoal}\n${pngGraphData.hex}}\n\\par\n`;
     //   }
     // }
+
+    if (!question.subquestions) continue;
 
     for (const subq of question.subquestions) {
       rtfContent += `\\fs20 ${subQuestionCounter}. ${question.description ? question.description + '. ' : ''}${subq.description}\\par\n`;

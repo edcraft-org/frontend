@@ -1,5 +1,6 @@
 import { saveAs } from "file-saver";
 import { Document, Packer, Paragraph, TextRun, ImageRun } from "docx";
+import { AssessmentDetails } from "../../pages/AssessmentPages/AssessmentDetailsPage/AssessmentDetailsPage";
 
 const SCALE_FACTOR = 0.6;
 
@@ -35,12 +36,13 @@ const convertSvgToPngBlob = async (svgData: string): Promise<Blob | null> => {
   });
 };
 
-export const generateWordDoc = async (assessmentDetails) => {
+export const generateWordDoc = async (assessmentDetails: AssessmentDetails) => {
   let subQuestionCounter = 1;
 	const paragraphs: Paragraph[] = [];
 
 
   for (const question of assessmentDetails.questions) {
+    if (!question.subquestions) continue;
 
     for (const subq of question.subquestions) {
       paragraphs.push(

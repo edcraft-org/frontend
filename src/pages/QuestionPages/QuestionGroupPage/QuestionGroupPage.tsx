@@ -57,7 +57,7 @@ const QuestionGroupPage: React.FC<QuestionGroupPageProps> = ({ questionNumber, q
     </Box>
   );
 
-  const totalMarks = question.subquestions?.reduce((sum, subQuestion) => sum + subQuestion.marks, 0) || question.marks;
+  const totalMarks = question.subquestions?.reduce((sum, subQuestion) => sum + subQuestion.marks, 0) || 1;
 
   return (
     <Box>

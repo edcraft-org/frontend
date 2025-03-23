@@ -46,7 +46,7 @@ const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType,
         variant="outlined"
         type="number"
         value={marks}
-        onChange={(e) => setMarks(e.target.value)}
+        onChange={(e) => setMarks(Number(e.target.value))}
         required
         inputProps={{ min: 1 }}
         sx={{ marginTop: 2, bgcolor: 'white'}}

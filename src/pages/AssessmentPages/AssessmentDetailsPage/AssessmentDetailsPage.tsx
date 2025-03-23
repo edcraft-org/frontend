@@ -29,7 +29,7 @@ import type { Question } from "../../../utils/api/QuestionAPI"
 import { generateRTF } from "../../../utils/export/rtf"
 import { generateWordDoc } from "../../../utils/export/word"
 
-interface AssessmentDetails {
+export interface AssessmentDetails {
   title: string
   questions: Question[]
 }
