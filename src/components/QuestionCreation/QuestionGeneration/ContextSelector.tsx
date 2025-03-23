@@ -33,19 +33,15 @@ interface ContextSelectorProps {
   outerGeneratedContext: OuterGeneratedContext[]
   outerContext: ContextBlockType
   setSelectedDetail: (detail: Detail) => void
-  onContextSelected?: (context: OuterGeneratedContext) => void
 }
 
-const ContextSelector: React.FC<ContextSelectorProps> = ({ outerGeneratedContext, outerContext, setSelectedDetail, onContextSelected }) => {
+const ContextSelector: React.FC<ContextSelectorProps> = ({ outerGeneratedContext, outerContext, setSelectedDetail }) => {
   const [selectedContextIndex, setSelectedContextIndex] = useState<number>(-1)
 
   const handleContextChange = (event: SelectChangeEvent<string>) => {
     const index = Number.parseInt(event.target.value)
     setSelectedContextIndex(index)
     setSelectedDetail(outerContext.details[index])
-    if (index !== -1 && onContextSelected) {
-      onContextSelected(outerGeneratedContext[index])
-    }
   }
 
   const getContextTypeLabel = (type: "input" | "algo") => {

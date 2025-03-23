@@ -51,7 +51,7 @@ export const generateRTF = async (assessmentDetails) => {
   let rtfContent = "{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Arial;}}\n";
   let subQuestionCounter = 1;
 
-  for (const [_index, question] of assessmentDetails.questions.entries()) {
+  for (const question of assessmentDetails.questions) {
     // if (question.svg?.graph) {
     //   const pngGraphData = await convertSvgToPng(question.svg.graph);
     //   if (pngGraphData) {
@@ -61,7 +61,7 @@ export const generateRTF = async (assessmentDetails) => {
     //   }
     // }
 
-    for (const [_subIndex, subq] of question.subquestions.entries()) {
+    for (const subq of question.subquestions) {
       rtfContent += `\\fs20 ${subQuestionCounter}. ${question.description ? question.description + '. ' : ''}${subq.description}\\par\n`;
       subQuestionCounter++;
       if (subq.svg?.graph) {

@@ -83,7 +83,7 @@ const GeneratedVariablesTable: React.FC<GeneratedVariablesTableProps> = ({ gener
             </TableRow>
           </TableHead>
           <TableBody>
-            {Object.entries(generatedVariables.context).map(([name, value], index) => (
+            {Object.entries(generatedVariables.context).map(([name, value]) => (
               <TableRow
                 key={name}
                 sx={{

@@ -94,7 +94,6 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
   const [useGeneratedInput, setUseGeneratedInput] = useState<{ [key: string]: number }>({});
   const [inputInit, setInputInit] = useState<{ [key: string]: { [arg: string]: unknown } }>({});
   const [useGeneratedOuterInput, setUseGeneratedOuterInput] = useState<{ [key: string]: number }>({});
-  const [generating, setGenerating] = useState<boolean>(false);
 
   const handleGenerateInput = async () => {
     try {
@@ -127,8 +126,6 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
       handleInputInit(data.context_init, index);
     } catch (error) {
       console.error('Error generating variables:', error);
-    } finally {
-      setGenerating(false);
     }
   };
 
@@ -139,7 +136,6 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
     const algoDetails = context.details[context.details.length-1].details as AlgoDetailsType;
 
     const convertedArguments = convertArguments(algoDetails.variableArguments, algoDetails.algoVariables, algoDetails.selectedSubclasses);
-    setGenerating(true);
     try {
       const argumentsInit = Object.keys(inputInit).reduce((acc, key) => {
         acc[key] = inputInit[key];
@@ -163,8 +159,6 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
       handleArgumentInit(data.context_init, index);
     } catch (error) {
       console.error('Error generating variables:', error);
-    } finally {
-      setGenerating(false);
     }
   };
 

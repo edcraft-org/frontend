@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Box, Typography, Tooltip, IconButton, Button, Collapse } from '@mui/material';
-import { Delete, ExpandLess, ExpandMore } from '@mui/icons-material';
+import { Box, Typography, Tooltip, IconButton } from '@mui/material';
+// import { Box, Typography, Tooltip, IconButton, Button, Collapse } from '@mui/material';
+import { Delete } from '@mui/icons-material';
+// import { Delete, ExpandLess, ExpandMore } from '@mui/icons-material';
 import QuestionDescriptionInput from './QuestionDescriptionInput';
 import QuestionQueryableSelector from './QuestionQueryableSelector';
 import { numberToAlphabet } from '../../../utils/format';
@@ -8,7 +10,7 @@ import VariableTable from './VariableTable';
 import QuestionDetails from '../QuestionDetails';
 import { ContextBlockType, Detail, initialState, InputDetailsType, SubQuestionType } from '../../../reducer/questionGenerationReducer';
 import ContextSelector from './ContextSelector';
-import CodeBlock from './CodeBlock';
+// import CodeBlock from './CodeBlock';
 
 interface SubQuestionProps {
   index: number;
@@ -62,19 +64,14 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
   outerGeneratedContext,
   setSelectedDetail
 }) => {
-  const [expanded, setExpanded] = useState(false);
+  // const [expanded, setExpanded] = useState(false);
   const [marks, setMarks] = useState<number>(1);
   const [type, setType] = useState<string>('Multiple Choice');
-  const [generatedContext, setGeneratedContext] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>>([]);
+  // const [generatedContext, setGeneratedContext] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>>([]);
 
-  const handleContextSelected = (context: any) => {
-    // console.log("Selected context:", context)
-    // You can perform additional actions here when a context is selected
-  }
-
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
+  // const handleExpandClick = () => {
+  //   setExpanded(!expanded);
+  // };
 
   return (
     <Box sx={{ marginBottom: 2, border: '1px solid #ccc', borderRadius: '4px', padding: 2 }}>
@@ -86,7 +83,7 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
           <Delete />
         </IconButton>
       </Box>
-      <>
+      {/* <>
         <Box sx={{ marginBottom: 2 }}>
           <Button
             variant="outlined"
@@ -110,12 +107,11 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
             outerGeneratedContext={outerGeneratedContext}
           />
         </Collapse>
-      </>
+      </> */}
       <ContextSelector
         outerGeneratedContext={outerGeneratedContext}
         outerContext={outerContext}
         setSelectedDetail={(detail: Detail) => setSelectedDetail(detail, index)}
-        onContextSelected={handleContextSelected}
       />
       <QuestionDescriptionInput
         description={subQuestion.description}

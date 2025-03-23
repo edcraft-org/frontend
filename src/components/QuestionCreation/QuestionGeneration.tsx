@@ -58,7 +58,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   const { user } = useContext(AuthContext);
 
   const handleGenerate = async () => {
-    const { description, context, subQuestions } = state;
+    const { description, subQuestions } = state;
     const requestPayload: GenerateQuestionRequest = {
       description,
       context: {

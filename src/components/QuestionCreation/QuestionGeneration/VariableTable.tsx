@@ -162,7 +162,6 @@ const VariableTable: React.FC<VariableTableProps> = ({
       if (inputDetail.inputInit) {
         const inputInitKeys = Object.keys(inputDetail.inputInit)
         if (inputInitKeys.length > 0) {
-          console.log(type, inputInitKeys[0])
           // if (type.includes(inputInitKeys[0])) {
           // Extract base type name before any generic parameters
           const baseType = type.split('[')[0];

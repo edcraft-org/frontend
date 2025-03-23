@@ -50,9 +50,6 @@ const TreeViewSelector: React.FC<TreeViewSelectorProps> = ({
   onNodeSelect,
 }) => {
   const [treeItems, setTreeItems] = useState<TreeViewBaseItem[]>([]);
-  const [newSubtopic, setNewSubtopic] = useState('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [previousSelectedNode, setPreviousSelectedNode] = useState<string | null>(null);
 
   useEffect(() => {
