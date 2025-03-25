@@ -33,10 +33,11 @@ const QuestionQueryableSelector: React.FC<QuestionQueryableSelectorProps> = ({
   return (
     <>
       <FormControl fullWidth sx={{ marginBottom: 2, bgcolor: 'white' }}>
-        <InputLabel id="queryable-label">{title} Query</InputLabel>
+        <InputLabel id="queryable-label">{title} Query *</InputLabel>
         <Select
           labelId="queryable-label"
           label="Queryable"
+          required
           value={queryable}
           onChange={(e) => setQueryable(e.target.value)}
           renderValue={(selected) => <Chip label={formatTextSplitUpperCase(selected)} />}

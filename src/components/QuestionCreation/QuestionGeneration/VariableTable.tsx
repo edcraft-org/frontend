@@ -105,7 +105,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
       const inputName = Object.keys(inputDetails.inputInit ?? {})[0] ?? "";
       const inputInit = (inputDetails.inputInit ?? {})[inputName]
       copyInputDetails(variable.name, inputName, inputDetailIndex, variable.arguments?.map((arg) => arg.name))
-      setInputInit({ [variable.name]: inputInit })
+      setInputInit((prev) => ({ ...prev, [variable.name]: inputInit }));
       setUseGeneratedInput((prev) => ({ ...prev, [variable.name]: inputDetailIndex }))
     }
     if (inputDetailIndex === -1) {
@@ -169,6 +169,8 @@ const VariableTable: React.FC<VariableTableProps> = ({
 
           // Check if base types match exactly
           if (baseType === inputBaseType) {
+            return true;
+          } else if (baseType == 'bool' && inputBaseType == 'BoolInput') {
             return true;
           }
         }

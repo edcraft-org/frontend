@@ -1,6 +1,7 @@
 import type React from "react"
 import { useState } from "react"
 import {
+  Alert,
   Box,
   Button,
   Dialog,
@@ -94,6 +95,7 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
   const [useGeneratedInput, setUseGeneratedInput] = useState<{ [key: string]: number }>({});
   const [inputInit, setInputInit] = useState<{ [key: string]: { [arg: string]: unknown } }>({});
   const [useGeneratedOuterInput, setUseGeneratedOuterInput] = useState<{ [key: string]: number }>({});
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleGenerateInput = async () => {
     try {
@@ -131,9 +133,27 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
 
   const handleGenerateVariables = async () => {
     if (context.details.length === 0 || context.details[context.details.length-1].type == 'input' || (context.details[context.details.length-1].details as AlgoDetailsType).algoVariables.length === 0) {
-      return;
+      return false;
     }
     const algoDetails = context.details[context.details.length-1].details as AlgoDetailsType;
+
+    const variablesWithSubclasses = algoDetails.algoVariables.filter(
+      variable => variable.subclasses && variable.subclasses.length > 0
+    );
+
+    if (variablesWithSubclasses.length > 0) {
+      const hasSelectedSubclass = variablesWithSubclasses.some(
+        variable => algoDetails.selectedSubclasses[variable.name] &&
+                  algoDetails.selectedSubclasses[variable.name].length > 0
+      );
+
+      if (!hasSelectedSubclass) {
+        setValidationError("Please select at least one subclass.");
+        return false;
+      }
+    }
+
+    setValidationError(null);
 
     const convertedArguments = convertArguments(algoDetails.variableArguments, algoDetails.algoVariables, algoDetails.selectedSubclasses);
     try {
@@ -157,6 +177,7 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
       setUseGeneratedInput({});
       setInputInit({});
       handleArgumentInit(data.context_init, index);
+      return true
     } catch (error) {
       console.error('Error generating variables:', error);
     }
@@ -166,12 +187,14 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
     setOpen(true)
     setStep(0)
     setContextType(null)
+    setValidationError(null)
   }
 
   const handleClose = () => {
     setOpen(false)
     removeDetailsItem(context.details.length-1, false);
     setUseGeneratedInput({});
+    setValidationError(null)
   }
 
   const handleBack = () => {
@@ -186,12 +209,14 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
     addDetailsItem(type == 'algo')
   }
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (contextType === "input") {
       handleGenerateInput()
 
     } else if (contextType === "algo") {
-      handleGenerateVariables()
+      if (!await handleGenerateVariables()) {
+        return
+      }
     }
     setOpen(false)
     setUseGeneratedInput({});
@@ -343,7 +368,7 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
                   <QuestionEnvSelector
                     setInputPath={setInputPath}
                   />
-                    <Accordion sx={{ marginBottom: 2 }}>
+                    <Accordion sx={{ marginY: 2 }}>
                       <AccordionSummary
                         expandIcon={<ExpandMoreIcon />}
                         sx={{ flexDirection: 'row-reverse' }}
@@ -395,7 +420,7 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
                     setSubtopic={setSubtopic}
                     context={context}
                   />
-                  <Accordion sx={{ marginBottom: 2 }}>
+                  <Accordion sx={{ marginY: 2 }}>
                     <AccordionSummary
                       expandIcon={<ExpandMoreIcon />}
                       sx={{ flexDirection: 'row-reverse' }}
@@ -444,6 +469,16 @@ const AddContextButton: React.FC<AddContextButtonProps> = ({
             </Box>
           )}
         </DialogContent>
+
+        {validationError && (
+          <Alert
+            severity="error"
+            sx={{ mb: 2 }}
+            onClose={() => setValidationError(null)}
+          >
+            {validationError}
+          </Alert>
+        )}
 
         <Divider />
 

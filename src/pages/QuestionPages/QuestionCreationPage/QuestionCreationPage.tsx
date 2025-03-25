@@ -4,12 +4,12 @@ import NavBar from '../../../components/NavBar/Navbar';
 import { useLocation, useParams } from 'react-router-dom';
 // import QuestionDetails from '../../../components/QuestionCreation/QuestionDetails';
 import QuestionGeneration from '../../../components/QuestionCreation/QuestionGeneration';
+import { NavigationWarning } from '../../../components/QuestionCreation/QuestionGeneration/NavigationWarning';
 
 const QuestionCreationPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
   const { projectTitle, assessmentId, assessmentTitle, questionBankId, questionBankTitle } = location.state || {};
-
 
   if (!projectId) {
     return <div>Error: Project ID is missing</div>;
@@ -19,6 +19,7 @@ const QuestionCreationPage: React.FC = () => {
   return (
     <Box sx={{ width: '100%', bgcolor: "#f5f7fa" }}>
       <NavBar project={{id: projectId, title: projectTitle}} assessment={ {id: assessmentId, title: assessmentTitle} } questionBank={{id: questionBankId, title: questionBankTitle}} isQuestionCreation={true}/>
+      <NavigationWarning/>
       <Box sx={{ marginTop: '64px', padding: 2 }}>
         <Typography variant="h4" gutterBottom>
           Create a New Question
