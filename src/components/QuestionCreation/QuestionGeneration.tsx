@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Box, Typography, Button } from '@mui/material';
+import { Box, Typography, Button, Alert } from '@mui/material';
 import { generateQuestion, GenerateQuestionRequest } from '../../utils/api/QuestionGenerationAPI';
 import QuestionCreation from './QuestionCreation';
 import { createQuestion, NewQuestion } from '../../utils/api/QuestionAPI';
@@ -56,6 +56,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   } = useQuestionGeneration();
 
   const { user } = useContext(AuthContext);
+  const [generatedContext, setGeneratedContext] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>>([]);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     const { description, subQuestions } = state;
@@ -124,6 +126,13 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         },
       })),
     };
+    for (const subq of subQuestions) {
+      if (subq.selectedQueryable == "" && subq.selectedInputQueryable == "") {
+        setValidationError("Please select a query for all sub-questions");
+        return;
+      }
+    }
+    setValidationError(null);
     try {
       dispatch({ type: 'SET_FIELD', field: 'loading', value: true });
       const data = await generateQuestion(requestPayload);
@@ -206,8 +215,6 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     handleAddGeneratedOutput: (input_path: { [key: string]: unknown }, input_init: { [key: string]: { [arg: string]: unknown } }, user_env_code: string) => handleAddGeneratedOutput(input_path, input_init, user_env_code, index),
   });
 
-  const [generatedContext, setGeneratedContext] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>>([]);
-
   return (
     <Box
       sx={{
@@ -221,10 +228,6 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         Question Generation
       </Typography>
 
-      <QuestionDescriptionInput
-          description={state.description}
-          setDescription={handleDescriptionChange}
-      />
       <CodeBlock
         context={state.context}
         outerContext = {initialState.context}
@@ -265,6 +268,15 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
       <Button variant="contained" color="primary" onClick={handleGenerate} sx={{ marginTop: 2 }}>
         Generate Question
       </Button>
+      {validationError && (
+        <Alert
+          severity="error"
+          sx={{ mt: 2 }}
+          onClose={() => setValidationError(null)}
+        >
+          {validationError}
+        </Alert>
+      )}
       {state.generatedQuestions.subquestions && state.generatedQuestions.subquestions.length > 0 && (
         <Box
           sx={{
