@@ -7,7 +7,6 @@ import { addExistingQuestionToAssessment } from '../../utils/api/AssessmentAPI';
 import { addExistingQuestionToQuestionBank } from '../../utils/api/QuestionBankAPI';
 import { AuthContext } from '../../context/Authcontext';
 import { convertArguments, convertInputArguments } from '../../utils/format';
-import QuestionDescriptionInput from './QuestionGeneration/QuestionDescriptionInput';
 import CodeBlock from './QuestionGeneration/CodeBlock';
 import SubQuestion from './QuestionGeneration/SubQuestion';
 import useQuestionGeneration from '../../hooks/useQuestionGeneration';
