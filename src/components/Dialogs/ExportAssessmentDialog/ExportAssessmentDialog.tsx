@@ -42,13 +42,19 @@ const ExportAssessmentsDialog: React.FC<ExportAssessmentsDialogProps> = ({
       <DialogContent dividers>
         <Typography variant="h6" sx={{ marginBottom: 2 }}>Selected Questions</Typography>
         <Paper sx={{ width: '100%', marginBottom: 2 }}>
-          <DataGrid
-            rows={selectedQuestions.map((question, index) => ({ id: question._id, title: index + 1, description: question.description }))}
-            columns={questionColumns}
-            initialState={{ pagination: { paginationModel } }}
-            pageSizeOptions={[5, 10]}
-            autoHeight
-          />
+          {selectedQuestions.length > 0 && (
+              <DataGrid
+                rows={selectedQuestions[0]?.subquestions?.map((question, index) => ({
+                  id: index,
+                  title: index + 1,
+                  description: question.description
+                }))}
+                columns={questionColumns}
+                initialState={{ pagination: { paginationModel } }}
+                pageSizeOptions={[5, 10]}
+                autoHeight
+              />
+          )}
         </Paper>
         <Typography variant="h6" sx={{ marginBottom: 2 }}>Select Assessments</Typography>
         <Paper sx={{ width: '100%', marginBottom: 2}}>

@@ -62,28 +62,11 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   index,
 }) => {
 
-  const handleDeleteGeneratedVariable = (id: string, variableName: string, index: number) => {
+  const handleDeleteGeneratedVariable = (id: string, index: number) => {
     setGeneratedContext((prevContexts) =>
-      prevContexts.reduce((acc, input) => {
-        if (input.id === id) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { [variableName]: _, ...rest } = input.context;
-          if (Object.keys(rest).length > 0) {
-            acc.push({ ...input, context: rest });
-          }
-        } else {
-          acc.push(input);
-        }
-        return acc;
-      }, [] as Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean }>)
+      prevContexts.filter((input) => input.id !== id)
     );
-    // setUseGeneratedInput({});
-    // setUseGeneratedOuterInput({});
     removeDetailsItem(index, true);
-    // setInputInit({});
-    // copyInputArgument('', '', '', -1);
-    // copyInputQuantifiable('', '', -1);
-    // copyInputDetails('', '', -1, []);
   };
 
   const handleGenerateOutput = async (algoDetails: AlgoDetailsType) => {
@@ -122,9 +105,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           <Divider sx={{ mb: 2 }} />
           {generatedContext.map((contextItem, idx) => (
             (contextItem.type === 'input') ? (
-              <GeneratedVariablesTable key={contextItem.id} generatedVariables={contextItem} onDelete={(id: string, variableName: string) => handleDeleteGeneratedVariable(id, variableName, idx)} />
+              <GeneratedVariablesTable key={contextItem.id} generatedVariables={contextItem} onDelete={(id: string) => handleDeleteGeneratedVariable(id, idx)} />
             ) :(
-              <GeneratedAlgosTable key={contextItem.id} generatedVariables={contextItem} contextDetail={context.details[idx]} onDelete={(id: string, variableName: string) => handleDeleteGeneratedVariable(id, variableName, idx)} onGenerateOutput={()=>{handleGenerateOutput(context.details[idx].details as AlgoDetailsType)}}/>
+              <GeneratedAlgosTable key={contextItem.id} generatedVariables={contextItem} contextDetail={context.details[idx]} onDelete={(id: string,) => handleDeleteGeneratedVariable(id, idx)} onGenerateOutput={()=>{handleGenerateOutput(context.details[idx].details as AlgoDetailsType)}}/>
             )
           ))}
           <Divider/>

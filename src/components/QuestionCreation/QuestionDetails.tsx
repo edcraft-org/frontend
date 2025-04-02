@@ -11,6 +11,16 @@ interface QuestionDetailsProps {
 }
 
 const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType, setMarks, numOptions, setNumOptions }) => {
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value === "") {
+      setNumOptions(0)
+      return
+    }
+    const cleanedValue = e.target.value.replace(/^0+/, "")
+    const parsedValue = Number.parseInt(cleanedValue || "0", 10)
+    setNumOptions(parsedValue)
+  }
+
   return (
     <Box
       sx={{
@@ -56,11 +66,15 @@ const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType,
         label="Number of Options"
         variant="outlined"
         type="number"
-        value={numOptions}
-        onChange={(e) => setNumOptions(Number(e.target.value))}
+        value={numOptions === 0 ? "" : numOptions}
+        onChange={handleNumberChange}
         required
-        sx={{ marginTop: 2, bgcolor: 'white' }}
-        disabled={type === 'true or false'}
+        sx={{ marginTop: 2, bgcolor: "white" }}
+        disabled={type === "true or false"}
+        inputProps={{
+          min: 0,
+          inputMode: "numeric",
+        }}
       />
     </Box>
   );

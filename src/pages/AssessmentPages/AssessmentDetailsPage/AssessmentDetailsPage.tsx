@@ -12,6 +12,10 @@ import {
   useMediaQuery,
   Breadcrumbs,
   Link,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material"
 import { useLocation, useParams } from "react-router-dom"
 import { useState, useEffect, useContext } from "react"
@@ -20,6 +24,11 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import AddIcon from "@mui/icons-material/Add"
 import FileDownloadIcon from "@mui/icons-material/FileDownload"
 import NavigateNextIcon from "@mui/icons-material/NavigateNext"
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
+import DescriptionIcon from "@mui/icons-material/Description"
+import TextSnippetIcon from "@mui/icons-material/TextSnippet"
+import AutomateIcon from "@mui/icons-material/AutoFixHigh"
+import EditIcon from "@mui/icons-material/Edit"
 
 import NavBar from "../../../components/NavBar/Navbar"
 import QuestionGroupPage from "../../QuestionPages/QuestionGroupPage/QuestionGroupPage"
@@ -44,6 +53,11 @@ const AssessmentDetailsPage: React.FC = () => {
   const { projectTitle } = location.state || {}
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
+  const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null)
+  const openExportMenu = Boolean(exportMenuAnchor)
+  const [createMenuAnchor, setCreateMenuAnchor] = useState<null | HTMLElement>(null)
+  const openCreateMenu = Boolean(createMenuAnchor)
+
 
   useEffect(() => {
     const fetchAssessmentQuestions = async () => {
@@ -106,20 +120,43 @@ const AssessmentDetailsPage: React.FC = () => {
     )
   }
 
-  const createNewQuestion = () => {
+  const handleCreateClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setCreateMenuAnchor(event.currentTarget)
+  }
+
+  const handleCreateMenuClose = () => {
+    setCreateMenuAnchor(null)
+  }
+
+  const createNewQuestion = (isManual: boolean = false) => {
     navigate(`/projects/${projectId}/createQuestion`, {
-      state: { assessmentId, assessmentTitle: assessmentDetails?.title, projectTitle },
+      state: {
+        assessmentId,
+        assessmentTitle: assessmentDetails?.title,
+        projectTitle,
+        isManual
+      },
     })
+    handleCreateMenuClose()
   }
 
-  const exportAssessmentRTF = () => {
-    if (!assessmentDetails) return
-    generateRTF(assessmentDetails)
+  const handleExportClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setExportMenuAnchor(event.currentTarget)
   }
 
-  const exportAssessmentWord = () => {
+  const handleExportMenuClose = () => {
+    setExportMenuAnchor(null)
+  }
+
+  const handleExportFormat = (format: "rtf" | "word") => {
     if (!assessmentDetails) return
-    generateWordDoc(assessmentDetails)
+
+    if (format === "rtf") {
+      generateRTF(assessmentDetails)
+    } else {
+      generateWordDoc(assessmentDetails)
+    }
+    handleExportMenuClose()
   }
 
   const handleRemoveQuestion = async (questionId: string) => {
@@ -192,11 +229,7 @@ const AssessmentDetailsPage: React.FC = () => {
                   {assessmentDetails ? assessmentDetails.title : "Loading..."}
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                  <Chip
-                    label={`${assessmentDetails?.questions.length || 0} Questions`}
-                    color="primary"
-                    size="small"
-                  />
+                  <Chip label={`${assessmentDetails?.questions.length || 0} Questions`} color="primary" size="small" />
                 </Box>
               </Box>
 
@@ -207,42 +240,131 @@ const AssessmentDetailsPage: React.FC = () => {
                   width: isMobile ? "100%" : "auto",
                 }}
               >
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  startIcon={<FileDownloadIcon />}
-                  onClick={exportAssessmentRTF}
-                  sx={{
-                    height: "48px",
-                    width: isMobile ? "100%" : "auto",
-                  }}
-                >
-                  Export as RTF
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  startIcon={<FileDownloadIcon />}
-                  onClick={exportAssessmentWord}
-                  sx={{
-                    height: "48px",
-                    width: isMobile ? "100%" : "auto",
-                  }}
-                >
-                  Export as Word Doc
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<AddIcon />}
-                  onClick={createNewQuestion}
-                  sx={{
-                    height: "48px",
-                    width: isMobile ? "100%" : "auto",
-                  }}
-                >
-                  Add Question
-                </Button>
+                <>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<FileDownloadIcon />}
+                    endIcon={<KeyboardArrowDownIcon />}
+                    onClick={handleExportClick}
+                    sx={{
+                      height: "48px",
+                      width: isMobile ? "100%" : "auto",
+                      borderRadius: "8px",
+                      fontWeight: "medium",
+                      transition: "all 0.2s",
+                      "&:hover": {
+                        backgroundColor: "rgba(25, 118, 210, 0.08)",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      },
+                    }}
+                    aria-controls={openExportMenu ? "export-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={openExportMenu ? "true" : undefined}
+                  >
+                    Export
+                  </Button>
+                  <Menu
+                    id="export-menu"
+                    anchorEl={exportMenuAnchor}
+                    open={openExportMenu}
+                    onClose={handleExportMenuClose}
+                    MenuListProps={{
+                      "aria-labelledby": "export-button",
+                      dense: true,
+                    }}
+                    transformOrigin={{ horizontal: "right", vertical: "top" }}
+                    anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                  >
+                    <MenuItem
+                      onClick={() => handleExportFormat("rtf")}
+                      sx={{
+                        py: 1.5,
+                        "&:hover": {
+                          backgroundColor: "rgba(25, 118, 210, 0.08)",
+                        },
+                      }}
+                    >
+                      <ListItemIcon>
+                        <TextSnippetIcon fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText>Export as RTF</ListItemText>
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => handleExportFormat("word")}
+                      sx={{
+                        py: 1.5,
+                        "&:hover": {
+                          backgroundColor: "rgba(25, 118, 210, 0.08)",
+                        },
+                      }}
+                    >
+                      <ListItemIcon>
+                        <DescriptionIcon fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText>Export as Word Doc</ListItemText>
+                    </MenuItem>
+                  </Menu>
+                </>
+                <>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddIcon />}
+                    endIcon={<KeyboardArrowDownIcon />}
+                    onClick={handleCreateClick}
+                    sx={{
+                      height: "48px",
+                      width: isMobile ? "100%" : "auto",
+                    }}
+                    aria-controls={openCreateMenu ? "create-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={openCreateMenu ? "true" : undefined}
+                  >
+                    Add Question
+                  </Button>
+                  <Menu
+                    id="create-menu"
+                    anchorEl={createMenuAnchor}
+                    open={openCreateMenu}
+                    onClose={handleCreateMenuClose}
+                    MenuListProps={{
+                      "aria-labelledby": "create-button",
+                      dense: true,
+                    }}
+                    transformOrigin={{ horizontal: "right", vertical: "top" }}
+                    anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                  >
+                    <MenuItem
+                      onClick={() => createNewQuestion(false)}
+                      sx={{
+                        py: 1.5,
+                        "&:hover": {
+                          backgroundColor: "rgba(25, 118, 210, 0.08)",
+                        },
+                      }}
+                    >
+                      <ListItemIcon>
+                        <AutomateIcon fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText>Generate Question</ListItemText>
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => createNewQuestion(true)}
+                      sx={{
+                        py: 1.5,
+                        "&:hover": {
+                          backgroundColor: "rgba(25, 118, 210, 0.08)",
+                        },
+                      }}
+                    >
+                      <ListItemIcon>
+                        <EditIcon fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText>Manual Creation</ListItemText>
+                    </MenuItem>
+                  </Menu>
+                </>
               </Box>
             </Box>
           </Paper>
@@ -259,9 +381,6 @@ const AssessmentDetailsPage: React.FC = () => {
             <Typography variant="h6" color="text.primary" sx={{ mb: 2 }}>
               This assessment doesn't have any questions yet
             </Typography>
-            <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={createNewQuestion}>
-              Create Your First Question
-            </Button>
           </Paper>
         ) : (
           <Grid container spacing={3}>
@@ -292,21 +411,6 @@ const AssessmentDetailsPage: React.FC = () => {
               </Grid>
             ))}
           </Grid>
-        )}
-
-        {assessmentDetails && assessmentDetails.questions.length > 0 && (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-              onClick={createNewQuestion}
-              size="large"
-              sx={{ px: 4, py: 1.5 }}
-            >
-              Add Another Question
-            </Button>
-          </Box>
         )}
       </Container>
     </Box>

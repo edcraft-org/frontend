@@ -16,7 +16,7 @@ import { formatValue } from "../../utils/format"
 
 interface GeneratedVariablesTableProps {
   generatedVariables: { id: string; type: "input" | "algo"; context: { [key: string]: unknown } }
-  onDelete?: (id: string, variableName: string) => void
+  onDelete?: (id: string) => void
 }
 
 const GeneratedVariablesTable: React.FC<GeneratedVariablesTableProps> = ({ generatedVariables, onDelete }) => {
@@ -145,7 +145,7 @@ const GeneratedVariablesTable: React.FC<GeneratedVariablesTableProps> = ({ gener
                     }}
                   >
                     <IconButton
-                      onClick={() => onDelete(generatedVariables.id, name)}
+                      onClick={() => onDelete(generatedVariables.id)}
                       aria-label="delete"
                       size="small"
                       sx={{

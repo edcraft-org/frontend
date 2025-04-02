@@ -26,7 +26,7 @@ interface GeneratedVariablesTableProps {
     name?: string
   }
   contextDetail: Detail
-  onDelete?: (id: string, variableName: string) => void
+  onDelete?: (id: string) => void
   onGenerateOutput?: () => void
 }
 
@@ -171,24 +171,19 @@ const GeneratedAlgosTable: React.FC<GeneratedVariablesTableProps> = ({
                   padding: "8px 16px",
                 }}
               >
-                {Object.keys(generatedVariables.context).map((name) => (
-                  <IconButton
-                    key={name}
-                    onClick={() => onDelete(generatedVariables.id, name)}
-                    aria-label="delete"
-                    size="small"
-                    sx={{
-                      color: "#f44336",
-                      "&:hover": {
-                        backgroundColor: "rgba(244, 67, 54, 0.08)",
-                      },
-                      display: 'block',
-                      // mb: 1
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                ))}
+                <IconButton
+                  onClick={() => onDelete(generatedVariables.id)}
+                  aria-label="delete"
+                  size="small"
+                  sx={{
+                    color: "#f44336",
+                    "&:hover": {
+                      backgroundColor: "rgba(244, 67, 54, 0.08)",
+                    },
+                  }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
               </TableCell>
             )}
             {onGenerateOutput && (

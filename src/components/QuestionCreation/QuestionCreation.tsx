@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Box, Typography, Card, CardContent, CardHeader, List, ListItem, Divider, Checkbox, Button, Tooltip, TextField, IconButton, Select, MenuItem, FormControl, InputLabel, FormControlLabel } from '@mui/material';
+import { Box, Typography, Card, CardContent, CardHeader, List, ListItem, Divider, Checkbox, Button, Tooltip, TextField, IconButton, Select, MenuItem, FormControl, InputLabel, FormControlLabel, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ConfirmSelectionDialog from '../Dialogs/ConfirmSelectionDialog/ConfirmSelectionDialog';
 import { GridColDef } from '@mui/x-data-grid';
@@ -7,6 +7,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { SubQuestion, GenerateQuestionResponse, NewQuestion } from '../../utils/api/QuestionAPI';
 import { numberToAlphabet } from '../../utils/format';
 import { AuthContext } from '../../context/Authcontext';
@@ -17,9 +18,10 @@ interface QuestionCreationProps {
   project: { id: string, title: string };
   assessmentId?: string;
   questionBankId?: string;
+  isManual?: boolean;
 }
 
-const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQuestion, project, assessmentId, questionBankId }) => {
+const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQuestion, project, assessmentId, questionBankId, isManual = false }) => {
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [editableQuestions, setEditableQuestions] = useState<SubQuestion[]>([]);
@@ -156,6 +158,25 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
     setEditingIndex(null);
   };
 
+  const handleAddSubQuestion = () => {
+    setEditableQuestions(prevQuestions => [...prevQuestions, {
+      description: '',
+      options: [''],
+      answer: '',
+      marks: 1,
+      numOptions: 1
+    }]);
+  };
+
+  const handleDeleteSubQuestion = (index: number) => {
+    setEditableQuestions(prevQuestions =>
+      prevQuestions.filter((_, i) => i !== index)
+    );
+    setSelectedQuestions(prev =>
+      prev.filter(i => i !== index)
+    );
+  };
+
   const selectedQuestionRows = selectedQuestions
     .slice()
     .sort((a, b) => a - b)
@@ -217,28 +238,46 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
             title={`${numberToAlphabet(index).toLowerCase()}.`}
             sx={{ backgroundColor: '#e8e8e8', padding: 1 }}
             action={
-              <>
+              <Stack direction="row" spacing={0.5} alignItems="center">
                 <Checkbox
                   checked={selectedQuestions.includes(index)}
                   onChange={() => handleSelectQuestion(index)}
                 />
+
                 {editingIndex === index ? (
-                  <IconButton onClick={handleSaveClick}>
+                  <IconButton onClick={handleSaveClick} size="small">
                     <SaveIcon />
                   </IconButton>
                 ) : (
-                  <IconButton onClick={() => handleEditClick(index)}>
+                  <IconButton onClick={() => handleEditClick(index)} size="small">
                     <EditIcon />
                   </IconButton>
                 )}
-              </>
+
+                {isManual && (
+                  <>
+                    <Box sx={{ height: 20, borderLeft: '2px solid rgba(0, 0, 0, 1)' }} />
+                    <IconButton
+                      onClick={() => handleDeleteSubQuestion(index)}
+                      size="small"
+                      sx={{
+                        '&:hover': {
+                          color: 'error.main'
+                        }
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </>
+                )}
+              </Stack>
             }
           />
           <CardContent>
             <TextField
               label="Question"
               value={qa.description}
-              onChange={(e) => handleQuestionChange(index, 'question', e.target.value)}
+              onChange={(e) => handleQuestionChange(index, 'description', e.target.value)}
               fullWidth
               margin="normal"
               variant="outlined"
@@ -329,11 +368,30 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
           </CardContent>
         </Card>
       ))}
-      {addButtonText && (
-        <Button variant="contained" color="primary" onClick={handleOpenDialog} disabled={selectedQuestions.length === 0}>
-          {addButtonText}
-        </Button>
-      )}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '200px' }}>
+        {isManual && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddSubQuestion}
+            sx={{ marginBottom: 2 }}
+            fullWidth
+          >
+            Add Subquestion
+          </Button>
+        )}
+        {addButtonText && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleOpenDialog}
+            disabled={selectedQuestions.length === 0}
+            fullWidth
+          >
+            {addButtonText}
+          </Button>
+        )}
+      </Box>
       <ConfirmSelectionDialog
         open={dialogOpen}
         onClose={handleCloseDialog}

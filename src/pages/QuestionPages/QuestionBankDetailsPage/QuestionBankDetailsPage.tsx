@@ -13,6 +13,10 @@ import {
   useMediaQuery,
   Breadcrumbs,
   Link,
+  Menu,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
 } from "@mui/material"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { useState, useEffect, useContext } from "react"
@@ -20,6 +24,9 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import AddIcon from "@mui/icons-material/Add"
 import FileUploadIcon from "@mui/icons-material/FileUpload"
 import NavigateNextIcon from "@mui/icons-material/NavigateNext"
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
+import AutomateIcon from "@mui/icons-material/AutoFixHigh"
+import EditIcon from "@mui/icons-material/Edit"
 
 import NavBar from "../../../components/NavBar/Navbar"
 import ExportAssessmentsDialog from "../../../components/Dialogs/ExportAssessmentDialog/ExportAssessmentDialog"
@@ -52,6 +59,11 @@ const QuestionBankDetailsPage: React.FC = () => {
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([])
   const [selectAll, setSelectAll] = useState(false)
   const [loading, setLoading] = useState<boolean>(true)
+
+  const [createMenuAnchor, setCreateMenuAnchor] = useState<null | HTMLElement>(null)
+  const openCreateMenu = Boolean(createMenuAnchor)
+  const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
+  const openExportMenu = Boolean(exportMenuAnchor);
 
   const [exportAssessmentDialogOpen, setExportAssessmentDialogOpen] = useState(false)
   const [exportQuestionBankDialogOpen, setExportQuestionBankDialogOpen] = useState(false)
@@ -214,6 +226,22 @@ const QuestionBankDetailsPage: React.FC = () => {
     setNewQuestionBankTitle(event.target.value)
   }
 
+  const handleCreateClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setCreateMenuAnchor(event.currentTarget)
+  }
+
+  const handleCreateMenuClose = () => {
+    setCreateMenuAnchor(null)
+  }
+
+  const handleExportClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setExportMenuAnchor(event.currentTarget);
+  };
+
+  const handleExportMenuClose = () => {
+    setExportMenuAnchor(null);
+  };
+
   const handleExportAssessment = async () => {
     const combinedAssessments = [...selectedAssessments]
     if (newAssessmentTitle) {
@@ -276,11 +304,18 @@ const QuestionBankDetailsPage: React.FC = () => {
     }
   }
 
-  const createNewQuestion = () => {
+  const createNewQuestion = (isManual: boolean = false) => {
     navigate(`/projects/${projectId}/createQuestion`, {
-      state: { questionBankId, questionBankTitle: questionBankDetails?.title, projectTitle },
+      state: {
+        questionBankId,
+        questionBankTitle: questionBankDetails?.title,
+        projectTitle,
+        isManual
+      },
     })
+    handleCreateMenuClose()
   }
+
 
   const handleBackToQuestionBanks = () => {
     navigate(`/projects/${projectId}/questionBanks`, {
@@ -358,45 +393,132 @@ const QuestionBankDetailsPage: React.FC = () => {
                   justifyContent: isMobile ? "space-between" : "flex-end",
                 }}
               >
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  startIcon={<FileUploadIcon />}
-                  onClick={handleExportAssessmentClick}
-                  disabled={selectedQuestions.length === 0}
-                  sx={{
-                    height: "48px",
-                    flex: isMobile ? "1 0 calc(50% - 8px)" : "none",
-                  }}
-                >
-                  To Assessment
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  startIcon={<FileUploadIcon />}
-                  onClick={handleExportQuestionBankClick}
-                  disabled={selectedQuestions.length === 0}
-                  sx={{
-                    height: "48px",
-                    flex: isMobile ? "1 0 calc(50% - 8px)" : "none",
-                  }}
-                >
-                  To Question Bank
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<AddIcon />}
-                  onClick={createNewQuestion}
-                  sx={{
-                    height: "48px",
-                    width: isMobile ? "100%" : "auto",
-                    mt: isMobile ? 1 : 0,
-                  }}
-                >
-                  Add Question
-                </Button>
+                <>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<FileUploadIcon />}
+                    endIcon={<KeyboardArrowDownIcon />}
+                    onClick={handleExportClick}
+                    disabled={selectedQuestions.length === 0}
+                    sx={{
+                      height: "48px",
+                      width: isMobile ? "100%" : "auto",
+                    }}
+                    aria-controls={openExportMenu ? "export-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={openExportMenu ? "true" : undefined}
+                  >
+                    Export To
+                  </Button>
+                  <Menu
+                    id="export-menu"
+                    anchorEl={exportMenuAnchor}
+                    open={openExportMenu}
+                    onClose={handleExportMenuClose}
+                    MenuListProps={{
+                      "aria-labelledby": "export-button",
+                      dense: true,
+                    }}
+                    transformOrigin={{ horizontal: "right", vertical: "top" }}
+                    anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        handleExportAssessmentClick();
+                        handleExportMenuClose();
+                      }}
+                      sx={{
+                        py: 1.5,
+                        "&:hover": {
+                          backgroundColor: "rgba(25, 118, 210, 0.08)",
+                        },
+                      }}
+                    >
+                      <ListItemIcon>
+                        <FileUploadIcon fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText>To Assessment</ListItemText>
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleExportQuestionBankClick();
+                        handleExportMenuClose();
+                      }}
+                      sx={{
+                        py: 1.5,
+                        "&:hover": {
+                          backgroundColor: "rgba(25, 118, 210, 0.08)",
+                        },
+                      }}
+                    >
+                      <ListItemIcon>
+                        <FileUploadIcon fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText>To Question Bank</ListItemText>
+                    </MenuItem>
+                  </Menu>
+                </>
+                <>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddIcon />}
+                    endIcon={<KeyboardArrowDownIcon />}
+                    onClick={handleCreateClick}
+                    sx={{
+                      height: "48px",
+                      width: isMobile ? "100%" : "auto",
+                      mt: isMobile ? 1 : 0,
+                    }}
+                    aria-controls={openCreateMenu ? "create-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={openCreateMenu ? "true" : undefined}
+                  >
+                    Add Question
+                  </Button>
+                  <Menu
+                    id="create-menu"
+                    anchorEl={createMenuAnchor}
+                    open={openCreateMenu}
+                    onClose={handleCreateMenuClose}
+                    MenuListProps={{
+                      "aria-labelledby": "create-button",
+                      dense: true,
+                    }}
+                    transformOrigin={{ horizontal: "right", vertical: "top" }}
+                    anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                  >
+                    <MenuItem
+                      onClick={() => createNewQuestion(false)}
+                      sx={{
+                        py: 1.5,
+                        "&:hover": {
+                          backgroundColor: "rgba(25, 118, 210, 0.08)",
+                        },
+                      }}
+                    >
+                      <ListItemIcon>
+                        <AutomateIcon fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText>Generate Question</ListItemText>
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => createNewQuestion(true)}
+                      sx={{
+                        py: 1.5,
+                        "&:hover": {
+                          backgroundColor: "rgba(25, 118, 210, 0.08)",
+                        },
+                      }}
+                    >
+                      <ListItemIcon>
+                        <EditIcon fontSize="small" color="primary" />
+                      </ListItemIcon>
+                      <ListItemText>Manual Creation</ListItemText>
+                    </MenuItem>
+                  </Menu>
+                </>
               </Box>
             </Box>
           </Paper>
@@ -413,9 +535,6 @@ const QuestionBankDetailsPage: React.FC = () => {
             <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
               This question bank doesn't have any questions yet
             </Typography>
-            <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={createNewQuestion}>
-              Create Your First Question
-            </Button>
           </Paper>
         ) : (
           <Paper
