@@ -150,7 +150,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
   }
 
   const hasQuantifiable = variables.some((variable) => isQuantifiable(variable.type))
-  const hasSubclasses = variables.some((variable) => variable.subclasses && variable.subclasses.length > 0)
+  // const hasSubclasses = variables.some((variable) => variable.subclasses && variable.subclasses.length > 0)
   const hasMatchingInput = (type: string) => contextDetails && contextDetails.length > 0 && contextDetails.some((_contextDetails, index) => checkArgumentType(type, index))
 
   const checkArgumentType = (type: string, inputDetailIndex: number): boolean => {
@@ -234,7 +234,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
                 Element type
               </TableCell>
             )}
-            {hasSubclasses && (
+            {/* {hasSubclasses && (
               <TableCell
                 sx={{
                   width: "20%",
@@ -246,7 +246,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
               >
                 Subclass
               </TableCell>
-            )}
+            )} */}
             <TableCell
               sx={{
                 width: "20%",
@@ -280,6 +280,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
               hasMatchingInput(variable.type) &&
               useGeneratedInput[variable.name] != -1 &&
               useGeneratedInput[variable.name] != undefined
+            console.log(variable.subclasses)
             return (
               <TableRow
                 key={index}
@@ -299,7 +300,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
                 >
                   {variable.name}
                 </TableCell>
-                <TableCell
+                {(!variable.subclasses || variable.subclasses.length == 0) && (<TableCell
                   sx={{
                     width: "20%",
                     padding: "12px 16px",
@@ -308,7 +309,8 @@ const VariableTable: React.FC<VariableTableProps> = ({
                   }}
                 >
                   {variable.type}
-                </TableCell>
+                </TableCell>)
+                }
                 {hasQuantifiable ? (
                   <TableCell sx={{ width: "20%", padding: "12px 16px" }}>
                     {isQuantifiable(variable.type) ? (
@@ -357,7 +359,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
                     )}
                   </TableCell>
                 ) : null}
-                {hasSubclasses && (
+                {variable.subclasses && variable.subclasses.length > 0 && (
                   <TableCell sx={{ width: "20%", padding: "12px 16px" }}>
                     {variable.subclasses && variable.subclasses.length > 0 ? (
                       <FormControl
