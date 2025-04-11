@@ -221,6 +221,8 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         border: '1px solid #ccc',
         borderRadius: '4px',
         padding: 2,
+        // minWidth: "100vh",
+        // minHeight: "100vh",
       }}
     >
       <Typography variant="h6" gutterBottom sx={{ marginBottom: 2 }}>

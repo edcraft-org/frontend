@@ -5,6 +5,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import QuestionGeneration from '../../../components/QuestionCreation/QuestionGeneration';
 import { NavigationWarning } from '../../../components/QuestionCreation/QuestionGeneration/NavigationWarning';
 import ManualCreation from '../../../components/QuestionCreation/ManualCreation';
+import { NavigationWarningProvider } from '../../../context/NavigationWarningContext';
 
 const QuestionCreationPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -15,13 +16,18 @@ const QuestionCreationPage: React.FC = () => {
     return <div>Error: Project ID is missing</div>;
   }
 
-
   return (
-    <Box sx={{ width: '100%', bgcolor: "#f5f7fa" }}>
-      <NavBar project={{id: projectId, title: projectTitle}} assessment={ {id: assessmentId, title: assessmentTitle} } questionBank={{id: questionBankId, title: questionBankTitle}} isQuestionCreation={true}/>
-      <NavigationWarning/>
-      <Box sx={{ marginTop: '64px', padding: 2 }}>
-        {isManual ? (
+    <NavigationWarningProvider>
+      <Box sx={{ minHeight: "100vh", width: '100%', bgcolor: "#f5f7fa" }}>
+        <NavBar
+          project={{id: projectId, title: projectTitle}}
+          assessment={{ id: assessmentId, title: assessmentTitle }}
+          questionBank={{id: questionBankId, title: questionBankTitle}}
+          isQuestionCreation={true}
+        />
+        <NavigationWarning/>
+        <Box sx={{ marginTop: '64px', padding: 2 }}>
+          {isManual ? (
             <ManualCreation
               project={{ id: projectId, title: projectTitle }}
               assessmentId={assessmentId}
@@ -33,9 +39,10 @@ const QuestionCreationPage: React.FC = () => {
               assessmentId={assessmentId}
               questionBankId={questionBankId}
             />
-        )}
+          )}
+        </Box>
       </Box>
-    </Box>
+    </NavigationWarningProvider>
   );
 };
 

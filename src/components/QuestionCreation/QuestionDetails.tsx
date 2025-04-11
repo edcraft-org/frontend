@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, MenuItem, FormControl, InputLabel, Select, Chip, Typography, TextField } from '@mui/material';
+import { Box, MenuItem, FormControl, InputLabel, Select, Chip, Typography, TextField, Paper, Grid } from '@mui/material';
 
 interface QuestionDetailsProps {
   type: string;
@@ -22,61 +22,95 @@ const QuestionDetails: React.FC<QuestionDetailsProps> = ({ type, marks, setType,
   }
 
   return (
-    <Box
+    <Paper
+      elevation={2}
       sx={{
-        marginBottom: 2,
-        border: '1px solid #ccc',
-        borderRadius: '4px',
-        padding: 2,
+        marginBottom: 3,
+        borderRadius: 2,
+        overflow: 'hidden',
       }}
     >
-      <Typography variant="h6" gutterBottom sx={{ marginBottom: 2 }}>
-        Question Details
-      </Typography>
-      <FormControl fullWidth sx={{ marginBottom: 2, bgcolor: 'white' }}>
-        <InputLabel id="question-type-label">Question Type</InputLabel>
-        <Select
-          labelId="question-type-label"
-          label="Question Type"
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          renderValue={(selected) => (
-            <Chip label={selected} />
-          )}
+      <Box sx={{
+        p: 2,
+        borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+        bgcolor: '#f8f9fa',
+      }}>
+        <Typography
+          variant="h6"
+          fontWeight="medium"
+          color="primary"
         >
-          <MenuItem value="Multiple Choice">Multiple Choice</MenuItem>
-          <MenuItem value="Fill in the blank">Fill in the Blank</MenuItem>
-          {/* <MenuItem value="Multiple Response">Multiple Response></MenuItem>
-          <MenuItem value="Other">Other</MenuItem> */}
-        </Select>
-      </FormControl>
-      <TextField
-        fullWidth
-        label="Question Marks"
-        variant="outlined"
-        type="number"
-        value={marks}
-        onChange={(e) => setMarks(Number(e.target.value))}
-        required
-        inputProps={{ min: 1 }}
-        sx={{ marginTop: 2, bgcolor: 'white'}}
-      />
-      <TextField
-        fullWidth
-        label="Number of Options"
-        variant="outlined"
-        type="number"
-        value={numOptions === 0 ? "" : numOptions}
-        onChange={handleNumberChange}
-        required
-        sx={{ marginTop: 2, bgcolor: "white" }}
-        disabled={type === "true or false"}
-        inputProps={{
-          min: 0,
-          inputMode: "numeric",
-        }}
-      />
-    </Box>
+          Question Details
+        </Typography>
+      </Box>
+
+      <Box sx={{ p: 3, width: '800px' }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
+              <InputLabel id="question-type-label">Question Type</InputLabel>
+              <Select
+                labelId="question-type-label"
+                label="Question Type"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                renderValue={(selected) => (
+                  <Chip
+                    label={selected}
+                    size="small"
+                    sx={{
+                      borderRadius: 1,
+                      bgcolor: 'grey.100',
+                      color: 'grey.800',
+                      border: '1px solid',
+                      borderColor: 'grey.300',
+                      '& .MuiChip-label': {
+                        px: 1,
+                        fontWeight: 500
+                      }
+                    }}
+                  />
+                )}
+              >
+                <MenuItem value="Multiple Choice">Multiple Choice</MenuItem>
+                <MenuItem value="Fill in the blank">Fill in the Blank</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="Question Marks"
+              variant="outlined"
+              type="number"
+              value={marks}
+              onChange={(e) => setMarks(Number(e.target.value))}
+              required
+              inputProps={{ min: 1 }}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="Number of Options"
+              variant="outlined"
+              type="number"
+              value={numOptions === 0 ? "" : numOptions}
+              onChange={handleNumberChange}
+              required
+              disabled={type === "true or false"}
+              inputProps={{
+                min: 0,
+                inputMode: "numeric",
+              }}
+              helperText={type === "true or false" ? "Not applicable" : ""}
+            />
+          </Grid>
+        </Grid>
+      </Box>
+    </Paper>
   );
 };
 

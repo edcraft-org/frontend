@@ -11,6 +11,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { SubQuestion, GenerateQuestionResponse, NewQuestion } from '../../utils/api/QuestionAPI';
 import { numberToAlphabet } from '../../utils/format';
 import { AuthContext } from '../../context/Authcontext';
+import { useNavigationWarning } from '../../context/NavigationWarningContext';
 
 interface QuestionCreationProps {
   questions: GenerateQuestionResponse;
@@ -30,6 +31,8 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
   const [includeTable, setIncludeTable] = useState<{ [key: number]: boolean }>({});
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const { setBypassWarning } = useNavigationWarning();
+
   useEffect(() => {
     const combinedQuestions: SubQuestion[] = [];
 
@@ -89,15 +92,18 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
     setDialogOpen(false);
     try {
       await onAddQuestion(newQuestion);
-      if (assessmentId) {
-        navigate(`/projects/${project.id}/assessments/${assessmentId}`, {
-          state: { projectTitle: project.title }
-        });
-      } else if (questionBankId) {
-        navigate(`/projects/${project.id}/questionBanks/${questionBankId}`, {
-          state: { projectTitle: project.title }
-        });
-      }
+      setBypassWarning(true); // Set bypass first
+      setTimeout(() => { // Use setTimeout to ensure bypass is set before navigation
+        if (assessmentId) {
+          navigate(`/projects/${project.id}/assessments/${assessmentId}`, {
+            state: { projectTitle: project.title }
+          });
+        } else if (questionBankId) {
+          navigate(`/projects/${project.id}/questionBanks/${questionBankId}`, {
+            state: { projectTitle: project.title }
+          });
+        }
+      }, 0);
     } catch (error) {
       console.error('Error adding questions:', error);
     }
@@ -207,7 +213,17 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
     : '';
 
   return (
-    <Box>
+    <Box
+      // sx={{
+      //   marginTop: 2,
+      //   padding: 2,
+      //   backgroundColor: '#f0f4f8',
+      //   borderRadius: '8px',
+      //   boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+      //   minHeight: "100vh",
+      //   minWidth: "100vh",
+      // }}
+    >
       {questions.description && (
         <Card variant="outlined" sx={{ marginBottom: 4, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
           <CardHeader
