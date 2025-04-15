@@ -207,7 +207,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
             >
               Variable Type
             </TableCell>
-            {hasQuantifiable && (
+            {!isAlgoTable && hasQuantifiable && (
               <TableCell
                 sx={{
                   width: "20%",
@@ -233,17 +233,19 @@ const VariableTable: React.FC<VariableTableProps> = ({
                 Subclass
               </TableCell>
             )} */}
-            <TableCell
-              sx={{
-                width: "20%",
-                fontWeight: "bold",
-                fontSize: "0.875rem",
-                padding: "12px 16px",
-                borderBottom: "2px solid #e0e0e0",
-              }}
-            >
-              Options
-            </TableCell>
+            {!isAlgoTable && (
+              <TableCell
+                sx={{
+                  width: "20%",
+                  fontWeight: "bold",
+                  fontSize: "0.875rem",
+                  padding: "12px 16px",
+                  borderBottom: "2px solid #e0e0e0",
+                }}
+              >
+                Options
+              </TableCell>
+            )}
             {(isAlgoTable || isInnerInputTable) && (
               <TableCell
                 sx={{
@@ -296,7 +298,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
                   {variable.type}
                 </TableCell>)
                 }
-                {hasQuantifiable ? (
+                {!isAlgoTable && hasQuantifiable ? (
                   <TableCell sx={{ width: "20%", padding: "12px 16px" }}>
                     {isQuantifiable(variable.type) ? (
                       <FormControl
@@ -392,7 +394,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
                     )}
                   </TableCell>
                 )}
-                {selectedSubclasses[variable.name] &&
+                {!isAlgoTable && selectedSubclasses[variable.name] &&
                 variables
                   .find((v) => v.name === variable.name)
                   ?.subclasses?.find((s) => s.name === selectedSubclasses[variable.name])?.arguments ? (
@@ -435,7 +437,7 @@ const VariableTable: React.FC<VariableTableProps> = ({
                       )}
                   </TableCell>
                 ) : (
-                  variable.arguments && (
+                  !isAlgoTable && variable.arguments && (
                     <TableCell sx={{ width: "20%", padding: "12px 16px" }}>
                       {variable.arguments?.map((arg, idx) =>
                         arg.type === "typing.Callable" ? (
