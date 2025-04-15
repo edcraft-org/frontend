@@ -46,7 +46,18 @@ export type QuestionDetails = {
   // question_type: string;
 }
 
-export interface SubQuestion {
+export type GeneratedContextItem = {
+  id: string;
+  type: 'input' | 'algo';
+  context: Record<string, unknown>;
+  context_init: Record<string, unknown>;
+  has_output: boolean;
+  name?: string;
+};
+
+export type GeneratedContext = GeneratedContextItem[];
+
+export interface SubQuestionContext {
   description: string;
   queryable: string;
   context: ContextRequest;
@@ -57,7 +68,7 @@ export interface SubQuestion {
 export interface GenerateQuestionRequest {
   description: string;
   context: ContextRequest;
-  sub_questions?: SubQuestion[];
+  sub_questions?: SubQuestionContext[];
 }
 
 export interface GenerateVariableRequest {

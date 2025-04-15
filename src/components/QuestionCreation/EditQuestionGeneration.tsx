@@ -2,7 +2,7 @@ import { useContext, useState } from 'react';
 import { Box, Typography, Button, Alert } from '@mui/material';
 import { GeneratedContext, generateQuestion, GenerateQuestionRequest } from '../../utils/api/QuestionGenerationAPI';
 import QuestionCreation from './QuestionCreation';
-import { createQuestion, NewQuestion } from '../../utils/api/QuestionAPI';
+import { createQuestion, NewQuestion, Question, updateQuestion } from '../../utils/api/QuestionAPI';
 import { addExistingQuestionToAssessment } from '../../utils/api/AssessmentAPI';
 import { addExistingQuestionToQuestionBank } from '../../utils/api/QuestionBankAPI';
 import { AuthContext } from '../../context/Authcontext';
@@ -14,16 +14,18 @@ import { AlgoDetailsType, initialState, InputDetailsType } from '../../reducer/q
 
 interface QuestionGenerationProps {
   project: { id: string, title: string };
+  question: Question;
   assessmentId?: string;
   questionBankId?: string;
 }
 
 const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
   project,
+  question,
   assessmentId,
-  questionBankId
-}) => {
+  questionBankId,
 
+}) => {
   const {
     state,
     dispatch,
@@ -52,11 +54,18 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     setSelectedDetail,
     // resetState,
     handleAddGeneratedOutput,
-  } = useQuestionGeneration();
+  } = useQuestionGeneration(question.state || null);
 
   const { user } = useContext(AuthContext);
-  const [generatedContext, setGeneratedContext] = useState<GeneratedContext>([]);
+  const [generatedContext, setGeneratedContext] = useState<GeneratedContext>(question.generated_context || []);
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // useEffect(() => {
+  //   if (question.state) {
+  //     // Initialize reducer with stored state
+  //     dispatch({ type: 'LOAD_STATE', value: question.state });
+  //   }
+  // }, [question]);
 
   const handleGenerate = async () => {
     const { description, subQuestions } = state;
@@ -145,25 +154,25 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
 
   const onAddQuestion = async (newQuestion: NewQuestion) => {
     try {
-      // TODO: To be updated when authentication logic is implemented
       if (!user) {
         throw new Error('User is not logged in');
       }
-      // Create the question
-      const question = await createQuestion(newQuestion);
 
-      if (assessmentId) {
-        // Add the question to the assessment
-        await addExistingQuestionToAssessment(assessmentId, question._id);
-      } else if (questionBankId) {
-        // Add the question to the question bank
-        await addExistingQuestionToQuestionBank(questionBankId, question._id);
+      if (question) {
+        // Update existing question
+        await updateQuestion(question._id, newQuestion);
       } else {
-        throw new Error('Assessment ID or Question Bank ID is missing');
+        // Create new question
+        const createdQuestion = await createQuestion(newQuestion);
+        if (assessmentId) {
+          await addExistingQuestionToAssessment(assessmentId, createdQuestion._id);
+        } else if (questionBankId) {
+          await addExistingQuestionToQuestionBank(questionBankId, createdQuestion._id);
+        }
       }
-      console.log('Questions added to assessment successfully');
+      // Handle navigation
     } catch (error) {
-      console.error('Error adding questions to assessment:', error);
+      console.error('Error saving question:', error);
     }
   };
 
@@ -213,7 +222,6 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
     copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => copyInputDetailsItem(inputDetailsItem, index),
     handleAddGeneratedOutput: (input_path: { [key: string]: unknown }, input_init: { [key: string]: { [arg: string]: unknown } }, user_env_code: string) => handleAddGeneratedOutput(input_path, input_init, user_env_code, index),
   });
-
   return (
     <Box
       sx={{
@@ -221,8 +229,6 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
         border: '1px solid #ccc',
         borderRadius: '4px',
         padding: 2,
-        // minWidth: "100vh",
-        // minHeight: "100vh",
       }}
     >
       <Typography variant="h6" gutterBottom sx={{ marginBottom: 2 }}>
@@ -299,6 +305,7 @@ const QuestionGeneration: React.FC<QuestionGenerationProps> = ({
             onAddQuestion={onAddQuestion}
             assessmentId={assessmentId}
             questionBankId={questionBankId}
+            isUpdate={true}
           />
         </Box>
       )}

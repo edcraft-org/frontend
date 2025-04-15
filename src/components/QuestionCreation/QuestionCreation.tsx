@@ -12,17 +12,23 @@ import { SubQuestion, GenerateQuestionResponse, NewQuestion } from '../../utils/
 import { numberToAlphabet } from '../../utils/format';
 import { AuthContext } from '../../context/Authcontext';
 import { useNavigationWarning } from '../../context/NavigationWarningContext';
+import { QuestionBlock } from '../../reducer/questionGenerationReducer';
+import { GeneratedContext } from '../../utils/api/QuestionGenerationAPI';
 
 interface QuestionCreationProps {
+
   questions: GenerateQuestionResponse;
   onAddQuestion: (newQuestion: NewQuestion) => void;
   project: { id: string, title: string };
+  state?: QuestionBlock;
+  generatedContext?: GeneratedContext;
   assessmentId?: string;
   questionBankId?: string;
   isManual?: boolean;
+  isUpdate?: boolean;
 }
 
-const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQuestion, project, assessmentId, questionBankId, isManual = false }) => {
+const QuestionCreation: React.FC<QuestionCreationProps> = ({ state, generatedContext, questions, onAddQuestion, project, assessmentId, questionBankId, isManual = false, isUpdate = false }) => {
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [editableQuestions, setEditableQuestions] = useState<SubQuestion[]>([]);
@@ -88,6 +94,8 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
       description: questions.description,
       svg: questions.svg,
       subquestions: selected,
+      generated_context: generatedContext,
+      state: state,
     };
     setDialogOpen(false);
     try {
@@ -207,9 +215,13 @@ const QuestionCreation: React.FC<QuestionCreationProps> = ({ questions, onAddQue
   ];
 
   const addButtonText = assessmentId
-    ? 'Add to Assessment'
-    : questionBankId
-    ? 'Add to Question Bank'
+  ? isUpdate
+    ? 'Update Assessment'
+    : 'Add to Assessment'
+  : questionBankId
+    ? isUpdate
+      ? 'Update Question Bank'
+      : 'Add to Question Bank'
     : '';
 
   return (

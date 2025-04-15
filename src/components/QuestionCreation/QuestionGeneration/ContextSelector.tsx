@@ -15,28 +15,60 @@ import {
   type SelectChangeEvent,
   Tooltip,
 } from "@mui/material"
-import { AlgoDetailsType, ContextBlockType, Detail } from "../../../reducer/questionGenerationReducer"
+import { AlgoDetailsType, ContextBlockType, Detail, InputDetailsType, SubQuestionType } from "../../../reducer/questionGenerationReducer"
 import { formatText, formatValue } from "../../../utils/format"
 import GeneratedVariablesTable from "../../Table/GeneratedVariablesTable"
 import GeneratedAlgosTable from "../../Table/GeneratedAlgosTable"
-
-interface OuterGeneratedContext {
-  id: string
-  type: "input" | "algo"
-  context: { [key: string]: unknown }
-  context_init: { [key: string]: unknown },
-  has_output: boolean,
-  name?: string
-}
+import { GeneratedContext } from "../../../utils/api/QuestionGenerationAPI"
 
 interface ContextSelectorProps {
-  outerGeneratedContext: OuterGeneratedContext[]
+  subQuestion: SubQuestionType;
+  outerGeneratedContext: GeneratedContext
   outerContext: ContextBlockType
   setSelectedDetail: (detail: Detail) => void
 }
 
-const ContextSelector: React.FC<ContextSelectorProps> = ({ outerGeneratedContext, outerContext, setSelectedDetail }) => {
-  const [selectedContextIndex, setSelectedContextIndex] = useState<number>(-1)
+const ContextSelector: React.FC<ContextSelectorProps> = ({ subQuestion, outerGeneratedContext, outerContext, setSelectedDetail }) => {
+  const [selectedContextIndex, setSelectedContextIndex] = useState<number>(() => {
+    const selectedDetail = subQuestion.context.selectedDetail
+    if (selectedDetail) {
+      const index = outerContext.details.findIndex(context => {
+        if (context.type !== selectedDetail.type) {
+          return false;
+        }
+
+        if (context.type === 'algo' && selectedDetail.type === 'algo') {
+          const contextDetails = context.details as AlgoDetailsType;
+          const selectedDetails = selectedDetail.details as AlgoDetailsType;
+
+          return (
+            contextDetails.selectedTopic === selectedDetails.selectedTopic &&
+            contextDetails.selectedSubtopic === selectedDetails.selectedSubtopic &&
+            JSON.stringify(contextDetails.argumentsInit) === JSON.stringify(selectedDetails.argumentsInit)
+          );
+        }
+
+        if (context.type === 'input' && selectedDetail.type === 'input') {
+          const contextDetails = context.details as InputDetailsType;
+          const selectedDetails = selectedDetail.details as InputDetailsType;
+
+          return (
+            JSON.stringify(contextDetails.inputPath) === JSON.stringify(selectedDetails.inputPath) &&
+            JSON.stringify(contextDetails.inputInit) === JSON.stringify(selectedDetails.inputInit)
+          );
+        }
+
+        return false;
+      });
+
+      // if (index !== -1) {
+      //   setSelectedDetail(outerContext.details[index]);
+      // }
+
+      return index;
+    }
+    return -1;
+  });
 
   const handleContextChange = (event: SelectChangeEvent<string>) => {
     const index = Number.parseInt(event.target.value)

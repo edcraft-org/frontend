@@ -1,9 +1,13 @@
 import { useReducer } from 'react';
-import { reducer, initialState, InputDetailsType, Detail, AlgoDetailsType } from '../reducer/questionGenerationReducer';
+import { reducer, initialState, InputDetailsType, Detail, AlgoDetailsType, QuestionBlock } from '../reducer/questionGenerationReducer';
 import { getQueryables, getAlgoVariables, getQueryableVariables, getQuantifiables, getUserQueryables, getUserAlgoVariables, getInputQueryables, getInputQueryableVariables, listInputVariable, getUserInputVariables, getUserQueryableVariables, getUserInputQueryableVariables, getUserInputQueryables } from '../utils/api/QuestionGenerationAPI';
 
-const useQuestionGeneration = () => {
-  const [state, dispatch] = useReducer(reducer, initialState);
+const useQuestionGeneration = (loadedState: QuestionBlock | null = null) => {
+   const [state, dispatch] = useReducer(
+    reducer,
+    loadedState || initialState,
+    (initial) => initial
+  );
 
   const handleTopicChange = async (topic: string, index?: number) => {
     const updateAlgoDetails = (details: Detail[]) => {

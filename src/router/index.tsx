@@ -6,6 +6,7 @@ import QuestionBankDetailsPage from '../pages/QuestionPages/QuestionBankDetailsP
 import AssessmentPage from '../pages/AssessmentPages/AssessmentPage/AssessmentPage';
 import QuestionBankPage from '../pages/QuestionPages/QuestionBankPage/QuestionBankPage';
 import QuestionCreationPage from '../pages/QuestionPages/QuestionCreationPage/QuestionCreationPage';
+import QuestionEditPage from '../pages/QuestionPages/QuestionEditPage/QuestionEditPage';
 // import QuestionGroupPage from '../pages/QuestionPages/QuestionGroupPage/QuestionGroupPage';
 
 const routes = [
@@ -36,6 +37,10 @@ const routes = [
   {
     path: '/projects/:projectId/createQuestion',
     element: <QuestionCreationPage />
+  },
+  {
+    path: "/projects/:projectId/editQuestion" ,
+    element: <QuestionEditPage />
   }
 ];
 

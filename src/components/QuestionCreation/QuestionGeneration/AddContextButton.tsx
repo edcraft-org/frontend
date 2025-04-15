@@ -26,7 +26,7 @@ import CodeIcon from "@mui/icons-material/Code"
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"
 import QuestionEnvSelector from "./QuestionEnvSelector"
 import QuestionCategorySelector from "./QuestionCategorySelector"
-import { GenerateInputRequest, GenerateVariableRequest, generateInput, generateVariable } from '../../../utils/api/QuestionGenerationAPI';
+import { GenerateInputRequest, GenerateVariableRequest, GeneratedContext, generateInput, generateVariable } from '../../../utils/api/QuestionGenerationAPI';
 import { convertArguments, convertInputArguments } from '../../../utils/format';
 import { AlgoDetailsType, ContextBlockType, initialState, InputDetailsType } from '../../../reducer/questionGenerationReducer';
 import VariableTable from "./VariableTable"
@@ -55,9 +55,9 @@ interface AddContextButtonProps {
   addDetailsItem: (isAlgo: boolean) => void;
   removeDetailsItem: (inputDetailIndex: number, deleteGenerated: boolean) => void;
   copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => void;
-  outerGeneratedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>;
+  outerGeneratedContext: GeneratedContext;
   index?: number;
-  generatedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>;
+  generatedContext: GeneratedContext
   setGeneratedContext: (value: React.SetStateAction<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>>) => void;
 }
 

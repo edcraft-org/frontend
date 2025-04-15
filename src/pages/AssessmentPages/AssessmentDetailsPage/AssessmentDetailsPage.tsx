@@ -182,6 +182,19 @@ const AssessmentDetailsPage: React.FC = () => {
     })
   }
 
+  const handleEditQuestion = (question: Question) => {
+    const isManual = question.generated_context === undefined
+    navigate(`/projects/${projectId}/editQuestion`, {
+      state: {
+        assessmentId,
+        assessmentTitle: assessmentDetails?.title,
+        projectTitle,
+        isManual,
+        question
+      },
+    });
+  };
+
   return (
     <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#f5f7fa" }}>
       <NavBar
@@ -405,7 +418,7 @@ const AssessmentDetailsPage: React.FC = () => {
                       height: "100%",
                     }}
                   >
-                    <QuestionGroupPage questionNumber={index + 1} question={question} onRemove={handleRemoveQuestion} />
+                    <QuestionGroupPage questionNumber={index + 1} question={question} onEdit={handleEditQuestion} onRemove={handleRemoveQuestion} />
                   </Box>
                 </Paper>
               </Grid>

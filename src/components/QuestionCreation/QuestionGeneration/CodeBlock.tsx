@@ -5,7 +5,7 @@ import GeneratedVariablesTable from '../../Table/GeneratedVariablesTable';
 import AddContextButton from './AddContextButton';
 import GeneratedAlgosTable from '../../Table/GeneratedAlgosTable';
 import { convertArguments } from '../../../utils/format';
-import { generateOutput, GenerateVariableRequest } from '../../../utils/api/QuestionGenerationAPI';
+import { GeneratedContext, generateOutput, GenerateVariableRequest } from '../../../utils/api/QuestionGenerationAPI';
 import { v4 as uuidv4 } from 'uuid';
 
 interface CodeBlockProps {
@@ -29,8 +29,8 @@ interface CodeBlockProps {
   removeDetailsItem: (inputDetailIndex: number, deleteGenerated: boolean) => void;
   copyInputDetailsItem: (inputDetailsItem: InputDetailsType) => void;
   handleAddGeneratedOutput: (input_path: { [key: string]: unknown }, input_init: { [key: string]: { [arg: string]: unknown } }, user_env_code: string) => void;
-  outerGeneratedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>;
-  generatedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>;
+  outerGeneratedContext: GeneratedContext;
+  generatedContext: GeneratedContext;
   setGeneratedContext: (value: React.SetStateAction<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>>) => void;
   index?: number;
 }

@@ -20,6 +20,7 @@ interface NavBarProps {
   isProjectAssessment?: boolean;
   isProjectQuestionBank?: boolean;
   isQuestionCreation?: boolean;
+  isQuestionEdit?: boolean;
   project?: {
     id: string;
     title?: string;
@@ -36,7 +37,7 @@ interface NavBarProps {
 
 const settings = ['Logout'];
 
-function NavBar({ project, assessment, questionBank, isProjectAssessment, isProjectQuestionBank, isQuestionCreation }: NavBarProps) {
+function NavBar({ project, assessment, questionBank, isProjectAssessment, isProjectQuestionBank, isQuestionCreation, isQuestionEdit }: NavBarProps) {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
@@ -83,6 +84,15 @@ function NavBar({ project, assessment, questionBank, isProjectAssessment, isProj
     breadcrumbs.push(
       <Link key="6" color="inherit" onClick={() => navigate(`/projects/${project?.id}/createQuestion`, { state: { projectTitle: project?.title } })}>
         Create Question
+      </Link>
+    );
+  }
+
+
+  if (isQuestionEdit) {
+    breadcrumbs.push(
+      <Link key="6" color="inherit" onClick={() => navigate(`/projects/${project?.id}/editQuestion`, { state: { projectTitle: project?.title } })}>
+        Edit Question
       </Link>
     );
   }

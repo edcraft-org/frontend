@@ -323,6 +323,19 @@ const QuestionBankDetailsPage: React.FC = () => {
     })
   }
 
+  const handleEditQuestion = (question: Question) => {
+    const isManual = question.generated_context == null
+    navigate(`/projects/${projectId}/editQuestion`, {
+      state: {
+        questionBankId,
+        questionBankTitle: questionBankDetails?.title,
+        projectTitle,
+        isManual,
+        question
+      },
+    });
+  };
+
   return (
     <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#f5f7fa" }}>
       <NavBar
@@ -585,6 +598,7 @@ const QuestionBankDetailsPage: React.FC = () => {
                 handleSelectAll={handleSelectAll}
                 onQuestionClick={handleQuestionClickDialog}
                 handleRemoveQuestion={handleRemoveQuestion}
+                onEdit={handleEditQuestion}
               />
           </Paper>
         )}

@@ -1,14 +1,16 @@
-import { Box, Typography, RadioGroup, FormControlLabel, Radio, Divider, IconButton } from "@mui/material";
+import { Box, Typography, RadioGroup, FormControlLabel, Radio, Divider, IconButton, Tooltip } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import { useState } from "react";
 import { Question, SubQuestion } from "../../../utils/api/QuestionAPI";
 interface QuestionGroupPageProps {
   questionNumber: number;
   question: Question;
   onRemove?: (questionId: string) => void;
+  onEdit?: (question: Question) => void;  // Add this line
 }
 
-const QuestionGroupPage: React.FC<QuestionGroupPageProps> = ({ questionNumber, question, onRemove }) => {
+const QuestionGroupPage: React.FC<QuestionGroupPageProps> = ({ questionNumber, question, onEdit, onRemove }) => {
   const [selectedOption, setSelectedOption] = useState<string>("");
 
   const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,11 +69,22 @@ const QuestionGroupPage: React.FC<QuestionGroupPageProps> = ({ questionNumber, q
           <Typography variant="h6" sx={{ color: '#1e88e5', marginRight: 2 }}>
             {totalMarks} {totalMarks === 1 ? 'pt' : 'pts'}
           </Typography>
-          {onRemove && (
-            <IconButton onClick={() => onRemove(question._id)}>
-              <DeleteIcon />
-            </IconButton>
-          )}
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {onEdit && (
+              <Tooltip title="Edit question">
+                <IconButton onClick={() => onEdit(question)}>
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+            {onRemove && (
+              <Tooltip title="Delete question">
+                <IconButton onClick={() => onRemove(question._id)}>
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
         </Box>
       </Box>
       <Box sx={{ paddingBottom: '16px', paddingLeft: '16px', borderRadius: '0 0 8px 8px' }}>

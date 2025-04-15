@@ -109,7 +109,7 @@ export type Action =
   | { type: 'SET_SUB_QUESTION_CONTEXT_INPUT_DETAILS'; index: number; field: keyof InputDetailsType; value: unknown }
   | { type: 'ADD_SUB_QUESTION' }
   | { type: 'REMOVE_SUB_QUESTION'; index: number }
-  | { type: 'RESET_STATE' };
+  | { type: 'RESET_STATE' }
 
 export const reducer = (state: QuestionBlock, action: Action): QuestionBlock => {
   switch (action.type) {

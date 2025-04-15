@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Typography, Tooltip, IconButton } from '@mui/material';
-// import { Box, Typography, Tooltip, IconButton, Button, Collapse } from '@mui/material';
 import { Delete } from '@mui/icons-material';
-// import { Delete, ExpandLess, ExpandMore } from '@mui/icons-material';
 import QuestionDescriptionInput from './QuestionDescriptionInput';
 import QuestionQueryableSelector from './QuestionQueryableSelector';
 import { numberToAlphabet } from '../../../utils/format';
@@ -10,7 +8,7 @@ import VariableTable from './VariableTable';
 import QuestionDetails from '../QuestionDetails';
 import { ContextBlockType, Detail, initialState, InputDetailsType, SubQuestionType } from '../../../reducer/questionGenerationReducer';
 import ContextSelector from './ContextSelector';
-// import CodeBlock from './CodeBlock';
+import { GeneratedContext } from '../../../utils/api/QuestionGenerationAPI';
 
 interface SubQuestionProps {
   index: number;
@@ -46,7 +44,7 @@ interface SubQuestionProps {
     handleAddGeneratedOutput: (input_path: { [key: string]: unknown }, input_init: { [key: string]: { [arg: string]: unknown } }, user_env_code: string) => void;
   };
   loading: boolean;
-  outerGeneratedContext: Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>;
+  outerGeneratedContext: GeneratedContext;
   setSelectedDetail: (detail: Detail, index: number) => void;
 }
 
@@ -64,15 +62,8 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
   outerGeneratedContext,
   setSelectedDetail
 }) => {
-  // const [expanded, setExpanded] = useState(false);
   const [marks, setMarks] = useState<number>(1);
   const [type, setType] = useState<string>('Multiple Choice');
-  // const [generatedContext, setGeneratedContext] = useState<Array<{ id: string, type: 'input' | 'algo', context: { [key: string]: unknown }, context_init: { [key: string]: unknown }, has_output: boolean, name?: string }>>([]);
-
-  // const handleExpandClick = () => {
-  //   setExpanded(!expanded);
-  // };
-
   return (
     <Box sx={{ marginBottom: 2, border: '1px solid #ccc', borderRadius: '4px', padding: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -83,32 +74,8 @@ const SubQuestion: React.FC<SubQuestionProps> = ({
           <Delete />
         </IconButton>
       </Box>
-      {/* <>
-        <Box sx={{ marginBottom: 2 }}>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={handleExpandClick}
-            startIcon={expanded ? <ExpandLess /> : <ExpandMore />}
-            sx={{ textTransform: 'none' }}
-          >
-            {expanded ? 'Hide Context' : 'Show Context'}
-          </Button>
-        </Box>
-        <Collapse in={expanded}>
-          <CodeBlock
-            context = {subQuestion.context}
-            outerContext={outerContext}
-            {...contextActions}
-            index = {index}
-            loading={false}
-            generatedContext={generatedContext}
-            setGeneratedContext={setGeneratedContext}
-            outerGeneratedContext={outerGeneratedContext}
-          />
-        </Collapse>
-      </> */}
       <ContextSelector
+        subQuestion={subQuestion}
         outerGeneratedContext={outerGeneratedContext}
         outerContext={outerContext}
         setSelectedDetail={(detail: Detail) => setSelectedDetail(detail, index)}

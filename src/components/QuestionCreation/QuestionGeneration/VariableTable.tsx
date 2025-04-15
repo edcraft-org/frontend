@@ -14,7 +14,7 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material"
-import type { Variable, Quantifiable, VariableItem } from "../../../utils/api/QuestionGenerationAPI"
+import type { Variable, Quantifiable, VariableItem, GeneratedContext } from "../../../utils/api/QuestionGenerationAPI"
 import type { ContextBlockType, InputDetailsType } from "../../../reducer/questionGenerationReducer"
 import CodeSnippetEditor from "../CodeSnippetEditor"
 
@@ -35,22 +35,8 @@ interface VariableTableProps {
   useGeneratedInput: { [key: string]: number }
   setUseGeneratedInput: (value: React.SetStateAction<{ [key: string]: number }>) => void
   setInputInit: (value: React.SetStateAction<{ [key: string]: { [arg: string]: unknown } }>) => void
-  generatedContext: Array<{
-    id: string
-    type: "input" | "algo"
-    context: { [key: string]: unknown }
-    context_init: { [key: string]: unknown }
-    has_output: boolean,
-    name?: string
-  }>
-  outerGeneratedContext: Array<{
-    id: string
-    type: "input" | "algo"
-    context: { [key: string]: unknown }
-    context_init: { [key: string]: unknown }
-    has_output: boolean,
-    name?: string
-  }>
+  generatedContext: GeneratedContext
+  outerGeneratedContext: GeneratedContext
   copyInputDetailsItem: (inputDetailsType: InputDetailsType) => void
 }
 
@@ -280,7 +266,6 @@ const VariableTable: React.FC<VariableTableProps> = ({
               hasMatchingInput(variable.type) &&
               useGeneratedInput[variable.name] != -1 &&
               useGeneratedInput[variable.name] != undefined
-            console.log(variable.subclasses)
             return (
               <TableRow
                 key={index}

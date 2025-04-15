@@ -1,4 +1,6 @@
+import { QuestionBlock } from "../../reducer/questionGenerationReducer";
 import { basePath } from "./Constants";
+import { GeneratedContext } from "./QuestionGenerationAPI";
 
 interface SVGContent {
   graph?: string;
@@ -20,6 +22,8 @@ export interface Question {
   description: string;
   svg?: SVGContent;
   subquestions?: SubQuestion[];
+  generated_context?: GeneratedContext;
+  state?: QuestionBlock;
 }
 
 export interface NewQuestion {
@@ -27,6 +31,8 @@ export interface NewQuestion {
   description: string;
   svg?: SVGContent;
   subquestions?: SubQuestion[];
+  generated_context?: GeneratedContext;
+  state?: QuestionBlock;
 }
 
 export interface QuestionCreationItem {
@@ -88,4 +94,23 @@ export const deleteQuestion = async (questionId: string): Promise<string> => {
 
   const result: string = await response.json();
   return result;
+};
+
+export const updateQuestion = async (questionId: string, updatedQuestion: NewQuestion): Promise<Question> => {
+  const url = `${basePath}/questions/${questionId}`;
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updatedQuestion),
+  });
+
+  if (!response.ok) {
+    const message = `An error has occurred: ${response.status}`;
+    throw new Error(message);
+  }
+
+  const question: Question = await response.json();
+  return question;
 };

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Box, Grid, Typography, Checkbox, IconButton, Divider } from "@mui/material";
+import { Box, Grid, Typography, Checkbox, IconButton, Divider, Tooltip } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import { Question, SubQuestion } from '../../utils/api/QuestionAPI';
 
 interface QuestionListProps {
@@ -11,9 +12,10 @@ interface QuestionListProps {
   handleSelectAll: () => void;
   onQuestionClick: (question: Question, index: number) => void;
   handleRemoveQuestion: (questionId: string) => void;
+  onEdit?: (question: Question) => void; // Add this line
 }
 
-const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestions, handleQuestionClick, selectAll, handleSelectAll, onQuestionClick, handleRemoveQuestion }) => {
+const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestions, handleQuestionClick, selectAll, handleSelectAll, onQuestionClick, handleRemoveQuestion, onEdit }) => {
 
   const renderSubQuestion = (subQuestion: SubQuestion, index: number) => (
     <Box key={index} sx={{ marginBottom: 2, paddingLeft: '16px' }}>
@@ -83,20 +85,34 @@ const QuestionList: React.FC<QuestionListProps> = ({ questions, selectedQuestion
           >
             <Box sx={{ marginBottom: 2, backgroundColor: '#e0e0e0', paddingY: '8px', paddingLeft: '16px', borderRadius: '8px 8px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="h6" sx={{ color: '#1e88e5' }}>Question {index + 1}</Typography>
-              <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Checkbox
                   checked={selectedQuestions.includes(question)}
                   onClick={(e) => e.stopPropagation()}
                   onChange={() => handleQuestionClick(question)}
                 />
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveQuestion(question._id);
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
+                {onEdit && (
+                  <Tooltip title="Edit question">
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(question);
+                      }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                <Tooltip title="Delete question">
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveQuestion(question._id);
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
               </Box>
             </Box>
             <Box sx={{ paddingBottom: '16px', paddingLeft: '16px', borderRadius: '0 0 8px 8px' }}>
