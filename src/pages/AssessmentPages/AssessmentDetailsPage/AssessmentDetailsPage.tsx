@@ -183,7 +183,7 @@ const AssessmentDetailsPage: React.FC = () => {
   }
 
   const handleEditQuestion = (question: Question) => {
-    const isManual = question.generated_context === undefined
+    const isManual = question.generated_context === undefined || question.generated_context === null
     navigate(`/projects/${projectId}/editQuestion`, {
       state: {
         assessmentId,
