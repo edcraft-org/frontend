@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 
 import { useContext, useState } from "react"
@@ -14,6 +16,7 @@ import Tooltip from "@mui/material/Tooltip"
 import MenuItem from "@mui/material/MenuItem"
 import Breadcrumbs from "@mui/material/Breadcrumbs"
 import Link from "@mui/material/Link"
+import HelpIcon from "@mui/icons-material/Help"
 import { AuthContext } from "../../context/Authcontext"
 import { supabase } from "../../../supabaseClient"
 
@@ -250,7 +253,42 @@ function NavBar({
               {breadcrumbs}
             </Breadcrumbs>
           </Box>
-
+          <Box sx={{ mr: 2, display: "flex", alignItems: "center" }}>
+            <Tooltip title="Documentation">
+              <Box
+                component="a"
+                href="https://edcraft-org.github.io/user-guide/"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(25, 118, 210, 0.08)",
+                  transition: "all 0.2s ease",
+                  textDecoration: "none",
+                  "&:hover": {
+                    backgroundColor: "rgba(25, 118, 210, 0.15)",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                  },
+                }}
+              >
+                <HelpIcon sx={{ fontSize: "24px", color: "#1976d2", mr: 1 }} />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    color: "#1976d2",
+                    display: { xs: "none", sm: "block" },
+                  }}
+                >
+                  Docs
+                </Typography>
+              </Box>
+            </Tooltip>
+          </Box>
           {user ? (
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">
